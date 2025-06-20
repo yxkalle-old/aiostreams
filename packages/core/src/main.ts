@@ -772,8 +772,12 @@ export class AIOStreams {
         // this fixes issues in most cases as most addons do provide idPrefixes
         if (existing) {
           existing.types = [...new Set([...existing.types, ...resource.types])];
-          if (resource.idPrefixes) {
-            existing.idPrefixes = existing.idPrefixes || [];
+          if (
+            existing.idPrefixes &&
+            existing.idPrefixes.length > 0 &&
+            resource.idPrefixes &&
+            resource.idPrefixes.length > 0
+          ) {
             existing.idPrefixes = [
               ...new Set([...existing.idPrefixes, ...resource.idPrefixes]),
             ];
