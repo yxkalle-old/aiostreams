@@ -455,12 +455,15 @@ class StreamParser {
     return this.addon.library ?? false;
   }
 
-  protected calculateBytesFromSizeString(size: string): number | undefined {
+  protected calculateBytesFromSizeString(
+    size: string,
+    sizeRegex?: RegExp
+  ): number | undefined {
     const k = this.sizeK;
-    if (!this.sizeRegex) {
+    const sizePattern = sizeRegex || this.sizeRegex;
+    if (!sizePattern) {
       return undefined;
     }
-    const sizePattern = this.sizeRegex;
     const match = size.match(sizePattern);
     if (!match) return 0;
     const value = parseFloat(match[1]);

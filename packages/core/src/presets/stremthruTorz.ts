@@ -40,6 +40,25 @@ class StremthruTorzStreamParser extends StreamParser {
   ): string | undefined {
     return undefined;
   }
+
+  protected override getFolderSize(
+    stream: Stream,
+    currentParsedStream: ParsedStream
+  ): number | undefined {
+    let folderSize = this.calculateBytesFromSizeString(
+      stream.description ?? '',
+      /📦\s*(\d+(\.\d+)?)\s?(KB|MB|GB|TB)/i
+    );
+    if (
+      folderSize &&
+      folderSize &&
+      currentParsedStream.size &&
+      folderSize <= currentParsedStream.size
+    ) {
+      folderSize = currentParsedStream.size;
+    }
+    return folderSize;
+  }
 }
 
 export class StremthruTorzPreset extends Preset {
