@@ -22,6 +22,9 @@ function matchMultiplePatterns(
 
 class FileParser {
   static parse(filename: string): ParsedFile {
+    const parsed = PTT.parse(filename);
+    // prevent the title from being parsed for info
+    filename = filename.replace(parsed.title, '').trim();
     filename = filename.replace(/\s+/g, '.').replace(/^\.+|\.+$/g, '');
     const resolution = matchPattern(filename, PARSE_REGEX.resolutions);
     const quality = matchPattern(filename, PARSE_REGEX.qualities);
@@ -37,7 +40,6 @@ class FileParser {
     const getPaddedNumber = (number: number, length: number) =>
       number.toString().padStart(length, '0');
 
-    const parsed = PTT.parse(filename);
     const releaseGroup = parsed.group;
     const title = parsed.title;
     const year = parsed.year ? parsed.year.toString() : undefined;
