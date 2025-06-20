@@ -777,8 +777,8 @@ export class AIOStreams {
         } else {
           this.finalResources.push({
             ...resource,
-            // explicitly set to an empty array
-            idPrefixes: [],
+            // explicitly set to null
+            idPrefixes: null,
             // idPrefixes: resource.idPrefixes
             //   ? [...resource.idPrefixes]
             //   : undefined,
