@@ -329,19 +329,7 @@ export class MediaFusionPreset extends Preset {
   ) {
     let pikpakCredentials = undefined;
     if (serviceId === constants.PIKPAK_SERVICE) {
-      pikpakCredentials = this.getServiceCredential(serviceId, userData, {
-        [constants.PIKPAK_SERVICE]: (credentials) => {
-          if (!credentials.email || !credentials.password) {
-            throw new Error(
-              `Missing email or password for ${serviceId}. Please add an email and password.`
-            );
-          }
-          return {
-            email: credentials.email,
-            password: credentials.password,
-          };
-        },
-      });
+      pikpakCredentials = this.getServiceCredential(serviceId, userData);
     }
     const encodedUserData = this.base64EncodeJSON(
       {
