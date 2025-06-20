@@ -113,7 +113,6 @@ export class Cache<K, V> {
     const footer = [
       '╚══════════════════════╧══════════╧═════════════════╧═════════════════╝',
       `  Summary: ${this.instances.size} cache instance(s), ${grandTotalItems} total items, Est. Total Size: ${formatBytes(grandTotalSize)}`,
-      `  Timestamp (UTC): 2025-06-20 16:45:08`,
     ];
 
     const lines = [...header, ...bodyLines, ...footer];
