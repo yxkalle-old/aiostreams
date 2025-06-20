@@ -303,6 +303,9 @@ export class UserRepository {
   }
 
   static async pruneUsers(maxDays: number = 30): Promise<number> {
+    if (maxDays < 0) {
+      return 0;
+    }
     try {
       const query =
         db.getDialect() === 'postgres'
