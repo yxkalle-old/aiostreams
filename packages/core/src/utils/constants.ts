@@ -257,7 +257,7 @@ const SERVICE_DETAILS: Record<
   },
   [ALLEDEBRID_SERVICE]: {
     id: ALLEDEBRID_SERVICE,
-    name: 'All-Debrid',
+    name: 'AllDebrid',
     shortName: 'AD',
     knownNames: ['AD', 'All Debrid', 'AllDebrid', 'All-Debrid'],
     signUpText:
