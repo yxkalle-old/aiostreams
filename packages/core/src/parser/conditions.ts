@@ -13,7 +13,7 @@ export abstract class BaseConditionParser {
         logical: true,
         add: false,
         concatenate: false,
-        conditional: false,
+        conditional: true,
         divide: false,
         factorial: false,
         multiply: false,
@@ -425,6 +425,12 @@ export class SelectConditionParser extends BaseConditionParser {
       throw new Error(
         `Filter condition failed: ${error instanceof Error ? error.message : String(error)}`
       );
+    }
+
+    // if the result is a boolean value, convert it to the appropriate type
+    // true = all streams, false = no streams
+    if (typeof selectedStreams === 'boolean') {
+      selectedStreams = selectedStreams ? streams : [];
     }
 
     // attempt to parse the result
