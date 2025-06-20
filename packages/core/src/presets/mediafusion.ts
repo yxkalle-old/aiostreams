@@ -302,15 +302,18 @@ export class MediaFusionPreset extends Preset {
       timeout: options.timeout || this.METADATA.TIMEOUT,
       presetType: this.METADATA.ID,
       presetInstanceId: '',
-
-      headers: {
-        'User-Agent': this.METADATA.USER_AGENT,
-        encoded_user_data: this.generateEncodedUserData(
-          userData,
-          options,
-          serviceId
-        ),
-      },
+      headers: options.url?.endsWith('/manifest.json')
+        ? {
+            'User-Agent': this.METADATA.USER_AGENT,
+          }
+        : {
+            'User-Agent': this.METADATA.USER_AGENT,
+            encoded_user_data: this.generateEncodedUserData(
+              userData,
+              options,
+              serviceId
+            ),
+          },
     };
   }
 
