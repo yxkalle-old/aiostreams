@@ -144,7 +144,7 @@ export class NuvioStreamsPreset extends Preset {
         name: 'Scraper API Key',
         description:
           'Optionally provide a [ScraperAPI](https://www.scraperapi.com/) API Key from',
-        type: 'string',
+        type: 'password',
         required: false,
         default: '',
       },
@@ -153,7 +153,7 @@ export class NuvioStreamsPreset extends Preset {
         name: 'ShowBox Cookie',
         description:
           'The cookie for the ShowBox provider. Highly recommended to get streams greater than 9GB. Log in at [Febbox](https://www.febbox.com/) > DevTools > Storage > Cookied > Copy the value of the `ui` cookie. ',
-        type: 'string',
+        type: 'password',
         required: false,
         default: '',
       },
