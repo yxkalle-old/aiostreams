@@ -42,7 +42,6 @@ const manifest = async (config?: UserData): Promise<Manifest> => {
     description: config?.addonDescription || Env.DESCRIPTION,
     catalogs,
     resources,
-    idPrefixes: [],
     types: resources.reduce((types, resource) => {
       const resourceTypes =
         typeof resource === 'string' ? [resource] : resource.types;
