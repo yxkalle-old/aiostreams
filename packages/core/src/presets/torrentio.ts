@@ -283,7 +283,9 @@ export class TorrentioPreset extends Preset {
     let providers = options.providers;
 
     if (!providers) {
-      providers = TorrentioPreset.defaultProviders;
+      providers = TorrentioPreset.defaultProviders.map(
+        (provider) => provider.value
+      );
     }
 
     let config: string[][] = [];
