@@ -123,7 +123,9 @@ export abstract class BaseConditionParser {
       }
 
       return streams.filter((stream) =>
-        resolutions.includes(stream.parsedFile?.resolution || 'Unknown')
+        resolutions
+          .map((r) => r.toLowerCase())
+          .includes(stream.parsedFile?.resolution?.toLowerCase() || 'unknown')
       );
     };
 
@@ -140,7 +142,9 @@ export abstract class BaseConditionParser {
         throw new Error('You must provide one or more quality strings');
       }
       return streams.filter((stream) =>
-        qualities.includes(stream.parsedFile?.quality || 'Unknown')
+        qualities
+          .map((q) => q.toLowerCase())
+          .includes(stream.parsedFile?.quality?.toLowerCase() || 'unknown')
       );
     };
 
@@ -157,7 +161,9 @@ export abstract class BaseConditionParser {
         throw new Error('You must provide one or more encode strings');
       }
       return streams.filter((stream) =>
-        encodes.includes(stream.parsedFile?.encode || 'Unknown')
+        encodes
+          .map((encode) => encode.toLowerCase())
+          .includes(stream.parsedFile?.encode?.toLowerCase() || 'unknown')
       );
     };
 
@@ -173,7 +179,9 @@ export abstract class BaseConditionParser {
       ) {
         throw new Error('You must provide one or more type string parameters');
       }
-      return streams.filter((stream) => types.includes(stream.type));
+      return streams.filter((stream) =>
+        types.map((t) => t.toLowerCase()).includes(stream.type.toLowerCase())
+      );
     };
 
     this.parser.functions.visualTag = function (
@@ -191,7 +199,9 @@ export abstract class BaseConditionParser {
         );
       }
       return streams.filter((stream) =>
-        stream.parsedFile?.visualTags.some((v) => visualTags.includes(v))
+        stream.parsedFile?.visualTags.some((v) =>
+          visualTags.map((vt) => vt.toLowerCase()).includes(v.toLowerCase())
+        )
       );
     };
 
@@ -210,7 +220,13 @@ export abstract class BaseConditionParser {
         );
       }
       return streams.filter((stream) =>
-        audioTags.some((a) => stream.parsedFile?.audioTags.includes(a))
+        audioTags
+          .map((a) => a.toLowerCase())
+          .some((a) =>
+            stream.parsedFile?.audioTags
+              .map((at) => at.toLowerCase())
+              .includes(a)
+          )
       );
     };
 
@@ -229,7 +245,13 @@ export abstract class BaseConditionParser {
         );
       }
       return streams.filter((stream) =>
-        audioChannels.some((a) => stream.parsedFile?.audioChannels?.includes(a))
+        audioChannels
+          .map((a) => a.toLowerCase())
+          .some((a) =>
+            stream.parsedFile?.audioChannels
+              ?.map((ac) => ac.toLowerCase())
+              .includes(a)
+          )
       );
     };
 
@@ -248,7 +270,13 @@ export abstract class BaseConditionParser {
         );
       }
       return streams.filter((stream) =>
-        languages.some((l) => stream.parsedFile?.languages?.includes(l))
+        languages
+          .map((l) => l.toLowerCase())
+          .some((l) =>
+            stream.parsedFile?.languages
+              ?.map((lang) => lang.toLowerCase())
+              .includes(l)
+          )
       );
     };
 
