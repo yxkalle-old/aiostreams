@@ -1316,6 +1316,21 @@ ${errorStreams.length > 0 ? `  ❌ Errors     : ${errorStreams.map((s) => `    �
       size: { total: 0, details: {} },
     };
 
+    const includedReasons: Record<string, SkipReason> = {
+      resolution: { total: 0, details: {} },
+      quality: { total: 0, details: {} },
+      encode: { total: 0, details: {} },
+      visualTag: { total: 0, details: {} },
+      audioTag: { total: 0, details: {} },
+      audioChannel: { total: 0, details: {} },
+      language: { total: 0, details: {} },
+      streamType: { total: 0, details: {} },
+      size: { total: 0, details: {} },
+      seeders: { total: 0, details: {} },
+      regex: { total: 0, details: {} },
+      keywords: { total: 0, details: {} },
+    };
+
     const start = Date.now();
     const isRegexAllowed = FeatureControl.isRegexAllowed(this.userData);
 
@@ -1619,6 +1634,9 @@ ${errorStreams.length > 0 ? `  ❌ Errors     : ${errorStreams.map((s) => `    �
 
       // carry out include checks first
       if (this.userData.includedStreamTypes?.includes(stream.type)) {
+        includedReasons.streamType.total++;
+        includedReasons.streamType.details[stream.type] =
+          (includedReasons.streamType.details[stream.type] || 0) + 1;
         return true;
       }
 
@@ -1627,6 +1645,14 @@ ${errorStreams.length > 0 ? `  ❌ Errors     : ${errorStreams.map((s) => `    �
           file?.resolution || ('Unknown' as any)
         )
       ) {
+        const resolution = this.userData.includedResolutions.find(
+          (resolution) => (file?.resolution || 'Unknown') === resolution
+        );
+        if (resolution) {
+          includedReasons.resolution.total++;
+          includedReasons.resolution.details[resolution] =
+            (includedReasons.resolution.details[resolution] || 0) + 1;
+        }
         return true;
       }
 
@@ -1635,6 +1661,14 @@ ${errorStreams.length > 0 ? `  ❌ Errors     : ${errorStreams.map((s) => `    �
           file?.quality || ('Unknown' as any)
         )
       ) {
+        const quality = this.userData.includedQualities.find(
+          (quality) => (file?.quality || 'Unknown') === quality
+        );
+        if (quality) {
+          includedReasons.quality.total++;
+          includedReasons.quality.details[quality] =
+            (includedReasons.quality.details[quality] || 0) + 1;
+        }
         return true;
       }
 
@@ -1645,6 +1679,16 @@ ${errorStreams.length > 0 ? `  ❌ Errors     : ${errorStreams.map((s) => `    �
           )
         )
       ) {
+        const tag = this.userData.includedVisualTags.find((tag) =>
+          (file?.visualTags.length ? file.visualTags : ['Unknown']).includes(
+            tag
+          )
+        );
+        if (tag) {
+          includedReasons.visualTag.total++;
+          includedReasons.visualTag.details[tag] =
+            (includedReasons.visualTag.details[tag] || 0) + 1;
+        }
         return true;
       }
 
@@ -1653,6 +1697,14 @@ ${errorStreams.length > 0 ? `  ❌ Errors     : ${errorStreams.map((s) => `    �
           (file?.audioTags.length ? file.audioTags : ['Unknown']).includes(tag)
         )
       ) {
+        const tag = this.userData.includedAudioTags.find((tag) =>
+          (file?.audioTags.length ? file.audioTags : ['Unknown']).includes(tag)
+        );
+        if (tag) {
+          includedReasons.audioTag.total++;
+          includedReasons.audioTag.details[tag] =
+            (includedReasons.audioTag.details[tag] || 0) + 1;
+        }
         return true;
       }
 
@@ -1664,6 +1716,15 @@ ${errorStreams.length > 0 ? `  ❌ Errors     : ${errorStreams.map((s) => `    �
           ).includes(channel)
         )
       ) {
+        const channel = this.userData.includedAudioChannels.find((channel) =>
+          (file?.audioChannels.length
+            ? file.audioChannels
+            : ['Unknown']
+          ).includes(channel)
+        );
+        includedReasons.audioChannel.total++;
+        includedReasons.audioChannel.details[channel!] =
+          (includedReasons.audioChannel.details[channel!] || 0) + 1;
         return true;
       }
 
@@ -1672,6 +1733,12 @@ ${errorStreams.length > 0 ? `  ❌ Errors     : ${errorStreams.map((s) => `    �
           (file?.languages.length ? file.languages : ['Unknown']).includes(lang)
         )
       ) {
+        const lang = this.userData.includedLanguages.find((lang) =>
+          (file?.languages.length ? file.languages : ['Unknown']).includes(lang)
+        );
+        includedReasons.language.total++;
+        includedReasons.language.details[lang!] =
+          (includedReasons.language.details[lang!] || 0) + 1;
         return true;
       }
 
@@ -1680,6 +1747,14 @@ ${errorStreams.length > 0 ? `  ❌ Errors     : ${errorStreams.map((s) => `    �
           (encode) => (file?.encode || 'Unknown') === encode
         )
       ) {
+        const encode = this.userData.includedEncodes.find(
+          (encode) => (file?.encode || 'Unknown') === encode
+        );
+        if (encode) {
+          includedReasons.encode.total++;
+          includedReasons.encode.details[encode] =
+            (includedReasons.encode.details[encode] || 0) + 1;
+        }
         return true;
       }
 
@@ -1687,6 +1762,10 @@ ${errorStreams.length > 0 ? `  ❌ Errors     : ${errorStreams.map((s) => `    �
         includedRegexPatterns &&
         (await testRegexes(stream, includedRegexPatterns))
       ) {
+        includedReasons.regex.total++;
+        includedReasons.regex.details[includedRegexPatterns[0].source] =
+          (includedReasons.regex.details[includedRegexPatterns[0].source] ||
+            0) + 1;
         return true;
       }
 
@@ -1694,6 +1773,10 @@ ${errorStreams.length > 0 ? `  ❌ Errors     : ${errorStreams.map((s) => `    �
         includedKeywordsPattern &&
         (await testRegexes(stream, [includedKeywordsPattern]))
       ) {
+        includedReasons.keywords.total++;
+        includedReasons.keywords.details[includedKeywordsPattern.source] =
+          (includedReasons.keywords.details[includedKeywordsPattern.source] ||
+            0) + 1;
         return true;
       }
 
@@ -1719,12 +1802,18 @@ ${errorStreams.length > 0 ? `  ❌ Errors     : ${errorStreams.map((s) => `    �
           includedSeederRange[0] &&
           (stream.torrent?.seeders ?? 0) > includedSeederRange[0]
         ) {
+          includedReasons.seeder.total++;
+          includedReasons.seeder.details[includedSeederRange[0]] =
+            (includedReasons.seeder.details[includedSeederRange[0]] || 0) + 1;
           return true;
         }
         if (
           includedSeederRange[1] &&
           (stream.torrent?.seeders ?? 0) < includedSeederRange[1]
         ) {
+          includedReasons.seeder.total++;
+          includedReasons.seeder.details[includedSeederRange[1]] =
+            (includedReasons.seeder.details[includedSeederRange[1]] || 0) + 1;
           return true;
         }
       }
@@ -2189,9 +2278,27 @@ ${errorStreams.length > 0 ? `  ❌ Errors     : ${errorStreams.map((s) => `    �
         }
       }
 
+      const includedDetails: string[] = [];
+      for (const [reason, stats] of Object.entries(includedReasons)) {
+        if (stats.total > 0) {
+          const formattedReason = reason
+            .replace(/([A-Z])/g, ' $1')
+            .replace(/^./, (str) => str.toUpperCase());
+          includedDetails.push(`\n  📌 ${formattedReason} (${stats.total})`);
+          for (const [detail, count] of Object.entries(stats.details)) {
+            includedDetails.push(`    • ${count}× ${detail}`);
+          }
+        }
+      }
+
       if (filterDetails.length > 0) {
         summary.push('\n  🔎 Filter Details:');
         summary.push(...filterDetails);
+      }
+
+      if (includedDetails.length > 0) {
+        summary.push('\n  🔎 Included Details:');
+        summary.push(...includedDetails);
       }
 
       summary.push('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
