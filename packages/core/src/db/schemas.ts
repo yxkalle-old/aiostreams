@@ -654,7 +654,7 @@ export const ParsedStreamSchema = z.object({
   message: z.string().max(1000).optional(),
   regexMatched: z
     .object({
-      name: z.string().min(1).optional(),
+      name: z.string().optional(),
       pattern: z.string().min(1).optional(),
       index: z.number(),
     })
@@ -731,7 +731,7 @@ export const AIOStream = StreamSchema.extend({
     message: z.string().max(1000).optional(),
     regexMatched: z
       .object({
-        name: z.string().min(1).optional(),
+        name: z.string().optional(),
         pattern: z.string().min(1).optional(),
         index: z.number(),
       })
