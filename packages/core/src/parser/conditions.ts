@@ -73,6 +73,25 @@ export abstract class BaseConditionParser {
       );
     };
 
+    // gets all streams that have a regex matched with an index in the range of min and max
+    this.parser.functions.regexMatchedInRange = function (
+      streams: ParsedStream[],
+      min: number,
+      max: number
+    ) {
+      return streams.filter((stream) => {
+        if (!stream.regexMatched) {
+          return false;
+        } else if (
+          stream.regexMatched.index < min ||
+          stream.regexMatched.index > max
+        ) {
+          return false;
+        }
+        return true;
+      });
+    };
+
     this.parser.functions.indexer = function (
       streams: ParsedStream[],
       indexer: string
