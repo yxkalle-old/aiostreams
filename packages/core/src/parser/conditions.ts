@@ -619,13 +619,7 @@ export class SelectConditionParser extends BaseConditionParser {
     this.parser.consts.streams = streams;
     let selectedStreams: ParsedStream[] = [];
 
-    try {
-      selectedStreams = await this.evaluateCondition(condition);
-    } catch (error) {
-      throw new Error(
-        `Filter condition failed: ${error instanceof Error ? error.message : String(error)}`
-      );
-    }
+    selectedStreams = await this.evaluateCondition(condition);
 
     // if the result is a boolean value, convert it to the appropriate type
     // true = all streams, false = no streams
