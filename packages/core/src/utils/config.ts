@@ -259,7 +259,7 @@ export async function validateConfig(
 
   if (Env.ADDON_PASSWORD && config.addonPassword !== Env.ADDON_PASSWORD) {
     throw new Error(
-      'The password in the config does not match the password in the environment variables'
+      'Invalid addon password. Please enter the value of the ADDON_PASSWORD environment variable '
     );
   }
   const validations = {
