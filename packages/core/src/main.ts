@@ -1257,10 +1257,12 @@ ${errorStreams.length > 0 ? `  âŒ Errors     : ${errorStreams.map((s) => `    â
           addon.presetType
         )}`
       );
-    } else if (FeatureControl.disabledHosts.has(manifestUrl.host)) {
+    } else if (
+      FeatureControl.disabledHosts.has(manifestUrl.host.split(':')[0])
+    ) {
       throw new Error(
         `Addon ${this.getAddonName(addon)} is disabled: ${FeatureControl.disabledHosts.get(
-          manifestUrl.host
+          manifestUrl.host.split(':')[0]
         )}`
       );
     }
