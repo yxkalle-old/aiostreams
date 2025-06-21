@@ -1492,17 +1492,23 @@ ${errorStreams.length > 0 ? `  âŒ Errors     : ${errorStreams.map((s) => `    â
           )
         : undefined;
 
-    const excludedKeywordsPattern = this.userData.excludedKeywords
-      ? await formRegexFromKeywords(this.userData.excludedKeywords)
-      : undefined;
+    const excludedKeywordsPattern =
+      this.userData.excludedKeywords &&
+      this.userData.excludedKeywords.length > 0
+        ? await formRegexFromKeywords(this.userData.excludedKeywords)
+        : undefined;
 
-    const requiredKeywordsPattern = this.userData.requiredKeywords
-      ? await formRegexFromKeywords(this.userData.requiredKeywords)
-      : undefined;
+    const requiredKeywordsPattern =
+      this.userData.requiredKeywords &&
+      this.userData.requiredKeywords.length > 0
+        ? await formRegexFromKeywords(this.userData.requiredKeywords)
+        : undefined;
 
-    const includedKeywordsPattern = this.userData.includedKeywords
-      ? await formRegexFromKeywords(this.userData.includedKeywords)
-      : undefined;
+    const includedKeywordsPattern =
+      this.userData.includedKeywords &&
+      this.userData.includedKeywords.length > 0
+        ? await formRegexFromKeywords(this.userData.includedKeywords)
+        : undefined;
 
     // test many regexes against many attributes and return true if at least one regex matches any attribute
     // and false if no regex matches any attribute
