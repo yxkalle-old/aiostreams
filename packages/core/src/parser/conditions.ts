@@ -64,12 +64,13 @@ export abstract class BaseConditionParser {
   private setupParserFunctions() {
     this.parser.functions.regexMatched = function (
       streams: ParsedStream[],
-      regexName?: string
+      ...regexNames: string[]
     ) {
+      if (regexNames.length === 0) {
+        return streams.filter((stream) => stream.regexMatched);
+      }
       return streams.filter((stream) =>
-        regexName
-          ? stream.regexMatched?.name === regexName
-          : stream.regexMatched
+        regexNames.some((regexName) => stream.regexMatched?.name === regexName)
       );
     };
 
