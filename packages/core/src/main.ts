@@ -161,6 +161,10 @@ export class AIOStreams {
     const limitedStreams = this.limitStreams(sortedStreams);
 
     // step 7
+    // apply filter conditions last
+    const postFilteredStreams =
+      await this.applyFilterConditions(limitedStreams);
+    // step 8
     // proxify streaming links if a proxy is provided
 
     const proxifiedStreams = this.applyModifications(
@@ -2151,86 +2155,6 @@ ${errorStreams.length > 0 ? `  âŒ Errors     : ${errorStreams.map((s) => `    â
 
     let filteredStreams = streams.filter((_, index) => filterResults[index]);
 
-    if (this.userData.excludedFilterConditions) {
-      const parser = new SelectConditionParser();
-      const streamsToRemove = new Set<string>(); // Track actual stream objects to be removed
-
-      for (const condition of this.userData.excludedFilterConditions) {
-        try {
-          // Always select from the current filteredStreams (not yet modified by this loop)
-          const selectedStreams = await parser.select(
-            filteredStreams.filter((stream) => !streamsToRemove.has(stream.id)),
-            condition
-          );
-
-          // Track these stream objects for removal
-          selectedStreams.forEach((stream) => streamsToRemove.add(stream.id));
-
-          // Update skip reasons for this condition (only count newly selected streams)
-          if (selectedStreams.length > 0) {
-            skipReasons.excludedFilterCondition.total += selectedStreams.length;
-            skipReasons.excludedFilterCondition.details[condition] =
-              selectedStreams.length;
-          }
-        } catch (error) {
-          logger.error(
-            `Failed to apply excluded filter condition "${condition}": ${error instanceof Error ? error.message : String(error)}`
-          );
-          // Continue with the next condition instead of breaking the entire loop
-        }
-      }
-
-      logger.verbose(
-        `Total streams selected by excluded conditions: ${streamsToRemove.size}`
-      );
-
-      // Remove all marked streams at once, after processing all conditions
-      filteredStreams = filteredStreams.filter(
-        (stream) => !streamsToRemove.has(stream.id)
-      );
-    }
-
-    if (
-      this.userData.requiredFilterConditions &&
-      this.userData.requiredFilterConditions.length > 0
-    ) {
-      const parser = new SelectConditionParser();
-      const streamsToKeep = new Set<string>(); // Track actual stream objects to be removed
-
-      for (const condition of this.userData.requiredFilterConditions) {
-        try {
-          const selectedStreams = await parser.select(
-            filteredStreams.filter((stream) => !streamsToKeep.has(stream.id)),
-            condition
-          );
-
-          // Track these stream objects for removal
-          selectedStreams.forEach((stream) => streamsToKeep.add(stream.id));
-
-          // Update skip reasons for this condition (only count newly selected streams)
-          if (selectedStreams.length > 0) {
-            skipReasons.requiredFilterCondition.total +=
-              filteredStreams.length - selectedStreams.length;
-            skipReasons.requiredFilterCondition.details[condition] =
-              filteredStreams.length - selectedStreams.length;
-          }
-        } catch (error) {
-          logger.error(
-            `Failed to apply required filter condition "${condition}": ${error instanceof Error ? error.message : String(error)}`
-          );
-          // Continue with the next condition instead of breaking the entire loop
-        }
-      }
-
-      logger.verbose(
-        `Total streams selected by required conditions: ${streamsToKeep.size}`
-      );
-      // remove all streams that are not in the streamsToKeep set
-      filteredStreams = filteredStreams.filter((stream) =>
-        streamsToKeep.has(stream.id)
-      );
-    }
-
     // Log filter summary
     const totalFiltered = streams.length - filteredStreams.length;
     if (totalFiltered > 0) {
@@ -2272,6 +2196,99 @@ ${errorStreams.length > 0 ? `  âŒ Errors     : ${errorStreams.map((s) => `    â
     return filteredStreams;
   }
 
+  private async applyFilterConditions(
+    streams: ParsedStream[]
+  ): Promise<ParsedStream[]> {
+    const skipReasons: Record<
+      string,
+      { total: number; details: Record<string, number> }
+    > = {
+      excludedFilterCondition: {
+        total: 0,
+        details: {},
+      },
+      requiredFilterCondition: {
+        total: 0,
+        details: {},
+      },
+    };
+    if (this.userData.excludedFilterConditions) {
+      const parser = new SelectConditionParser();
+      const streamsToRemove = new Set<string>(); // Track actual stream objects to be removed
+
+      for (const condition of this.userData.excludedFilterConditions) {
+        try {
+          // Always select from the current filteredStreams (not yet modified by this loop)
+          const selectedStreams = await parser.select(
+            streams.filter((stream) => !streamsToRemove.has(stream.id)),
+            condition
+          );
+
+          // Track these stream objects for removal
+          selectedStreams.forEach((stream) => streamsToRemove.add(stream.id));
+
+          // Update skip reasons for this condition (only count newly selected streams)
+          if (selectedStreams.length > 0) {
+            skipReasons.excludedFilterCondition.total += selectedStreams.length;
+            skipReasons.excludedFilterCondition.details[condition] =
+              selectedStreams.length;
+          }
+        } catch (error) {
+          logger.error(
+            `Failed to apply excluded filter condition "${condition}": ${error instanceof Error ? error.message : String(error)}`
+          );
+          // Continue with the next condition instead of breaking the entire loop
+        }
+      }
+
+      logger.verbose(
+        `Total streams selected by excluded conditions: ${streamsToRemove.size}`
+      );
+
+      // Remove all marked streams at once, after processing all conditions
+      streams = streams.filter((stream) => !streamsToRemove.has(stream.id));
+    }
+
+    if (
+      this.userData.requiredFilterConditions &&
+      this.userData.requiredFilterConditions.length > 0
+    ) {
+      const parser = new SelectConditionParser();
+      const streamsToKeep = new Set<string>(); // Track actual stream objects to be removed
+
+      for (const condition of this.userData.requiredFilterConditions) {
+        try {
+          const selectedStreams = await parser.select(
+            streams.filter((stream) => !streamsToKeep.has(stream.id)),
+            condition
+          );
+
+          // Track these stream objects for removal
+          selectedStreams.forEach((stream) => streamsToKeep.add(stream.id));
+
+          // Update skip reasons for this condition (only count newly selected streams)
+          if (selectedStreams.length > 0) {
+            skipReasons.requiredFilterCondition.total +=
+              streams.length - selectedStreams.length;
+            skipReasons.requiredFilterCondition.details[condition] =
+              streams.length - selectedStreams.length;
+          }
+        } catch (error) {
+          logger.error(
+            `Failed to apply required filter condition "${condition}": ${error instanceof Error ? error.message : String(error)}`
+          );
+          // Continue with the next condition instead of breaking the entire loop
+        }
+      }
+
+      logger.verbose(
+        `Total streams selected by required conditions: ${streamsToKeep.size}`
+      );
+      // remove all streams that are not in the streamsToKeep set
+      streams = streams.filter((stream) => streamsToKeep.has(stream.id));
+    }
+    return streams;
+  }
   private deduplicateStreams(streams: ParsedStream[]): ParsedStream[] {
     let deduplicator = this.userData.deduplicator;
     if (!deduplicator || !deduplicator.enabled) {
