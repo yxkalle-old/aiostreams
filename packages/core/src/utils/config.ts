@@ -296,7 +296,14 @@ export async function validateConfig(
         );
       }
       instanceIds.add(preset.instanceId);
-      validatePreset(preset);
+      try {
+        validatePreset(preset);
+      } catch (error) {
+        if (!skipErrorsFromAddonsOrProxies) {
+          throw error;
+        }
+        logger.warn(`Invalid preset ${preset.instanceId}: ${error}`);
+      }
     }
   }
 
@@ -488,14 +495,10 @@ function validatePreset(preset: PresetObject) {
 
   const optionMetas = presetMeta.OPTIONS;
 
-  for (const [optionId, optionValue] of Object.entries(preset.options)) {
-    const optionMeta = optionMetas.find((option) => option.id === optionId);
-    if (!optionMeta) {
-      continue;
-      // throw new Error(`Option ${optionId} not found in preset ${preset.id}`);
-    }
+  for (const optionMeta of optionMetas) {
+    const optionValue = preset.options[optionMeta.id];
     try {
-      preset.options[optionId] = validateOption(optionMeta, optionValue);
+      preset.options[optionMeta.id] = validateOption(optionMeta, optionValue);
     } catch (error) {
       throw new Error(
         `The value for option '${optionMeta.name}' in preset '${presetMeta.NAME}' is invalid: ${error}`
@@ -535,6 +538,12 @@ function validateOption(
   value: any,
   decryptValues: boolean = false
 ): any {
+  if (value === undefined) {
+    if (option.required) {
+      throw new Error(`Option ${option.id} is required, got ${value}`);
+    }
+    return value;
+  }
   if (option.type === 'multi-select') {
     if (!Array.isArray(value)) {
       throw new Error(
@@ -603,10 +612,6 @@ function validateOption(
         `Option ${option.id} must be a string, got ${typeof value}`
       );
     }
-  }
-
-  if (option.required && value === undefined) {
-    throw new Error(`Option ${option.id} is required, got ${value}`);
   }
 
   return value;
