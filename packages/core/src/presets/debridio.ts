@@ -78,6 +78,12 @@ export class DebridioPreset extends Preset {
       return [this.generateAddon(userData, options)];
     }
 
+    if (!options.debridioApiKey) {
+      throw new Error(
+        `${this.METADATA.NAME} requires a Debridio API Key, please provide one in the configuration`
+      );
+    }
+
     const usableServices = this.getUsableServices(userData);
 
     // if no services are usable, return a single addon with no services
