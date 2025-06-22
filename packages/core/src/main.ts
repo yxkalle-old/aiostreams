@@ -168,7 +168,7 @@ export class AIOStreams {
     // proxify streaming links if a proxy is provided
 
     const proxifiedStreams = this.applyModifications(
-      await this.proxifyStreams(limitedStreams)
+      await this.proxifyStreams(postFilteredStreams)
     );
 
     let finalStreams = proxifiedStreams;
