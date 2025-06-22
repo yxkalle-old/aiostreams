@@ -2524,17 +2524,13 @@ ${errorStreams.length > 0 ? `  âŒ Errors     : ${errorStreams.map((s) => `    â
               const aProviderIndex =
                 this.userData.services?.findIndex(
                   (service) => service.id === a.service?.id
-                ) ?? -1;
+                ) ?? Infinity;
               const bProviderIndex =
                 this.userData.services?.findIndex(
                   (service) => service.id === b.service?.id
-                ) ?? -1;
+                ) ?? Infinity;
 
-              if (
-                aProviderIndex &&
-                bProviderIndex &&
-                aProviderIndex !== bProviderIndex
-              ) {
+              if (aProviderIndex !== bProviderIndex) {
                 return aProviderIndex - bProviderIndex;
               }
 
@@ -2549,14 +2545,12 @@ ${errorStreams.length > 0 ? `  âŒ Errors     : ${errorStreams.map((s) => `    â
 
               // now look at the addon index
 
-              const aAddonIndex =
-                this.userData.presets.findIndex(
-                  (preset) => preset.instanceId === a.addon.presetInstanceId
-                ) ?? -1;
-              const bAddonIndex =
-                this.userData.presets.findIndex(
-                  (preset) => preset.instanceId === b.addon.presetInstanceId
-                ) ?? -1;
+              const aAddonIndex = this.userData.presets.findIndex(
+                (preset) => preset.instanceId === a.addon.presetInstanceId
+              );
+              const bAddonIndex = this.userData.presets.findIndex(
+                (preset) => preset.instanceId === b.addon.presetInstanceId
+              );
 
               // the addon index MUST exist, its not possible for it to not exist
               if (aAddonIndex !== bAddonIndex) {
@@ -2567,11 +2561,11 @@ ${errorStreams.length > 0 ? `  âŒ Errors     : ${errorStreams.map((s) => `    â
               const aTypeIndex =
                 this.userData.preferredStreamTypes?.findIndex(
                   (type) => type === a.type
-                ) ?? 0;
+                ) ?? Infinity;
               const bTypeIndex =
                 this.userData.preferredStreamTypes?.findIndex(
                   (type) => type === b.type
-                ) ?? 0;
+                ) ?? Infinity;
 
               if (aTypeIndex !== bTypeIndex) {
                 return aTypeIndex - bTypeIndex;
@@ -2601,14 +2595,12 @@ ${errorStreams.length > 0 ? `  âŒ Errors     : ${errorStreams.map((s) => `    â
               )
             ).map((serviceStreams) => {
               return serviceStreams.sort((a, b) => {
-                const aAddonIndex =
-                  this.userData.presets.findIndex(
-                    (preset) => preset.instanceId === a.addon.presetInstanceId
-                  ) ?? -1;
-                const bAddonIndex =
-                  this.userData.presets.findIndex(
-                    (preset) => preset.instanceId === b.addon.presetInstanceId
-                  ) ?? -1;
+                const aAddonIndex = this.userData.presets.findIndex(
+                  (preset) => preset.instanceId === a.addon.presetInstanceId
+                );
+                const bAddonIndex = this.userData.presets.findIndex(
+                  (preset) => preset.instanceId === b.addon.presetInstanceId
+                );
                 if (aAddonIndex !== bAddonIndex) {
                   return aAddonIndex - bAddonIndex;
                 }
@@ -2617,11 +2609,11 @@ ${errorStreams.length > 0 ? `  âŒ Errors     : ${errorStreams.map((s) => `    â
                 const aTypeIndex =
                   this.userData.preferredStreamTypes?.findIndex(
                     (type) => type === a.type
-                  ) ?? 0;
+                  ) ?? Infinity;
                 const bTypeIndex =
                   this.userData.preferredStreamTypes?.findIndex(
                     (type) => type === b.type
-                  ) ?? 0;
+                  ) ?? Infinity;
                 if (aTypeIndex !== bTypeIndex) {
                   return aTypeIndex - bTypeIndex;
                 }
@@ -2659,11 +2651,11 @@ ${errorStreams.length > 0 ? `  âŒ Errors     : ${errorStreams.map((s) => `    â
                 const aServiceIndex =
                   this.userData.services?.findIndex(
                     (service) => service.id === a.service?.id
-                  ) ?? -1;
+                  ) ?? Infinity;
                 const bServiceIndex =
                   this.userData.services?.findIndex(
                     (service) => service.id === b.service?.id
-                  ) ?? -1;
+                  ) ?? Infinity;
                 if (aServiceIndex !== bServiceIndex) {
                   return aServiceIndex - bServiceIndex;
                 }
