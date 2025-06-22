@@ -474,6 +474,24 @@ export abstract class BaseConditionParser {
       const streamIds = new Set(streams.map((stream) => stream.id));
       return originalStreams.filter((stream) => !streamIds.has(stream.id));
     };
+
+    this.parser.functions.merge = function (
+      ...streamArrays: ParsedStream[][]
+    ): ParsedStream[] {
+      const seen = new Set<string>();
+      const merged: ParsedStream[] = [];
+
+      for (const array of streamArrays) {
+        for (const stream of array) {
+          if (!seen.has(stream.id)) {
+            seen.add(stream.id);
+            merged.push(stream);
+          }
+        }
+      }
+
+      return merged;
+    };
   }
 
   protected async evaluateCondition(condition: string): Promise<any> {
