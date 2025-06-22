@@ -2325,7 +2325,10 @@ ${errorStreams.length > 0 ? `  âŒ Errors     : ${errorStreams.map((s) => `    â
         details: {},
       },
     };
-    if (this.userData.excludedStreamExpressions) {
+    if (
+      this.userData.excludedStreamExpressions &&
+      this.userData.excludedStreamExpressions.length > 0
+    ) {
       const selector = new StreamSelector();
       const streamsToRemove = new Set<string>(); // Track actual stream objects to be removed
 
