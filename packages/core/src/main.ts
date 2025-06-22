@@ -46,9 +46,9 @@ import {
 } from './utils/regex';
 import { isMatch } from 'super-regex';
 import {
-  GroupConditionParser,
-  SelectConditionParser,
-} from './parser/conditions';
+  StreamSelector,
+  GroupConditionEvaluator,
+} from './parser/streamExpression';
 import { RPDB } from './utils/rpdb';
 import { FeatureControl } from './utils/feature';
 const logger = createLogger('core');
@@ -1187,14 +1187,14 @@ ${errorStreams.length > 0 ? `  âŒ Errors     : ${errorStreams.map((s) => `    â
         if (!group.condition || !group.addons.length) continue;
 
         try {
-          const parser = new GroupConditionParser(
+          const evaluator = new GroupConditionEvaluator(
             previousGroupStreams,
             parsedStreams,
             previousGroupTimeTaken,
             totalTimeTaken,
             type
           );
-          const shouldFetch = await parser.parse(group.condition);
+          const shouldFetch = await evaluator.evaluate(group.condition);
           if (shouldFetch) {
             logger.info(`Condition met for group ${i + 1}, fetching streams`);
 
@@ -2325,16 +2325,16 @@ ${errorStreams.length > 0 ? `  âŒ Errors     : ${errorStreams.map((s) => `    â
         details: {},
       },
     };
-    if (this.userData.excludedFilterConditions) {
-      const parser = new SelectConditionParser();
+    if (this.userData.excludedStreamExpressions) {
+      const selector = new StreamSelector();
       const streamsToRemove = new Set<string>(); // Track actual stream objects to be removed
 
-      for (const condition of this.userData.excludedFilterConditions) {
+      for (const expression of this.userData.excludedStreamExpressions) {
         try {
           // Always select from the current filteredStreams (not yet modified by this loop)
-          const selectedStreams = await parser.select(
+          const selectedStreams = await selector.select(
             streams.filter((stream) => !streamsToRemove.has(stream.id)),
-            condition
+            expression
           );
 
           // Track these stream objects for removal
@@ -2343,12 +2343,12 @@ ${errorStreams.length > 0 ? `  âŒ Errors     : ${errorStreams.map((s) => `    â
           // Update skip reasons for this condition (only count newly selected streams)
           if (selectedStreams.length > 0) {
             skipReasons.excludedFilterCondition.total += selectedStreams.length;
-            skipReasons.excludedFilterCondition.details[condition] =
+            skipReasons.excludedFilterCondition.details[expression] =
               selectedStreams.length;
           }
         } catch (error) {
           logger.error(
-            `Failed to apply excluded filter condition "${condition}": ${error instanceof Error ? error.message : String(error)}`
+            `Failed to apply excluded stream expression "${expression}": ${error instanceof Error ? error.message : String(error)}`
           );
           // Continue with the next condition instead of breaking the entire loop
         }
@@ -2363,17 +2363,17 @@ ${errorStreams.length > 0 ? `  âŒ Errors     : ${errorStreams.map((s) => `    â
     }
 
     if (
-      this.userData.requiredFilterConditions &&
-      this.userData.requiredFilterConditions.length > 0
+      this.userData.requiredStreamExpressions &&
+      this.userData.requiredStreamExpressions.length > 0
     ) {
-      const parser = new SelectConditionParser();
+      const selector = new StreamSelector();
       const streamsToKeep = new Set<string>(); // Track actual stream objects to be removed
 
-      for (const condition of this.userData.requiredFilterConditions) {
+      for (const expression of this.userData.requiredStreamExpressions) {
         try {
-          const selectedStreams = await parser.select(
+          const selectedStreams = await selector.select(
             streams.filter((stream) => !streamsToKeep.has(stream.id)),
-            condition
+            expression
           );
 
           // Track these stream objects for removal
@@ -2383,12 +2383,12 @@ ${errorStreams.length > 0 ? `  âŒ Errors     : ${errorStreams.map((s) => `    â
           if (selectedStreams.length > 0) {
             skipReasons.requiredFilterCondition.total +=
               streams.length - selectedStreams.length;
-            skipReasons.requiredFilterCondition.details[condition] =
+            skipReasons.requiredFilterCondition.details[expression] =
               streams.length - selectedStreams.length;
           }
         } catch (error) {
           logger.error(
-            `Failed to apply required filter condition "${condition}": ${error instanceof Error ? error.message : String(error)}`
+            `Failed to apply required stream expression "${expression}": ${error instanceof Error ? error.message : String(error)}`
           );
           // Continue with the next condition instead of breaking the entire loop
         }
@@ -2775,13 +2775,17 @@ ${errorStreams.length > 0 ? `  âŒ Errors     : ${errorStreams.map((s) => `    â
       });
     }
 
-    if (this.userData.preferredFilterConditions?.length) {
-      const parser = new SelectConditionParser();
+    if (this.userData.preferredStreamExpressions?.length) {
+      const selector = new StreamSelector();
       const streamToConditionIndex = new Map<string, number>();
 
       // Go through each preferred filter condition, from highest to lowest priority.
-      for (let i = 0; i < this.userData.preferredFilterConditions.length; i++) {
-        const condition = this.userData.preferredFilterConditions[i];
+      for (
+        let i = 0;
+        i < this.userData.preferredStreamExpressions.length;
+        i++
+      ) {
+        const expression = this.userData.preferredStreamExpressions[i];
 
         // From the streams that haven't been matched to a higher-priority condition yet...
         const availableStreams = streams.filter(
@@ -2790,9 +2794,9 @@ ${errorStreams.length > 0 ? `  âŒ Errors     : ${errorStreams.map((s) => `    â
 
         // ...select the ones that match the current condition.
         try {
-          const selectedStreams = await parser.select(
+          const selectedStreams = await selector.select(
             availableStreams,
-            condition
+            expression
           );
 
           // And for each of those, record that this is the best condition they've matched so far.
@@ -2801,7 +2805,7 @@ ${errorStreams.length > 0 ? `  âŒ Errors     : ${errorStreams.map((s) => `    â
           }
         } catch (error) {
           logger.error(
-            `Failed to apply preferred filter condition "${condition}": ${
+            `Failed to apply preferred stream expression "${expression}": ${
               error instanceof Error ? error.message : String(error)
             }`
           );
@@ -2810,7 +2814,7 @@ ${errorStreams.length > 0 ? `  âŒ Errors     : ${errorStreams.map((s) => `    â
 
       // Now, apply the results to the original streams list.
       for (const stream of streams) {
-        stream.filterConditionMatched = streamToConditionIndex.get(stream.id);
+        stream.streamExpressionMatched = streamToConditionIndex.get(stream.id);
       }
     }
     logger.info(
@@ -3071,8 +3075,8 @@ ${errorStreams.length > 0 ? `  âŒ Errors     : ${errorStreams.map((s) => `    â
             multiplier *
             -(stream.regexMatched ? stream.regexMatched.index : Infinity)
           );
-        case 'filterConditionMatched':
-          return multiplier * -(stream.filterConditionMatched ?? Infinity);
+        case 'streamExpressionMatched':
+          return multiplier * -(stream.streamExpressionMatched ?? Infinity);
         case 'keyword':
           return multiplier * (stream.keywordMatched ? 1 : 0);
 

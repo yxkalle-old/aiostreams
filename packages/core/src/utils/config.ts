@@ -16,9 +16,9 @@ import { Env } from './env';
 import { createLogger, maskSensitiveInfo } from './logger';
 import { ZodError } from 'zod';
 import {
-  GroupConditionParser,
-  SelectConditionParser,
-} from '../parser/conditions';
+  GroupConditionEvaluator,
+  StreamSelector,
+} from '../parser/streamExpression';
 import { RPDB } from './rpdb';
 import { FeatureControl } from './feature';
 import { compileRegex } from './regex';
@@ -263,8 +263,8 @@ export async function validateConfig(
     );
   }
   const validations = {
-    'excluded filter conditions': [
-      config.excludedFilterConditions,
+    'excluded stream expressions': [
+      config.excludedStreamExpressions,
       Env.MAX_CONDITION_FILTERS,
     ],
     'excluded keywords': [config.excludedKeywords, Env.MAX_KEYWORD_FILTERS],
@@ -314,12 +314,12 @@ export async function validateConfig(
   }
 
   // validate excluded filter condition
-  if (config.excludedFilterConditions) {
-    for (const condition of config.excludedFilterConditions) {
+  if (config.excludedStreamExpressions) {
+    for (const condition of config.excludedStreamExpressions) {
       try {
-        await SelectConditionParser.testSelect(condition);
+        await StreamSelector.testSelect(condition);
       } catch (error) {
-        throw new Error(`Invalid excluded filter condition: ${error}`);
+        throw new Error(`Invalid excluded stream expression: ${error}`);
       }
     }
   }
@@ -520,7 +520,7 @@ async function validateGroup(group: Group) {
   // we must be able to parse the condition
   let result;
   try {
-    result = await GroupConditionParser.testParse(group.condition);
+    result = await GroupConditionEvaluator.testEvaluate(group.condition);
   } catch (error: any) {
     throw new Error(
       `Your group condition - '${group.condition}' - is invalid: ${error.message}`

@@ -2,7 +2,7 @@ import { Parser } from 'expr-eval';
 import { ParsedStream, ParsedStreams, ParsedStreamSchema } from '../db';
 import bytes from 'bytes';
 
-export abstract class BaseConditionParser {
+export abstract class StreamExpressionEngine {
   protected parser: Parser;
 
   constructor() {
@@ -587,7 +587,7 @@ export abstract class BaseConditionParser {
   }
 }
 
-export class GroupConditionParser extends BaseConditionParser {
+export class GroupConditionEvaluator extends StreamExpressionEngine {
   private previousStreams: ParsedStream[];
   private totalStreams: ParsedStream[];
   private previousGroupTimeTaken: number;
@@ -615,17 +615,17 @@ export class GroupConditionParser extends BaseConditionParser {
     this.parser.consts.totalTimeTaken = this.totalTimeTaken;
   }
 
-  async parse(condition: string) {
+  async evaluate(condition: string) {
     return await this.evaluateCondition(condition);
   }
 
-  static async testParse(condition: string) {
-    const parser = new GroupConditionParser([], [], 0, 0, 'movie');
-    return await parser.parse(condition);
+  static async testEvaluate(condition: string) {
+    const parser = new GroupConditionEvaluator([], [], 0, 0, 'movie');
+    return await parser.evaluate(condition);
   }
 }
 
-export class SelectConditionParser extends BaseConditionParser {
+export class StreamSelector extends StreamExpressionEngine {
   constructor() {
     super();
   }
@@ -658,7 +658,7 @@ export class SelectConditionParser extends BaseConditionParser {
   }
 
   static async testSelect(condition: string): Promise<ParsedStream[]> {
-    const parser = new SelectConditionParser();
+    const parser = new StreamSelector();
     const streams = [
       parser.createTestStream({ type: 'debrid' }),
       parser.createTestStream({ type: 'debrid' }),
