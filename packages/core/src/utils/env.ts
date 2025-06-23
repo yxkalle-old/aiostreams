@@ -295,6 +295,11 @@ export const Env = cleanEnv(process.env, {
     desc: 'Maximum days of inactivity before pruning, set to -1 to disable',
   }),
 
+  EXPOSE_USER_COUNT: bool({
+    default: false,
+    desc: 'Expose the number of users through the status endpoint',
+  }),
+
   RECURSION_THRESHOLD_LIMIT: num({
     default: 60,
     desc: 'Maximum number of requests to the same URL',
