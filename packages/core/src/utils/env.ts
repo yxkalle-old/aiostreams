@@ -1111,6 +1111,19 @@ export const Env = cleanEnv(process.env, {
     desc: 'Default TMDB Addon user agent',
   }),
 
+  TORRENTS_DB_URL: url({
+    default: 'https://torrentsdb.com',
+    desc: 'Torrents DB URL',
+  }),
+  DEFAULT_TORRENTS_DB_TIMEOUT: num({
+    default: undefined,
+    desc: 'Default Torrents DB timeout',
+  }),
+  DEFAULT_TORRENTS_DB_USER_AGENT: userAgent({
+    default: undefined,
+    desc: 'Default Torrents DB user agent',
+  }),
+
   // Rate limiting settings
   DISABLE_RATE_LIMITS: bool({
     default: false,
