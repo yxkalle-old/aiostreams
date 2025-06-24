@@ -228,6 +228,7 @@ export class AIOStreams {
     // remove uneccessary info that is already present in the original stream above
     copy.parsedFile = undefined;
     copy.size = undefined;
+    copy.folderSize = undefined;
     copy.torrent = undefined;
     copy.indexer = undefined;
     copy.age = undefined;
