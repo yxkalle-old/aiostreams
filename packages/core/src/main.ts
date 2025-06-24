@@ -794,12 +794,15 @@ export class AIOStreams {
             existing.idPrefixes = undefined;
           }
         } else {
+          logger.warn(
+            `Addon ${this.getAddonName(addon)} does not provide idPrefixes for type ${resource.name}, setting idPrefixes to undefined`
+          );
           this.finalResources.push({
             ...resource,
             // explicitly set to null
             idPrefixes: resource.idPrefixes?.length
               ? resource.idPrefixes
-              : null,
+              : undefined,
             // idPrefixes: resource.idPrefixes
             //   ? [...resource.idPrefixes]
             //   : undefined,
