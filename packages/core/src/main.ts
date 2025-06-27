@@ -67,7 +67,7 @@ export interface AIOStreamsResponse<T> {
 }
 
 export class AIOStreams {
-  private readonly userData: UserData;
+  private userData: UserData;
   private manifests: Record<string, Manifest | null>;
   private supportedResources: Record<string, StrictManifestResource[]>;
   private finalResources: StrictManifestResource[] = [];
@@ -87,6 +87,10 @@ export class AIOStreams {
     this.manifests = {};
     this.supportedResources = {};
     this.skipFailedAddons = skipFailedAddons;
+  }
+
+  private setUserData(userData: UserData) {
+    this.userData = userData;
   }
 
   public async initialise(): Promise<AIOStreams> {
@@ -254,6 +258,10 @@ export class AIOStreams {
       nextEpisode: Number(episode) + 1,
       nextEpisodeId,
     });
+    // modify userData to remove the excludeUncached filter
+    const userData = structuredClone(this.userData);
+    userData.excludeUncached = false;
+    this.setUserData(userData);
     const nextStreamsResponse = await this.getStreams(
       nextEpisodeId,
       type,
