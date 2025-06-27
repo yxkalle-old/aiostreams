@@ -532,7 +532,7 @@ export type Stream = z.infer<typeof StreamSchema>;
 const TrailerSchema = z
   .object({
     source: z.string().min(1),
-    type: z.enum(['Trailer']),
+    type: z.enum(['Trailer', 'Clip']),
   })
   .passthrough();
 
