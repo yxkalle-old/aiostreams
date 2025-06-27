@@ -43,6 +43,10 @@ export function makeRequest(
     }
   }
 
+  if (headers.get('User-Agent') === 'none') {
+    headers.delete('User-Agent');
+  }
+
   // block recursive requests
   const key = `${url}-${forwardIp}`;
   const currentCount = urlCount.get(key, false) ?? 0;

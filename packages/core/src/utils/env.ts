@@ -691,7 +691,7 @@ export const Env = cleanEnv(process.env, {
     desc: 'Default Torrentio timeout',
   }),
   DEFAULT_TORRENTIO_USER_AGENT: userAgent({
-    default: undefined,
+    default: 'none',
     desc: 'Default Torrentio user agent',
   }),
 
