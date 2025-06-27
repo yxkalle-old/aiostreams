@@ -262,7 +262,10 @@ export class AIOStreams {
     if (nextStreamsResponse.success) {
       const nextStreams = nextStreamsResponse.data;
       const serviceStreams = nextStreams.filter((stream) => stream.service);
-      if (serviceStreams.every((stream) => stream.service?.cached === false)) {
+      if (
+        serviceStreams.every((stream) => stream.service?.cached === false) || // only if all streams are uncached
+        this.userData.alwaysPrecache // or if alwaysPrecache is true
+      ) {
         const firstUncachedStream = serviceStreams.find(
           (stream) => stream.service?.cached === false
         );

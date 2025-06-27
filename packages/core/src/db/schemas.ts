@@ -387,6 +387,7 @@ export const UserDataSchema = z.object({
     .optional(),
   deduplicator: DeduplicatorOptions.optional(),
   precacheNextEpisode: z.boolean().optional(),
+  alwaysPrecache: z.boolean().optional(),
   services: ServiceList.optional(),
   presets: PresetList,
   catalogModifications: z.array(CatalogModification).optional(),
