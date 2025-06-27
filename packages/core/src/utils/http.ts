@@ -66,7 +66,7 @@ export function makeRequest(
   logger.debug(
     `Making a ${useProxy ? 'proxied' : 'direct'} request to ${makeUrlLogSafe(
       url
-    )} with forwarded ip ${maskSensitiveInfo(forwardIp ?? 'none')}`
+    )} with forwarded ip ${maskSensitiveInfo(forwardIp ?? 'none')} and headers ${maskSensitiveInfo(JSON.stringify(headers))}`
   );
   let response = fetch(url, {
     dispatcher: useProxy ? new ProxyAgent(Env.ADDON_PROXY!) : undefined,
