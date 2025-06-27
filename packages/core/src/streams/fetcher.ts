@@ -132,13 +132,13 @@ ${errorStreams.length > 0 ? `  âŒ Errors     : ${errorStreams.map((s) => `    â
       const finalStreams = results.flatMap((r) =>
         r.success ? r.streams : []
       ) as ParsedStream[];
-      // const filteredStreams = await this.filter.filter(finalStreams, type, id);
-      // await this.precompute.precompute(filteredStreams);
+      const filteredStreams = await this.filter.filter(finalStreams, type, id);
+      await this.precompute.precompute(filteredStreams);
       const groupTime = Date.now() - groupStart;
       return {
         // results,
         totalTime: groupTime,
-        streams: finalStreams,
+        streams: filteredStreams,
       };
     };
 
