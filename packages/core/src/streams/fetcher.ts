@@ -35,11 +35,11 @@ class StreamFetcher {
       description: string;
     }[];
   }> {
-    let errors: {
+    const allErrors: {
       title: string;
       description: string;
     }[] = [];
-    let parsedStreams: ParsedStream[] = [];
+    let allStreams: ParsedStream[] = [];
     const start = Date.now();
     let totalTimeTaken = 0;
     let previousGroupStreams: ParsedStream[] = [];
@@ -51,10 +51,14 @@ class StreamFetcher {
       const start = Date.now();
       try {
         const streams = await new Wrapper(addon).getStreams(type, id);
-        // filter out error type streams and put them in errors instead
         const errorStreams = streams.filter(
           (s) => s.type === constants.ERROR_STREAM_TYPE
         );
+        const addonErrors = errorStreams.map((s) => ({
+          title: `[❌] ${s.error?.title || getAddonName(addon)}`,
+          description: s.error?.description || 'Unknown error',
+        }));
+
         if (errorStreams.length > 0) {
           logger.error(
             `Found ${errorStreams.length} error streams from ${getAddonName(addon)}`,
@@ -62,23 +66,7 @@ class StreamFetcher {
               errorStreams: errorStreams.map((s) => s.error?.title),
             }
           );
-          errors.push(
-            ...errorStreams.map((s) => ({
-              title: `[❌] ${s.error?.title || getAddonName(addon)}`,
-              description: s.error?.description || 'Unknown error',
-            }))
-          );
         }
-
-        parsedStreams.push(
-          ...streams.filter((s) => s.type !== constants.ERROR_STREAM_TYPE)
-        );
-        // const errorStreams = streams.filter((s) => s.type === constants.ERROR_STREAM_TYPE);
-        // parsedStreams.push(...streams.filter((s) => s.type !== constants.ERROR_STREAM_TYPE));
-        // errors.push(...errorStreams.map((s) => ({
-        //   addon: addon.identifyingName,
-        //   error: s.error?.description || 'Unknown error',
-        // })));
 
         summaryMsg = `
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -96,24 +84,32 @@ ${errorStreams.length > 0 ? `  ❌ Errors     : ${errorStreams.map((s) => `    �
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`;
         return {
           success: true as const,
-          streams: streams,
+          streams: streams.filter(
+            (s) => s.type !== constants.ERROR_STREAM_TYPE
+          ),
+          errors: addonErrors,
           timeTaken: Date.now() - start,
         };
       } catch (error) {
         const errMsg = error instanceof Error ? error.message : String(error);
-        errors.push({
+        const addonErrors = {
           title: `[❌] ${getAddonName(addon)}`,
           description: errMsg,
-        });
+        };
         summaryMsg = `
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  🔴 [${addon.name} ${addon.identifier}] Scrape Summary
+  🔴 [${getAddonName(addon)}] Scrape Summary
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   ✖ Status      : FAILED
   🚫 Error      : ${errMsg}
   ⏱️ Time       : ${getTimeTakenSincePoint(start)}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`;
-        return { success: false as const, error: errMsg, timeTaken: 0 };
+        return {
+          success: false as const,
+          errors: [addonErrors],
+          timeTaken: 0,
+          streams: [],
+        };
       } finally {
         logger.info(summaryMsg);
       }
@@ -124,19 +120,16 @@ ${errorStreams.length > 0 ? `  ❌ Errors     : ${errorStreams.map((s) => `    �
       const groupStart = Date.now();
       const results = await Promise.all(addons.map(fetchFromAddon));
 
-      // apply filters and precompute here
+      const groupStreams = results.flatMap((r) => r.streams);
+      const groupErrors = results.flatMap((r) => r.errors);
+      allErrors.push(...groupErrors);
 
-      // apply filters and precompute here
-      // so that group conditions are being applied to post filtered streams that have
-      // regex matched / keyword matched precomputed
-      const finalStreams = results.flatMap((r) =>
-        r.success ? r.streams : []
-      ) as ParsedStream[];
-      const filteredStreams = await this.filter.filter(finalStreams, type, id);
+      const filteredStreams = await this.filter.filter(groupStreams, type, id);
       await this.precompute.precompute(filteredStreams);
+
       const groupTime = Date.now() - groupStart;
+      logger.info(`Filtered to ${filteredStreams.length} streams`);
       return {
-        // results,
         totalTime: groupTime,
         streams: filteredStreams,
       };
@@ -157,6 +150,7 @@ ${errorStreams.length > 0 ? `  ❌ Errors     : ${errorStreams.map((s) => `    �
 
       // Fetch streams from first group
       const firstGroupResult = await fetchFromGroup(firstGroupAddons);
+      allStreams.push(...firstGroupResult.streams);
       totalTimeTaken = firstGroupResult.totalTime;
       previousGroupStreams = firstGroupResult.streams;
       previousGroupTimeTaken = firstGroupResult.totalTime;
@@ -171,7 +165,7 @@ ${errorStreams.length > 0 ? `  ❌ Errors     : ${errorStreams.map((s) => `    �
         try {
           const evaluator = new GroupConditionEvaluator(
             previousGroupStreams,
-            parsedStreams,
+            allStreams,
             previousGroupTimeTaken,
             totalTimeTaken,
             type
@@ -187,6 +181,7 @@ ${errorStreams.length > 0 ? `  ❌ Errors     : ${errorStreams.map((s) => `    �
             );
 
             const groupResult = await fetchFromGroup(groupAddons);
+            allStreams.push(...groupResult.streams);
             totalTimeTaken += groupResult.totalTime;
             previousGroupStreams = groupResult.streams;
             previousGroupTimeTaken = groupResult.totalTime;
@@ -205,13 +200,14 @@ ${errorStreams.length > 0 ? `  ❌ Errors     : ${errorStreams.map((s) => `    �
     } else {
       // If no groups configured, fetch from all addons in parallel
       const result = await fetchFromGroup(addons);
+      allStreams.push(...result.streams);
       totalTimeTaken = result.totalTime;
     }
 
     logger.info(
-      `Fetched ${parsedStreams.length} streams from ${addons.length} addons in ${getTimeTakenSincePoint(start)}`
+      `Fetched ${allStreams.length} streams from ${addons.length} addons in ${getTimeTakenSincePoint(start)}`
     );
-    return { streams: parsedStreams, errors };
+    return { streams: allStreams, errors: allErrors };
   }
 }
 
