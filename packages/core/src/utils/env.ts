@@ -1124,6 +1124,32 @@ export const Env = cleanEnv(process.env, {
     desc: 'Default Torrents DB user agent',
   }),
 
+  USA_TV_URL: url({
+    default: 'https://848b3516657c-usatv.baby-beamup.club',
+    desc: 'USA TV URL',
+  }),
+  DEFAULT_USA_TV_TIMEOUT: num({
+    default: undefined,
+    desc: 'Default USA TV timeout',
+  }),
+  DEFAULT_USA_TV_USER_AGENT: userAgent({
+    default: undefined,
+    desc: 'Default USA TV user agent',
+  }),
+
+  ARGENTINA_TV_URL: url({
+    default: 'https://848b3516657c-argentinatv.baby-beamup.club',
+    desc: 'Argentina TV URL',
+  }),
+  DEFAULT_ARGENTINA_TV_TIMEOUT: num({
+    default: undefined,
+    desc: 'Default Argentina TV timeout',
+  }),
+  DEFAULT_ARGENTINA_TV_USER_AGENT: userAgent({
+    default: undefined,
+    desc: 'Default Argentina TV user agent',
+  }),
+
   // Rate limiting settings
   DISABLE_RATE_LIMITS: bool({
     default: false,
