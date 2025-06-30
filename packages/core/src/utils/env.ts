@@ -1193,6 +1193,19 @@ export const Env = cleanEnv(process.env, {
     desc: 'Default SubSource user agent',
   }),
 
+  OPENSUBTITLES_V3_PLUS_URL: url({
+    default: 'https://opensubtitles.stremio.homes',
+    desc: 'OpenSubtitles V3 Plus URL',
+  }),
+  DEFAULT_OPENSUBTITLES_V3_PLUS_TIMEOUT: num({
+    default: undefined,
+    desc: 'Default OpenSubtitles V3 Plus timeout',
+  }),
+  DEFAULT_OPENSUBTITLES_V3_PLUS_USER_AGENT: userAgent({
+    default: undefined,
+    desc: 'Default OpenSubtitles V3 Plus user agent',
+  }),
+
   // Rate limiting settings
   DISABLE_RATE_LIMITS: bool({
     default: false,
