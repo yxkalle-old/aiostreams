@@ -2,6 +2,14 @@ import { Stream, ParsedStream, Addon, ParsedFile } from '../db';
 import { constants, createLogger, FULL_LANGUAGE_MAPPING } from '../utils';
 import FileParser from './file';
 const logger = createLogger('parser');
+
+export class SkipStreamError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'SkipStreamError';
+  }
+}
+
 class StreamParser {
   private count = 0;
   get errorRegexes(): { pattern: RegExp; message: string }[] | undefined {

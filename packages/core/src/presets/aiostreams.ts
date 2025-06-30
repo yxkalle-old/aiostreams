@@ -10,6 +10,7 @@ import { Preset, baseOptions } from './preset';
 import { Env, formatZodError, RESOURCES } from '../utils';
 import { StreamParser } from '../parser';
 import { createLogger } from '../utils';
+import { SkipStreamError } from '../parser/streams';
 
 const logger = createLogger('parser');
 
@@ -22,6 +23,9 @@ class AIOStreamsStreamParser extends StreamParser {
         `Stream from AIOStream was not detected as a valid stream: ${formatZodError(parsed.error)}`
       );
       throw new Error('Invalid stream');
+    }
+    if (aioStream.streamData.id.endsWith('external-download')) {
+      throw new SkipStreamError('External download stream');
     }
     const addonName = this.addon?.name?.trim();
     return {

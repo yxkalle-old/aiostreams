@@ -755,6 +755,7 @@ export const AIOStream = StreamSchema.extend({
       .optional(),
     duration: z.number().optional(),
     library: z.boolean().optional(),
+    id: z.string().min(1),
   }),
 });
 

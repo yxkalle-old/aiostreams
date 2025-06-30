@@ -39,6 +39,7 @@ import {
 import { PresetManager } from './presets';
 import { StreamParser } from './parser';
 import { z } from 'zod';
+import { SkipStreamError } from './parser/streams';
 
 const logger = createLogger('wrappers');
 // const cache = Cache.getInstance<string, any>('wrappers');
@@ -167,7 +168,16 @@ export class Wrapper {
       ? PresetManager.fromId(this.addon.presetType).getParser()
       : StreamParser;
     const parser = new Parser(this.addon);
-    return streams.map((stream: Stream) => parser.parse(stream));
+    return streams.flatMap((stream: Stream) => {
+      try {
+        return [parser.parse(stream)];
+      } catch (error: any) {
+        if (error instanceof SkipStreamError) {
+          return [];
+        }
+        throw error;
+      }
+    });
   }
 
   async getCatalog(
