@@ -37,6 +37,7 @@ import { TMDBAddonPreset } from './tmdb';
 import { TorrentsDbPreset } from './torrentsDb';
 import { USATVPreset } from './usaTv';
 import { ArgentinaTVPreset } from './argentinaTv';
+import { SubSourcePreset } from './subsource';
 import { SubDLPreset } from './subdl';
 
 const PRESET_LIST: string[] = [
@@ -77,6 +78,7 @@ const PRESET_LIST: string[] = [
   'dc-universe',
   'doctor-who-universe',
   'opensubtitles',
+  'subsource',
   'subdl',
   'aiostreams',
 ];
@@ -176,6 +178,8 @@ export class PresetManager {
         return USATVPreset;
       case 'argentina-tv':
         return ArgentinaTVPreset;
+      case 'subsource':
+        return SubSourcePreset;
       case 'subdl':
         return SubDLPreset;
       default:

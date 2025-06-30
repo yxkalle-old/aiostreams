@@ -1180,6 +1180,19 @@ export const Env = cleanEnv(process.env, {
     desc: 'Default SubDL user agent',
   }),
 
+  SUBSOURCE_URL: url({
+    default: 'https://subsource.strem.top',
+    desc: 'SubSource URL',
+  }),
+  DEFAULT_SUBSOURCE_TIMEOUT: num({
+    default: undefined,
+    desc: 'Default SubSource timeout',
+  }),
+  DEFAULT_SUBSOURCE_USER_AGENT: userAgent({
+    default: undefined,
+    desc: 'Default SubSource user agent',
+  }),
+
   // Rate limiting settings
   DISABLE_RATE_LIMITS: bool({
     default: false,
