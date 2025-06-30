@@ -215,6 +215,7 @@ const OptionDefinition = z.object({
           'patreon',
           'buymeacoffee',
           'github-sponsors',
+          'donate',
         ]),
         url: z.string().url(),
       })
