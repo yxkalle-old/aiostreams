@@ -384,7 +384,7 @@ export const Env = cleanEnv(process.env, {
   }),
 
   DEFAULT_TIMEOUT: num({
-    default: 15000,
+    default: 10000,
     desc: 'Default timeout for the addon',
   }),
   CATALOG_TIMEOUT: num({
