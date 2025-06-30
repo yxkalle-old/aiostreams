@@ -37,6 +37,7 @@ import { TMDBAddonPreset } from './tmdb';
 import { TorrentsDbPreset } from './torrentsDb';
 import { USATVPreset } from './usaTv';
 import { ArgentinaTVPreset } from './argentinaTv';
+import { SubDLPreset } from './subdl';
 
 const PRESET_LIST: string[] = [
   'custom',
@@ -76,6 +77,7 @@ const PRESET_LIST: string[] = [
   'dc-universe',
   'doctor-who-universe',
   'opensubtitles',
+  'subdl',
   'aiostreams',
 ];
 
@@ -174,6 +176,8 @@ export class PresetManager {
         return USATVPreset;
       case 'argentina-tv':
         return ArgentinaTVPreset;
+      case 'subdl':
+        return SubDLPreset;
       default:
         throw new Error(`Preset ${id} not found`);
     }

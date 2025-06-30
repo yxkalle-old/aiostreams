@@ -1167,6 +1167,19 @@ export const Env = cleanEnv(process.env, {
     desc: 'Default Argentina TV user agent',
   }),
 
+  SUBDL_URL: url({
+    default: 'https://subdl.strem.top',
+    desc: 'SubDL URL',
+  }),
+  DEFAULT_SUBDL_TIMEOUT: num({
+    default: undefined,
+    desc: 'Default SubDL timeout',
+  }),
+  DEFAULT_SUBDL_USER_AGENT: userAgent({
+    default: undefined,
+    desc: 'Default SubDL user agent',
+  }),
+
   // Rate limiting settings
   DISABLE_RATE_LIMITS: bool({
     default: false,
