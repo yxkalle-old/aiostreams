@@ -18,6 +18,8 @@ class StreamUtils {
     copy.duration = undefined;
     copy.folderName = undefined;
     copy.filename = undefined;
+    copy.regexMatched = undefined;
+    copy.addon.name = '';
     return copy;
   }
 }
