@@ -550,6 +550,17 @@ function validateOption(
         `Option ${option.id} must be an array, got ${typeof value}`
       );
     }
+    if (option.constraints?.max && value.length > option.constraints.max) {
+      throw new Error(
+        `Option ${option.id} must be at most ${option.constraints.max} items, got ${value.length}`
+      );
+    }
+    if (option.constraints?.min && value.length < option.constraints.min) {
+      throw new Error(
+        `Option ${option.id} must be at least ${option.constraints.min} items, got ${value.length}`
+      );
+    }
+    return value;
   }
 
   if (option.type === 'select') {

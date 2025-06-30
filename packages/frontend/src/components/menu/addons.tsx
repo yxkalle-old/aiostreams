@@ -777,6 +777,19 @@ function AddonModal({
             toast.error(`${opt.name} must be at most ${opt.constraints.max}`);
             return false;
           }
+        } else if (opt.type === 'multi-select') {
+          if (opt.constraints.max && val.length > opt.constraints.max) {
+            toast.error(
+              `${opt.name} must be at most ${opt.constraints.max} items`
+            );
+            return false;
+          }
+          if (opt.constraints.min && val.length < opt.constraints.min) {
+            toast.error(
+              `${opt.name} must be at least ${opt.constraints.min} items`
+            );
+            return false;
+          }
         }
       }
     }
