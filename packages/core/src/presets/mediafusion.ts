@@ -57,7 +57,26 @@ class MediaFusionStreamParser extends StreamParser {
     if (file) {
       return file.trim();
     }
+    if (
+      stream.description?.includes('Update IMDb metadata') ||
+      stream.description?.includes('Upload torrent for')
+    ) {
+      return undefined;
+    }
     return super.getFilename(stream, currentParsedStream);
+  }
+
+  protected override getMessage(
+    stream: Stream,
+    currentParsedStream: ParsedStream
+  ): string | undefined {
+    if (
+      stream.description?.includes('Update IMDb metadata') ||
+      stream.description?.includes('Upload torrent for')
+    ) {
+      return stream.description.replace(/^\p{Emoji_Presentation}+/gu, '');
+    }
+    return undefined;
   }
 
   protected override getIndexer(
@@ -144,6 +163,13 @@ export class MediaFusionPreset extends Preset {
         name: 'Download via Browser',
         description:
           'Show download streams to allow downloading the stream from your service, rather than streaming.',
+        type: 'boolean',
+        default: false,
+      },
+      {
+        id: 'contributorStreams',
+        name: 'Contributor Streams',
+        description: 'Show a stream to contribute torrents for the title.',
         type: 'boolean',
         default: false,
       },
@@ -454,7 +480,7 @@ export class MediaFusionPreset extends Preset {
         mediaflow_config: null,
         rpdb_config: null,
         live_search_streams: !options.useCachedResultsOnly,
-        contribution_streams: false,
+        contribution_streams: options.contributorStreams ?? false,
         mdblist_config: null,
       },
       false,
