@@ -314,6 +314,11 @@ export const Env = cleanEnv(process.env, {
     desc: 'Default user agent for the addon',
   }),
 
+  HOSTNAME_USER_AGENT_OVERRIDES: str({
+    default: '*.strem.fun:Stremio',
+    desc: 'Comma separated list of hostname:useragent pairs. Takes priority over any other user agent settings.',
+  }),
+
   DEFAULT_MAX_CACHE_SIZE: num({
     default: 100000,
     desc: 'Default max cache size for a cache instance',
@@ -703,7 +708,7 @@ export const Env = cleanEnv(process.env, {
     desc: 'Default Torrentio timeout',
   }),
   DEFAULT_TORRENTIO_USER_AGENT: userAgent({
-    default: 'Stremio',
+    default: undefined,
     desc: 'Default Torrentio user agent',
   }),
 
