@@ -382,6 +382,18 @@ export const Env = cleanEnv(process.env, {
     default: 15000,
     desc: 'Default timeout for the addon',
   }),
+  CATALOG_TIMEOUT: num({
+    default: 30000,
+    desc: 'Timeout for catalog requests',
+  }),
+  META_TIMEOUT: num({
+    default: 30000,
+    desc: 'Timeout for meta requests',
+  }),
+  MANIFEST_TIMEOUT: num({
+    default: 3000,
+    desc: 'Timeout for manifest requests',
+  }),
 
   FORCE_PUBLIC_PROXY_HOST: host({
     default: undefined,
