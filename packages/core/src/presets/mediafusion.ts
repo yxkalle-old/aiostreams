@@ -300,9 +300,13 @@ export class MediaFusionPreset extends Preset {
       return [this.generateAddon(userData, options, undefined)];
     }
 
-    let addons = usableServices.map((service) =>
-      this.generateAddon(userData, options, service.id)
-    );
+    let addons = usableServices.map((service, idx) => {
+      let addonOptions = structuredClone(options);
+      // only the first addon gets contributorStreams to ensure we don't get duplicate contribution streams
+      addonOptions.contributorStreams =
+        addonOptions.contributorStreams && idx === 0;
+      return this.generateAddon(userData, addonOptions, service.id);
+    });
 
     if (options.includeP2P) {
       addons.push(this.generateAddon(userData, options, undefined));
