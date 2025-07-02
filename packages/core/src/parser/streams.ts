@@ -3,13 +3,6 @@ import { constants, createLogger, FULL_LANGUAGE_MAPPING } from '../utils';
 import FileParser from './file';
 const logger = createLogger('parser');
 
-export class SkipStreamError extends Error {
-  constructor(message: string) {
-    super(message);
-    this.name = 'SkipStreamError';
-  }
-}
-
 class StreamParser {
   private count = 0;
   get errorRegexes(): { pattern: RegExp; message: string }[] | undefined {
@@ -59,7 +52,7 @@ class StreamParser {
 
   constructor(protected readonly addon: Addon) {}
 
-  parse(stream: Stream): ParsedStream {
+  parse(stream: Stream): ParsedStream | { skip: true } {
     let parsedStream: ParsedStream = {
       id: this.getRandomId(),
       addon: this.addon,
