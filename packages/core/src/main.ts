@@ -44,6 +44,7 @@ import { getAddonName } from './utils/general';
 const logger = createLogger('core');
 
 const shuffleCache = Cache.getInstance<string, MetaPreview[]>('shuffle');
+const precacheCache = Cache.getInstance<string, ParsedStream[]>('precache');
 
 export interface AIOStreamsError {
   title?: string;
@@ -209,15 +210,30 @@ export class AIOStreams {
     // if this.userData.precacheNextEpisode is true, start a new thread to request the next episode, check if
     // all provider streams are uncached, and only if so, then send a request to the first uncached stream in the list.
     if (this.userData.precacheNextEpisode && !preCaching) {
-      setImmediate(() => {
-        this.precacheNextEpisode(type, id).catch((error) => {
-          logger.error('Error during precaching:', {
-            error: error instanceof Error ? error.message : String(error),
-            type,
-            id,
+      // only precache if the same user hasn't previously cached the next episode of the current episode
+      // within the last 24 hours (Env.PRECACHE_NEXT_EPISODE_MIN_INTERVAL)
+      let precache = false;
+      const cacheKey = `precache-${type}-${id}-${this.userData.uuid}`;
+      const cachedNextEpisode = precacheCache.get(cacheKey, false);
+      if (cachedNextEpisode) {
+        logger.info(
+          `The current request for ${type} ${id} has already had the next episode precached within the last ${Env.PRECACHE_NEXT_EPISODE_MIN_INTERVAL} seconds (${precacheCache.getTTL(cacheKey)} seconds left). Skipping precaching.`
+        );
+        precache = false;
+      } else {
+        precache = true;
+      }
+      if (precache) {
+        setImmediate(() => {
+          this.precacheNextEpisode(type, id).catch((error) => {
+            logger.error('Error during precaching:', {
+              error: error instanceof Error ? error.message : String(error),
+              type,
+              id,
+            });
           });
         });
-      });
+      }
     }
 
     if (this.userData.externalDownloads) {
@@ -1101,12 +1117,21 @@ export class AIOStreams {
           try {
             const wrapper = new Wrapper(firstUncachedStream.addon);
             logger.debug(
-              `The following stream was selected for precaching:\n${firstUncachedStream.originalDescription}`
+              `The following stream was selected for precaching:\n${firstUncachedStream.originalName}\n${firstUncachedStream.originalDescription}`
             );
-            const response = await wrapper.makeRequest(firstUncachedStream.url);
+            const response = await wrapper.makeRequest(
+              firstUncachedStream.url,
+              30000
+            );
             if (!response.ok) {
               throw new Error(`${response.status} ${response.statusText}`);
             }
+            const cacheKey = `precache-${type}-${id}-${this.userData.uuid}`;
+            precacheCache.set(
+              cacheKey,
+              nextStreams,
+              Env.PRECACHE_NEXT_EPISODE_MIN_INTERVAL
+            );
             logger.debug(`Response: ${response.status} ${response.statusText}`);
           } catch (error) {
             logger.error(`Error pinging url of first uncached stream`, {

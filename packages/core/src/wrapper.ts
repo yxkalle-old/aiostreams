@@ -251,13 +251,8 @@ export class Wrapper {
     );
   }
 
-  async makeRequest(url: string) {
-    return await makeRequest(
-      url,
-      this.addon.timeout,
-      this.addon.headers,
-      this.addon.ip
-    );
+  async makeRequest(url: string, timeout: number = this.addon.timeout) {
+    return await makeRequest(url, timeout, this.addon.headers, this.addon.ip);
   }
 
   private async makeResourceRequest<T>(

@@ -354,6 +354,12 @@ export const Env = cleanEnv(process.env, {
     default: 604800, // 7 days
     desc: 'Cache TTL for RPDB API key validity',
   }),
+
+  PRECACHE_NEXT_EPISODE_MIN_INTERVAL: num({
+    default: 86400, // 24 hours
+    desc: 'Minimum interval for precaching the next episode of the current episode in seconds. i.e. the minimum wait before attempting to precache the same next episode again.',
+  }),
+
   // configuration settings
 
   MAX_ADDONS: num({
