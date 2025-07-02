@@ -1419,7 +1419,8 @@ function SortableCatalogItem({
           <div className="mb-4 md:mb-6 md:pr-40">
             <div className="flex items-center gap-2 mb-1">
               <h3 className="text-sm md:text-base font-medium line-clamp-1 truncate text-ellipsis">
-                {catalog.addonName} - {catalog.name ?? catalog.id}
+                {catalog.name ?? catalog.id} -{' '}
+                {capitalise(catalog.overrideType ?? catalog.type)}
               </h3>
               <IconButton
                 className="rounded-full h-5 w-5 md:h-6 md:w-6 flex-shrink-0"
@@ -1428,11 +1429,8 @@ function SortableCatalogItem({
                 onClick={() => setModalOpen(true)}
               />
             </div>
-            <p className="text-xs md:text-sm text-[var(--muted-foreground)] capitalize mb-2 md:mb-0">
-              {catalog.overrideType !== undefined &&
-              catalog.overrideType !== catalog.type
-                ? `${catalog.overrideType} (${catalog.type})`
-                : catalog.type}
+            <p className="text-xs md:text-sm text-[var(--muted-foreground)] mb-2 md:mb-0">
+              {catalog.addonName}
             </p>
 
             {/* Mobile Controls Row - only visible on small screens */}
