@@ -1019,7 +1019,7 @@ function AddonGroupCard() {
           className="text-[--brand] hover:text-[--brand]/80 hover:underline"
         >
           wiki
-        </a>
+        </a>{' '}
         for a detailed guide to using groups.
       </div>
       {(userData.groups || []).map((group, index) => (
