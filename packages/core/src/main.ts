@@ -68,7 +68,6 @@ export class AIOStreams {
   private skipFailedAddons: boolean = true;
   private proxifier: Proxifier;
   private limiter: StreamLimiter;
-  private streamUtils: StreamUtils;
   private fetcher: Fetcher;
   private filterer: Filterer;
   private deduplicator: Deduplicator;
@@ -88,7 +87,6 @@ export class AIOStreams {
     this.skipFailedAddons = skipFailedAddons;
     this.proxifier = new Proxifier(userData);
     this.limiter = new StreamLimiter(userData);
-    this.streamUtils = new StreamUtils();
     this.fetcher = new Fetcher(userData);
     this.filterer = new Filterer(userData);
     this.deduplicator = new Deduplicator(userData);
@@ -232,7 +230,7 @@ export class AIOStreams {
         streamsWithExternalDownloads.push(stream);
         if (stream.url) {
           const downloadableStream: ParsedStream =
-            this.streamUtils.createDownloadableStream(stream);
+            StreamUtils.createDownloadableStream(stream);
           streamsWithExternalDownloads.push(downloadableStream);
           count++;
         }

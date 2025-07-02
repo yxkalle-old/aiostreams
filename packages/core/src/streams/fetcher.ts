@@ -1,9 +1,4 @@
-import {
-  Addon,
-  ParsedStream,
-  StrictManifestResource,
-  UserData,
-} from '../db/schemas';
+import { Addon, ParsedStream, UserData } from '../db/schemas';
 import { constants, createLogger, getTimeTakenSincePoint } from '../utils';
 import { Wrapper } from '../wrapper';
 import { GroupConditionEvaluator } from '../parser/streamExpression';
@@ -19,7 +14,6 @@ class StreamFetcher {
   private filter: StreamFilter;
   private precompute: StreamPrecompute;
   private deduplicate: StreamDeduplicator;
-
   constructor(userData: UserData) {
     this.userData = userData;
     this.filter = new StreamFilter(userData);

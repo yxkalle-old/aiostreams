@@ -337,6 +337,7 @@ export const UserDataSchema = z.object({
   excludedStreamExpressions: z.array(z.string().min(1).max(3000)).optional(),
   requiredStreamExpressions: z.array(z.string().min(1).max(3000)).optional(),
   preferredStreamExpressions: z.array(z.string().min(1).max(3000)).optional(),
+  includedStreamExpressions: z.array(z.string().min(1).max(3000)).optional(),
   groups: z
     .array(
       z.object({
