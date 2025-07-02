@@ -1388,6 +1388,10 @@ function SortableCatalogItem({
   const dynamicIconSize = `text-xl h-8 w-8 lg:text-2xl lg:h-10 lg:w-10`;
 
   const handleNameAndTypeEdit = () => {
+    if (!newType) {
+      toast.error('Type cannot be empty');
+      return;
+    }
     setUserData((prev) => ({
       ...prev,
       catalogModifications: prev.catalogModifications?.map((c) =>
@@ -1719,8 +1723,6 @@ function SortableCatalogItem({
             placeholder="Enter catalog type"
             value={newType}
             onValueChange={setNewType}
-            required
-            help="Override the type of the catalog. This can break the catalog and its behaviour."
           />
 
           <Button className="w-full" type="submit">
