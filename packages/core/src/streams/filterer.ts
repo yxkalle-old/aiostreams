@@ -1092,7 +1092,7 @@ class StreamFilterer {
       !this.userData.includedStreamExpressions ||
       this.userData.includedStreamExpressions.length === 0
     ) {
-      return streams;
+      return [];
     }
     for (const expression of this.userData.includedStreamExpressions) {
       const selectedStreams = await selector.select(streams, expression);
