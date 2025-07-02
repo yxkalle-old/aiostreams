@@ -365,7 +365,7 @@ export const Env = cleanEnv(process.env, {
     default: 30,
     desc: 'Max number of keyword filters',
   }),
-  MAX_CONDITION_FILTERS: num({
+  MAX_STREAM_EXPRESSION_FILTERS: num({
     default: 30,
     desc: 'Max number of condition filters',
   }),
