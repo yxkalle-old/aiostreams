@@ -275,7 +275,10 @@ const logStartupInfo = () => {
     logKeyValue('Max Addons:', Env.MAX_ADDONS.toString());
     logKeyValue('Max Groups:', Env.MAX_GROUPS.toString());
     logKeyValue('Max Keyword Filters:', Env.MAX_KEYWORD_FILTERS.toString());
-    logKeyValue('Max Condition Filters:', Env.MAX_CONDITION_FILTERS.toString());
+    logKeyValue(
+      'Max Stream Expression Filters:',
+      Env.MAX_STREAM_EXPRESSION_FILTERS.toString()
+    );
     logKeyValue(
       'Timeout Range:',
       `${formatMilliseconds(Env.MIN_TIMEOUT)} - ${formatMilliseconds(Env.MAX_TIMEOUT)}`
