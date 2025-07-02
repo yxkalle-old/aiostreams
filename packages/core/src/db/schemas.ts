@@ -819,6 +819,7 @@ const StatusResponseSchema = z.object({
     customHtml: z.string().optional(),
     protected: z.boolean(),
     regexFilterAccess: z.enum(['none', 'trusted', 'all']),
+    loggingSensitiveInfo: z.boolean(),
     tmdbApiAvailable: z.boolean(),
     forced: z.object({
       proxy: z.object({
