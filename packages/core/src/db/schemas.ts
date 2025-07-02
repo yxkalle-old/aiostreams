@@ -631,6 +631,24 @@ export const AddonCatalogResponseSchema = z.object({
 export type AddonCatalogResponse = z.infer<typeof AddonCatalogResponseSchema>;
 export type AddonCatalog = z.infer<typeof AddonCatalogSchema>;
 
+export const ExtrasTypesSchema = z.enum(['skip', 'genre', 'search']);
+
+const ExtraSkipSchema = z.object({
+  skip: z.coerce.number(),
+});
+const ExtraGenreSchema = z.object({
+  genre: z.string(),
+});
+const ExtraSearchSchema = z.object({
+  search: z.string(),
+});
+export const ExtrasSchema = z.union([
+  ExtraSkipSchema,
+  ExtraGenreSchema,
+  ExtraSearchSchema,
+]);
+export type Extras = z.infer<typeof ExtrasSchema>;
+
 const ParsedFileSchema = z.object({
   releaseGroup: z.string().optional(),
   resolution: z.string().optional(),

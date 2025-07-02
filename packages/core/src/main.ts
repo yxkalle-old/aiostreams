@@ -13,11 +13,15 @@ import {
   getTimeTakenSincePoint,
   maskSensitiveInfo,
   Cache,
+  CatalogExtras,
 } from './utils';
 import { Wrapper } from './wrapper';
 import { PresetManager } from './presets';
 import {
   AddonCatalog,
+  Extras,
+  ExtrasSchema,
+  ExtrasTypesSchema,
   Meta,
   MetaPreview,
   ParsedStream,
@@ -287,6 +291,14 @@ export class AIOStreams {
       // reset the type from the request (which is the overriden type) to the actual type
       type = modification.type;
     }
+    const parsedExtras = new CatalogExtras(extras);
+    logger.debug(`Parsed extras: ${JSON.stringify(parsedExtras)}`);
+    if (parsedExtras.genre === 'None') {
+      logger.debug(`Genre extra is None, removing genre extra`);
+      parsedExtras.genre = undefined;
+    }
+    const extrasString = parsedExtras.toString();
+
     // step 3
     // get the catalog from the addon
     let catalog;
@@ -294,7 +306,7 @@ export class AIOStreams {
       catalog = await new Wrapper(addon).getCatalog(
         type,
         actualCatalogId,
-        extras
+        extrasString
       );
     } catch (error) {
       return {
@@ -867,10 +879,28 @@ export class AIOStreams {
             catalog.name = modification.name;
           }
           if (modification?.onlyOnDiscover) {
-            // look in the extra list for a extra with name 'genre', and set 'isRequired' to true
+            // A few cases
+            // the catalog already has genres. In which case we set isRequired for the genre extra to true
+            // and also add a new genre with name 'None' to the top - if isRequried was previously false.
+
+            // the catalog does not have genres. In which case we add a new genre extra with only one option 'None'
+            // and set isRequired to true
+
             const genreExtra = catalog.extra?.find((e) => e.name === 'genre');
             if (genreExtra) {
+              if (!genreExtra.isRequired) {
+                // if catalog supports a no genre option, we add none to the top so it is still accessible
+                genreExtra.options?.unshift('None');
+              }
+              // set it to required to hide it from the home page
               genreExtra.isRequired = true;
+            } else {
+              // add a new genre extra with only one option 'None'
+              catalog.extra?.push({
+                name: 'genre',
+                options: ['None'],
+                isRequired: true,
+              });
             }
           }
           if (modification?.overrideType !== undefined) {
