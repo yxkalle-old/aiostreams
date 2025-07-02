@@ -40,7 +40,12 @@ import {
   LuChevronsDown,
   LuShuffle,
 } from 'react-icons/lu';
-import { TbSmartHome, TbSmartHomeOff } from 'react-icons/tb';
+import {
+  TbSearch,
+  TbSearchOff,
+  TbSmartHome,
+  TbSmartHomeOff,
+} from 'react-icons/tb';
 import { AnimatePresence } from 'framer-motion';
 import { PageControls } from '../shared/page-controls';
 import Image from 'next/image';
@@ -76,7 +81,9 @@ interface CatalogModification {
   rpdb?: boolean;
   onlyOnDiscover?: boolean;
   hideable?: boolean;
+  searchable?: boolean;
   addonName?: string;
+  disableSearch?: boolean;
 }
 
 export function AddonsMenu() {
@@ -1109,6 +1116,7 @@ function CatalogSettingsCard() {
                 addonName: nMod.addonName,
                 type: nMod.type,
                 hideable: nMod.hideable,
+                searchable: nMod.searchable,
               };
             }
             return eMod;
@@ -1125,6 +1133,7 @@ function CatalogSettingsCard() {
                 shuffle: false,
                 rpdb: userData.rpdbApiKey ? true : false,
                 hideable: catalog.hideable,
+                searchable: catalog.searchable,
                 addonName: catalog.addonName,
               });
             }
@@ -1595,6 +1604,43 @@ function SortableCatalogItem({
                         Discover Only
                       </Tooltip>
                     )}
+
+                    {catalog.searchable && (
+                      <Tooltip
+                        trigger={
+                          <IconButton
+                            className={dynamicIconSize}
+                            icon={
+                              catalog.disableSearch ? (
+                                <TbSearchOff />
+                              ) : (
+                                <TbSearch />
+                              )
+                            }
+                            intent="primary-subtle"
+                            rounded
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setUserData((prev) => ({
+                                ...prev,
+                                catalogModifications:
+                                  prev.catalogModifications?.map((c) =>
+                                    c.id === catalog.id &&
+                                    c.type === catalog.type
+                                      ? {
+                                          ...c,
+                                          disableSearch: !c.disableSearch,
+                                        }
+                                      : c
+                                  ),
+                              }));
+                            }}
+                          />
+                        }
+                      >
+                        Searchable
+                      </Tooltip>
+                    )}
                   </div>
                 </div>
               </AccordionTrigger>
@@ -1684,6 +1730,26 @@ function SortableCatalogItem({
                               prev.catalogModifications?.map((c) =>
                                 c.id === catalog.id && c.type === catalog.type
                                   ? { ...c, onlyOnDiscover }
+                                  : c
+                              ),
+                          }));
+                        }}
+                      />
+                    )}
+
+                    {catalog.searchable && (
+                      <Switch
+                        label="Disable Search"
+                        help="Disable the search for this catalog"
+                        side="right"
+                        value={catalog.disableSearch ?? false}
+                        onValueChange={(disableSearch) => {
+                          setUserData((prev) => ({
+                            ...prev,
+                            catalogModifications:
+                              prev.catalogModifications?.map((c) =>
+                                c.id === catalog.id && c.type === catalog.type
+                                  ? { ...c, disableSearch }
                                   : c
                               ),
                           }));

@@ -55,6 +55,11 @@ router.post('/', async (req: Request, res: Response, next: NextFunction) => {
               extra.options.length > 0
           ) !== -1
         : false,
+      searchable: catalog.extra
+        ? catalog.extra?.findIndex(
+            (e) => e.name === 'search' && !e.isRequired
+          ) !== -1
+        : true,
     }));
     res.status(200).json(createResponse({ success: true, data: catalogs }));
   } catch (error) {

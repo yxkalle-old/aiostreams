@@ -876,6 +876,9 @@ export class AIOStreams {
           if (modification?.overrideType !== undefined) {
             catalog.type = modification.overrideType;
           }
+          if (modification?.disableSearch) {
+            catalog.extra = catalog.extra?.filter((e) => e.name !== 'search');
+          }
           return catalog;
         });
     }
