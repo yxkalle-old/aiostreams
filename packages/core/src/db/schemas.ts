@@ -334,9 +334,9 @@ export const UserDataSchema = z.object({
   excludeUncachedFromServices: z.array(z.string().min(1)).optional(),
   excludeUncachedFromStreamTypes: z.array(StreamTypes).optional(),
   excludeUncachedMode: z.enum(['or', 'and']).optional(),
-  excludedStreamExpressions: z.array(z.string().min(1).max(1000)).optional(),
-  requiredStreamExpressions: z.array(z.string().min(1).max(1000)).optional(),
-  preferredStreamExpressions: z.array(z.string().min(1).max(1000)).optional(),
+  excludedStreamExpressions: z.array(z.string().min(1).max(3000)).optional(),
+  requiredStreamExpressions: z.array(z.string().min(1).max(3000)).optional(),
+  preferredStreamExpressions: z.array(z.string().min(1).max(3000)).optional(),
   groups: z
     .array(
       z.object({
