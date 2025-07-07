@@ -44,7 +44,7 @@ const StreamProxyConfig = z.object({
   id: z.enum(constants.PROXY_SERVICES).optional(),
   url: z.string().optional(),
   credentials: z.string().optional(),
-  publicIp: z.string().ip().optional(),
+  publicIp: z.union([z.string().ip(), z.literal('')]).optional(),
   proxiedAddons: z.array(z.string().min(1)).optional(),
   proxiedServices: z.array(z.string().min(1)).optional(),
 });
