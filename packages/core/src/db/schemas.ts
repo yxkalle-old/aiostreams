@@ -580,7 +580,9 @@ export const MetaPreviewSchema = z
     imdbRating: z.string().or(z.null()).or(z.number()).optional(),
     releaseInfo: z.string().or(z.number()).or(z.null()).optional(),
     //@deprecated
-    director: z.array(z.string()).or(z.null()).optional(),
+    director: z
+      .union([z.array(z.string().or(z.null())), z.null(), z.string()])
+      .optional(),
     //@deprecated
     cast: z.array(z.string()).or(z.null()).optional(),
     // background: z.string().min(1).optional(),
