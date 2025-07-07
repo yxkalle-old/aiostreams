@@ -26,23 +26,20 @@ class DebridioWatchtowerStreamParser extends StreamParser {
     parsedStream.type = 'http';
     let resolution = (stream as any).resolution;
     resolution = typeof resolution === 'string' ? resolution : undefined;
-
-    if (parsedStream.filename) {
-      parsedStream.parsedFile = FileParser.parse(resolution);
-      parsedStream.parsedFile = {
-        resolution: parsedStream.parsedFile.resolution,
-        languages: [],
-        audioChannels: [],
-        visualTags: [],
-        audioTags: [],
-      };
-      parsedStream.parsedFile.languages = Array.from(
-        new Set([
-          ...parsedStream.parsedFile.languages,
-          ...this.getLanguages(stream, parsedStream),
-        ])
-      );
-    }
+    parsedStream.parsedFile = FileParser.parse(resolution);
+    parsedStream.parsedFile = {
+      resolution: parsedStream.parsedFile.resolution,
+      languages: [],
+      audioChannels: [],
+      visualTags: [],
+      audioTags: [],
+    };
+    parsedStream.parsedFile.languages = Array.from(
+      new Set([
+        ...parsedStream.parsedFile.languages,
+        ...this.getLanguages(stream, parsedStream),
+      ])
+    );
 
     parsedStream.message = stream.name
       ? (stream.name?.split('\n')?.[0]?.match(/\[([^\]]+)\]/)?.[1] ?? undefined)
