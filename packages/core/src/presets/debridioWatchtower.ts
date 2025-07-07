@@ -23,12 +23,12 @@ class DebridioWatchtowerStreamParser extends StreamParser {
 
     stream.description = stream.description || stream.title;
 
-    parsedStream.filename = this.getFilename(stream, parsedStream);
-
     parsedStream.type = 'http';
+    let resolution = (stream as any).resolution;
+    resolution = typeof resolution === 'string' ? resolution : undefined;
 
     if (parsedStream.filename) {
-      parsedStream.parsedFile = FileParser.parse(parsedStream.filename);
+      parsedStream.parsedFile = FileParser.parse(resolution);
       parsedStream.parsedFile = {
         resolution: parsedStream.parsedFile.resolution,
         languages: [],
@@ -43,10 +43,10 @@ class DebridioWatchtowerStreamParser extends StreamParser {
         ])
       );
     }
-    parsedStream.filename = stream.behaviorHints?.filename ?? undefined;
-    parsedStream.folderName = undefined;
 
-    parsedStream.message = stream.description?.replace(/\d+p?/g, '');
+    parsedStream.message = stream.name
+      ? (stream.name?.split('\n')?.[0]?.match(/\[([^\]]+)\]/)?.[1] ?? undefined)
+      : undefined;
 
     return parsedStream;
   }
