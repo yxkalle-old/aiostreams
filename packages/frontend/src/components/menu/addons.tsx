@@ -606,13 +606,14 @@ function SortableAddonItem({
 
   const handleManifestUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
+    const standardisedManifest = standardiseManifestUrl(newManifestUrl);
     if (!newManifestUrl) {
       toast.error('Please enter a new manifest URL');
       return;
     }
 
     const regex = /^(https?|stremio):\/\/.+\/manifest\.json$/;
-    if (!regex.test(newManifestUrl)) {
+    if (!regex.test(standardisedManifest)) {
       toast.error('Please enter a valid manifest URL');
       return;
     }
@@ -620,7 +621,7 @@ function SortableAddonItem({
     // attempt to fetch the manifest
     try {
       setLoading(true);
-      const response = await fetch(newManifestUrl);
+      const response = await fetch(standardisedManifest);
       if (!response.ok) {
         throw new Error(`${response.status} ${response.statusText}`);
       }
@@ -639,7 +640,7 @@ function SortableAddonItem({
               ...p,
               options: {
                 ...p.options,
-                manifestUrl: newManifestUrl,
+                manifestUrl: standardisedManifest,
               },
             }
           : p
@@ -671,7 +672,7 @@ function SortableAddonItem({
         <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
           <div className="relative flex-shrink-0 h-8 w-8 hidden sm:block">
             {presetMetadata.ID === 'custom' ? (
-              <PlusIcon className="w-full h-full object-contain" />
+              <IoExtensionPuzzle className="w-full h-full object-contain" />
             ) : (
               <Image
                 src={presetMetadata.LOGO}
@@ -770,9 +771,7 @@ function SortableAddonItem({
                 label="New Manifest URL"
                 placeholder="Paste your new URL here"
                 value={newManifestUrl}
-                onValueChange={(v) => {
-                  setNewManifestUrl(standardiseManifestUrl(v));
-                }}
+                onValueChange={setNewManifestUrl}
                 required
                 autoFocus // Focus the input since it's the next logical action
               />
