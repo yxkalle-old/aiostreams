@@ -627,6 +627,7 @@ function SortableAddonItem({
       await response.json();
     } catch (error: any) {
       toast.error(`Failed to fetch or parse manifest: ${error.message}`);
+      setLoading(false);
       return;
     }
 
