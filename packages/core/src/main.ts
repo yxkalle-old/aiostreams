@@ -862,6 +862,15 @@ export class AIOStreams {
       )}`
     );
 
+    // if meta resouce exists, and aiostreamserror to idPrefixes
+    const metaResource = this.finalResources.find((r) => r.name === 'meta');
+    if (metaResource) {
+      metaResource.idPrefixes = [
+        ...(metaResource.idPrefixes || []),
+        'aiostreamserror',
+      ];
+    }
+
     if (this.userData.catalogModifications) {
       this.finalCatalogs = this.finalCatalogs
         // Sort catalogs based on catalogModifications order, with non-modified catalogs at the end
