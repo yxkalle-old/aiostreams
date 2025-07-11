@@ -565,6 +565,10 @@ function SortableAddonItem({
     opacity: isDragging ? 0.5 : 1,
   };
 
+  const standardiseManifestUrl = (url: string) => {
+    return url.replace(/^stremio:\/\//, 'https://').replace(/\/$/, '');
+  };
+
   useEffect(() => {
     if (configModalOpen.isOpen) {
       setStep(1);
@@ -575,10 +579,7 @@ function SortableAddonItem({
     let active = true;
 
     if (presetMetadata.ID === 'custom' && preset.options.manifestUrl) {
-      const manifestUrl = preset.options.manifestUrl.replace(
-        /^stremio:\/\//,
-        'https://'
-      );
+      const manifestUrl = standardiseManifestUrl(preset.options.manifestUrl);
       const cached = manifestCache.get(manifestUrl);
       if (cached) {
         setIsConfigurable(cached.behaviorHints?.configurable === true);
@@ -652,9 +653,10 @@ function SortableAddonItem({
 
   const getConfigureUrl = () => {
     if (!preset.options.manifestUrl) return '';
-    return preset.options.manifestUrl
-      .replace(/^stremio:\/\//, 'https://')
-      .replace(/\/manifest\.json$/, '/configure');
+    return standardiseManifestUrl(preset.options.manifestUrl).replace(
+      /\/manifest\.json$/,
+      '/configure'
+    );
   };
 
   return (
@@ -767,7 +769,9 @@ function SortableAddonItem({
                 label="New Manifest URL"
                 placeholder="Paste your new URL here"
                 value={newManifestUrl}
-                onValueChange={setNewManifestUrl}
+                onValueChange={(v) => {
+                  setNewManifestUrl(standardiseManifestUrl(v));
+                }}
                 required
                 autoFocus // Focus the input since it's the next logical action
               />
