@@ -862,13 +862,15 @@ export class AIOStreams {
       )}`
     );
 
-    // if meta resouce exists, and aiostreamserror to idPrefixes
+    // if meta resouce exists, and aiostreamserror to idPrefixes only if idPrefixes is defined
     const metaResource = this.finalResources.find((r) => r.name === 'meta');
     if (metaResource) {
+      if (metaResource.idPrefixes) {
       metaResource.idPrefixes = [
-        ...(metaResource.idPrefixes || []),
+          ...metaResource.idPrefixes,
         'aiostreamserror',
       ];
+      }
     }
 
     if (this.userData.catalogModifications) {
