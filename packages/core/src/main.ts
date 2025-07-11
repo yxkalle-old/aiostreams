@@ -776,7 +776,7 @@ export class AIOStreams {
               ...new Set([...existing.idPrefixes, ...resource.idPrefixes]),
             ];
           } else {
-            if (resource.name !== 'catalog') {
+            if (resource.name !== 'catalog' && !resource.idPrefixes?.length) {
               logger.warn(
                 `Addon ${getAddonName(addon)} does not provide idPrefixes for type ${resource.name}, setting idPrefixes to undefined`
               );
@@ -866,10 +866,10 @@ export class AIOStreams {
     const metaResource = this.finalResources.find((r) => r.name === 'meta');
     if (metaResource) {
       if (metaResource.idPrefixes) {
-      metaResource.idPrefixes = [
+        metaResource.idPrefixes = [
           ...metaResource.idPrefixes,
-        'aiostreamserror',
-      ];
+          'aiostreamserror',
+        ];
       }
     }
 
