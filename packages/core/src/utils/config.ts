@@ -614,12 +614,6 @@ function validateOption(
     }
   }
 
-  logger.info(
-    `Validating option ${option.id} with value ${value} of ${JSON.stringify(
-      option
-    )}`
-  );
-
   if (option.type === 'string' || option.type === 'password') {
     if (typeof value !== 'string') {
       throw new Error(

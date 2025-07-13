@@ -242,7 +242,6 @@ export class AISearchPreset extends Preset {
     const cacheKey = `${JSON.stringify(config)}`;
     let configId: string | undefined = configCache.get(cacheKey);
     if (configId) {
-      console.log('CACHE HIT');
       return `${url}/aisearch/${configId}/manifest.json`;
     }
     let response;
