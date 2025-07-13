@@ -614,7 +614,13 @@ function validateOption(
     }
   }
 
-  if (option.type === 'string') {
+  logger.info(
+    `Validating option ${option.id} with value ${value} of ${JSON.stringify(
+      option
+    )}`
+  );
+
+  if (option.type === 'string' || option.type === 'password') {
     if (typeof value !== 'string') {
       throw new Error(
         `Option ${option.id} must be a string, got ${typeof value}`
@@ -633,12 +639,6 @@ function validateOption(
   }
 
   if (option.type === 'password') {
-    if (typeof value !== 'string') {
-      throw new Error(
-        `Option ${option.id} must be a string, got ${typeof value}`
-      );
-    }
-
     if (option.forced) {
       // option.forced is already encrypted
       value = option.forced;
