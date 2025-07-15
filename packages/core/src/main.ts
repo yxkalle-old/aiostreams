@@ -1119,6 +1119,7 @@ export class AIOStreams {
     // modify userData to remove the excludeUncached filter
     const userData = structuredClone(this.userData);
     userData.excludeUncached = false;
+    userData.groups = undefined;
     this.setUserData(userData);
     const nextStreamsResponse = await this.getStreams(
       nextEpisodeId,
