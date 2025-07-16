@@ -329,12 +329,12 @@ export class AIOSubtitlePreset extends Preset {
       ...baseOptions(
         'AIOSubtitle',
         supportedResources,
-        Env.DEFAULT_SUBDL_TIMEOUT || Env.DEFAULT_TIMEOUT
+        Env.DEFAULT_AIOSUBTITLE_TIMEOUT || Env.DEFAULT_TIMEOUT
       ),
       {
-        id: 'language',
+        id: 'languages',
         type: 'multi-select',
-        name: 'Language',
+        name: 'Languages',
         description: 'Select the languages you want subtitles in',
         options: languages,
         required: true,
@@ -421,7 +421,7 @@ export class AIOSubtitlePreset extends Preset {
     }
     const host = options.url || this.METADATA.URL;
 
-    let config: string[][] = [['languages', options.language.join(',')]];
+    let config: string[][] = [['languages', options.languages.join(',')]];
     if (options.microsoftTranslatorApiKey) {
       config.push(['transProvider', 'Microsoft']);
       config.push(['apiKey', options.microsoftTranslatorApiKey]);
