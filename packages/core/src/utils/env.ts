@@ -1251,6 +1251,19 @@ export const Env = cleanEnv(process.env, {
     desc: 'Default AIOSubtitle user agent',
   }),
 
+  SUBHERO_URL: url({
+    default: 'https://subhero.onrender.com',
+    desc: 'SubHero URL',
+  }),
+  DEFAULT_SUBHERO_TIMEOUT: num({
+    default: undefined,
+    desc: 'Default SubHero timeout',
+  }),
+  DEFAULT_SUBHERO_USER_AGENT: userAgent({
+    default: undefined,
+    desc: 'Default SubHero user agent',
+  }),
+
   // Rate limiting settings
   DISABLE_RATE_LIMITS: bool({
     default: false,

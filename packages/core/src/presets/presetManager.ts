@@ -43,6 +43,7 @@ import { SubDLPreset } from './subdl';
 import { AISearchPreset } from './aiSearch';
 import { FKStreamPreset } from './fkstream';
 import { AIOSubtitlePreset } from './aiosubtitle';
+import { SubHeroPreset } from './subhero';
 
 const PRESET_LIST: string[] = [
   'custom',
@@ -87,6 +88,7 @@ const PRESET_LIST: string[] = [
   'opensubtitles-v3-plus',
   'subsource',
   'subdl',
+  'subhero',
   'aiosubtitle',
   'aiostreams',
 ];
@@ -198,6 +200,8 @@ export class PresetManager {
         return AISearchPreset;
       case 'aiosubtitle':
         return AIOSubtitlePreset;
+      case 'subhero':
+        return SubHeroPreset;
       default:
         throw new Error(`Preset ${id} not found`);
     }
