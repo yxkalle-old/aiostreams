@@ -1238,6 +1238,19 @@ export const Env = cleanEnv(process.env, {
     desc: 'Default FKStream user agent',
   }),
 
+  AIOSUBTITLE_URL: url({
+    default: 'https://3b4bbf5252c4-aio-streaming.baby-beamup.club',
+    desc: 'AIOSubtitle URL',
+  }),
+  DEFAULT_AIOSUBTITLE_TIMEOUT: num({
+    default: undefined,
+    desc: 'Default AIOSubtitle timeout',
+  }),
+  DEFAULT_AIOSUBTITLE_USER_AGENT: userAgent({
+    default: undefined,
+    desc: 'Default AIOSubtitle user agent',
+  }),
+
   // Rate limiting settings
   DISABLE_RATE_LIMITS: bool({
     default: false,
