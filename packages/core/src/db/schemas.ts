@@ -373,6 +373,7 @@ export const UserDataSchema = z.object({
   hideErrors: z.boolean().optional(),
   hideErrorsForResources: z.array(ResourceSchema).optional(),
   showStatistics: z.boolean().optional(),
+  statisticsPosition: z.enum(['top', 'bottom']).optional(),
   tmdbAccessToken: z.string().optional(),
   titleMatching: z
     .object({
