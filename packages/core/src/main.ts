@@ -574,7 +574,7 @@ export class AIOStreams {
     id: string,
     extras?: string
   ): Promise<AIOStreamsResponse<Subtitle[]>> {
-    logger.info(`getSubtitles: ${id}`);
+    logger.info(`Handling subtitle request`, { type, id, extras });
 
     // Find all addons that support subtitles for this type and id prefix
     const supportedAddons = [];
