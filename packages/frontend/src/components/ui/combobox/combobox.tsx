@@ -361,12 +361,11 @@ export const Combobox = React.forwardRef<HTMLButtonElement, ComboboxProps>(
                   {options.map((option) => (
                     <CommandItem
                       key={option.value}
-                      value={option.textValue || option.value}
+                      value={option.value}
                       onSelect={(currentValue: string) => {
                         const _option = options.find(
                           (n) =>
-                            (n.textValue || n.value).toLowerCase() ===
-                            currentValue.toLowerCase()
+                            n.value.toLowerCase() === currentValue.toLowerCase()
                         );
                         if (_option) {
                           if (!multiple) {
