@@ -1155,29 +1155,29 @@ export class AIOStreams {
     let episodeToPrecache = Number(episode) + 1;
     let seasonToPrecache = season;
     if (episodeCount && Number(episode) === episodeCount) {
-      logger.debug(
-        `Detected that the current episode is the last episode of the season, precaching first episode of next season instead`
-      );
-      episodeToPrecache = 1;
-      seasonToPrecache = (Number(season) + 1).toString();
+      const nextSeason = Number(season) + 1;
+      if (metadata?.seasons?.find((s) => s.season_number === nextSeason)) {
+        logger.debug(
+          `Detected that the current episode is the last episode of the season, precaching first episode of next season instead`
+        );
+        episodeToPrecache = 1;
+        seasonToPrecache = nextSeason.toString();
+      }
     }
-    const nextEpisodeId = `${titleId}:${seasonToPrecache}:${episodeToPrecache}`;
+    const precacheId = `${titleId}:${seasonToPrecache}:${episodeToPrecache}`;
     logger.info(`Pre-caching next episode of ${titleId}`, {
       season,
       episode,
-      nextEpisode: Number(episode) + 1,
-      nextEpisodeId,
+      episodeToPrecache,
+      seasonToPrecache,
+      precacheId,
     });
     // modify userData to remove the excludeUncached filter
     const userData = structuredClone(this.userData);
     userData.excludeUncached = false;
     userData.groups = undefined;
     this.setUserData(userData);
-    const nextStreamsResponse = await this.getStreams(
-      nextEpisodeId,
-      type,
-      true
-    );
+    const nextStreamsResponse = await this.getStreams(precacheId, type, true);
     if (nextStreamsResponse.success) {
       const nextStreams = nextStreamsResponse.data.streams;
       const serviceStreams = nextStreams.filter((stream) => stream.service);
