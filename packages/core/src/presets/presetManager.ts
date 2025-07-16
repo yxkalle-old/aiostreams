@@ -41,6 +41,7 @@ import { OpenSubtitlesV3PlusPreset } from './opensubtitles-v3-plus';
 import { SubSourcePreset } from './subsource';
 import { SubDLPreset } from './subdl';
 import { AISearchPreset } from './aiSearch';
+import { FKStreamPreset } from './fkstream';
 
 const PRESET_LIST: string[] = [
   'custom',
@@ -54,6 +55,7 @@ const PRESET_LIST: string[] = [
   'orion',
   'torrents-db',
   'streamfusion',
+  'fkstream',
   'debridio',
   'torbox',
   'easynews',
@@ -152,6 +154,8 @@ export class PresetManager {
         return OrionPreset;
       case 'streamfusion':
         return StreamFusionPreset;
+      case 'fkstream':
+        return FKStreamPreset;
       case 'anime-kitsu':
         return AnimeKitsuPreset;
       case 'nuvio-streams':

@@ -1225,6 +1225,19 @@ export const Env = cleanEnv(process.env, {
     desc: 'Default AI Search user agent',
   }),
 
+  FKSTREAM_URL: url({
+    default: 'https://streamio.fankai.fr',
+    desc: 'FKStream URL',
+  }),
+  DEFAULT_FKSTREAM_TIMEOUT: num({
+    default: undefined,
+    desc: 'Default FKStream timeout',
+  }),
+  DEFAULT_FKSTREAM_USER_AGENT: userAgent({
+    default: undefined,
+    desc: 'Default FKStream user agent',
+  }),
+
   // Rate limiting settings
   DISABLE_RATE_LIMITS: bool({
     default: false,
