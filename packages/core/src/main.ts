@@ -14,6 +14,8 @@ import {
   maskSensitiveInfo,
   Cache,
   CatalogExtras,
+  TMDBMetadata,
+  Metadata,
 } from './utils';
 import { Wrapper } from './wrapper';
 import { PresetManager } from './presets';
@@ -1132,8 +1134,34 @@ export class AIOStreams {
     }
     const season = match[1];
     const episode = match[2];
+    let episodeCount = undefined;
+    let metadata: Metadata | undefined;
+    try {
+      metadata = await new TMDBMetadata(
+        this.userData.tmdbAccessToken
+      ).getMetadata(id, type as any);
+      if (metadata?.seasons) {
+        episodeCount = metadata.seasons.find(
+          (s) => s.season_number === Number(season)
+        )?.episode_count;
+      }
+    } catch (error) {
+      logger.warning(`Error getting metadata for ${id}`, {
+        error: error instanceof Error ? error.message : String(error),
+      });
+    }
+
     const titleId = id.replace(seasonEpisodeRegex, '');
-    const nextEpisodeId = `${titleId}:${season}:${Number(episode) + 1}`;
+    let episodeToPrecache = Number(episode) + 1;
+    let seasonToPrecache = season;
+    if (episodeCount && Number(episode) === episodeCount) {
+      logger.debug(
+        `Detected that the current episode is the last episode of the season, precaching first episode of next season instead`
+      );
+      episodeToPrecache = 1;
+      seasonToPrecache = (Number(season) + 1).toString();
+    }
+    const nextEpisodeId = `${titleId}:${seasonToPrecache}:${episodeToPrecache}`;
     logger.info(`Pre-caching next episode of ${titleId}`, {
       season,
       episode,
