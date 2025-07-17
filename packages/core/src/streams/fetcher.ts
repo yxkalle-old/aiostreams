@@ -145,12 +145,11 @@ class StreamFetcher {
       );
       await this.precompute.precompute(filteredStreams);
 
-      const groupTime = Date.now() - groupStart;
       logger.info(
-        `Group processing finished. Filtered to ${filteredStreams.length} streams in ${groupTime}ms`
+        `Group processing finished. Filtered to ${filteredStreams.length} streams in ${getTimeTakenSincePoint(groupStart)}`
       );
       return {
-        totalTime: groupTime,
+        totalTime: Date.now() - groupStart,
         streams: filteredStreams,
       };
     };
