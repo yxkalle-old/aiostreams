@@ -433,6 +433,10 @@ export const Env = cleanEnv(process.env, {
     default: undefined,
     desc: 'Force proxy url',
   }),
+  FORCE_PROXY_PUBLIC_URL: url({
+    default: undefined,
+    desc: 'Force proxy public url',
+  }),
   FORCE_PROXY_CREDENTIALS: str({
     default: undefined,
     desc: 'Force proxy credentials',
@@ -461,6 +465,10 @@ export const Env = cleanEnv(process.env, {
   DEFAULT_PROXY_URL: url({
     default: undefined,
     desc: 'Default proxy url',
+  }),
+  DEFAULT_PROXY_PUBLIC_URL: url({
+    default: undefined,
+    desc: 'Default proxy public url',
   }),
   DEFAULT_PROXY_CREDENTIALS: str({
     default: undefined,
