@@ -57,7 +57,9 @@ router.get('/', async (req: Request, res: Response) => {
           url: !!Env.DEFAULT_PROXY_URL
             ? encryptString(Env.DEFAULT_PROXY_URL).data
             : null,
-          publicUrl: Env.DEFAULT_PROXY_PUBLIC_URL ?? null,
+          publicUrl: Env.DEFAULT_PROXY_PUBLIC_URL
+            ? encryptString(Env.DEFAULT_PROXY_PUBLIC_URL).data
+            : null,
           publicIp: Env.DEFAULT_PROXY_PUBLIC_IP ?? null,
           credentials: !!Env.DEFAULT_PROXY_CREDENTIALS
             ? encryptString(Env.DEFAULT_PROXY_CREDENTIALS).data
