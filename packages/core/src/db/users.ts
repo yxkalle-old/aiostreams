@@ -216,6 +216,9 @@ export class UserRepository {
             'Invalid password'
           );
         }
+        config.trusted =
+          Env.TRUSTED_UUIDS?.split(',').some((u) => new RegExp(u).test(uuid)) ??
+          false;
         let validatedConfig: UserData;
         try {
           validatedConfig = await validateConfig(config, false, false);
