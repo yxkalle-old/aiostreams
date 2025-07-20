@@ -282,12 +282,6 @@ export class TorrentioPreset extends Preset {
     }
     let providers = options.providers;
 
-    if (!providers) {
-      providers = TorrentioPreset.defaultProviders.map(
-        (provider) => provider.value
-      );
-    }
-
     let config: string[][] = [];
 
     // add services to config
@@ -303,7 +297,12 @@ export class TorrentioPreset extends Preset {
     }
 
     // add providers to config
-    config.push(['providers', providers.join(',')]);
+    if (
+      providers?.length &&
+      providers.length !== TorrentioPreset.defaultProviders.length // when using default providers, we don't need to add providers to the config
+    ) {
+      config.push(['providers', providers.join(',')]);
+    }
 
     const configString = this.urlEncodeKeyValuePairs(config);
     return `${url}${configString ? '/' + configString : ''}/manifest.json`;
