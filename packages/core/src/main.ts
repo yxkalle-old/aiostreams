@@ -497,6 +497,7 @@ export class AIOStreams {
           addonName: candidate.addon.name,
           addonInstanceId: candidate.instanceId,
         });
+        meta.links = this.convertDiscoverDeepLinks(meta.links);
 
         return {
           success: true,
