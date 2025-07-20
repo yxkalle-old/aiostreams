@@ -61,6 +61,7 @@ export interface AIOStreamsResponse<T> {
 
 export class AIOStreams {
   private userData: UserData;
+  private manifestUrl: string;
   private manifests: Record<string, Manifest | null>;
   private supportedResources: Record<string, StrictManifestResource[]>;
   private finalResources: StrictManifestResource[] = [];
@@ -85,6 +86,7 @@ export class AIOStreams {
   constructor(userData: UserData, skipFailedAddons: boolean = true) {
     this.addonInitialisationErrors = [];
     this.userData = userData;
+    this.manifestUrl = `${Env.BASE_URL}/stremio/${this.userData.uuid}/${this.userData.encryptedPassword}/manifest.json`;
     this.manifests = {};
     this.supportedResources = {};
     this.skipFailedAddons = skipFailedAddons;
@@ -375,8 +377,6 @@ export class AIOStreams {
       modification?.rpdb && this.userData.rpdbApiKey
         ? new RPDB(this.userData.rpdbApiKey)
         : undefined;
-    const ourManifestUrl = `${Env.BASE_URL}/stremio/${this.userData.uuid}/${this.userData.encryptedPassword}/manifest.json`;
-
     catalog = catalog.map((item) => {
       // Apply RPDB poster modification
       if (rpdb) {
@@ -398,34 +398,7 @@ export class AIOStreams {
       }
 
       if (item.links) {
-        item.links = item.links.map((link) => {
-          try {
-            if (link.url.startsWith('stremio:///discover/')) {
-              const linkUrl = new URL(
-                decodeURIComponent(link.url.split('/')[4])
-              );
-              // see if the linked addon is one of our addons and replace the transport url with our manifest url if so
-              const addon = this.addons.find(
-                (a) => new URL(a.manifestUrl).hostname === linkUrl.hostname
-              );
-              if (addon) {
-                const [_, linkType, catalogIdAndQuery] = link.url
-                  .replace('stremio:///discover/', '')
-                  .split('/');
-                const newCatalogId = `${addon.instanceId}.${catalogIdAndQuery}`;
-                const newTransportUrl = encodeURIComponent(ourManifestUrl);
-                link.url = `stremio:///discover/${newTransportUrl}/${linkType}/${newCatalogId}`;
-              }
-            }
-          } catch (error) {
-            logger.error(`Error converting discover deep link`, {
-              error: error instanceof Error ? error.message : String(error),
-              link: link.url,
-            });
-            // Ignore errors, leave link as is
-          }
-          return link;
-        });
+        item.links = this.convertDiscoverDeepLinks(item.links);
       }
       return item;
     });
@@ -1124,6 +1097,38 @@ export class AIOStreams {
       });
     }
     return streams;
+  }
+
+  private convertDiscoverDeepLinks(items: Meta['links']) {
+    if (!items) {
+      return items;
+    }
+    return items.map((link) => {
+      try {
+        if (link.url.startsWith('stremio:///discover/')) {
+          const linkUrl = new URL(decodeURIComponent(link.url.split('/')[4]));
+          // see if the linked addon is one of our addons and replace the transport url with our manifest url if so
+          const addon = this.addons.find(
+            (a) => new URL(a.manifestUrl).hostname === linkUrl.hostname
+          );
+          if (addon) {
+            const [_, linkType, catalogIdAndQuery] = link.url
+              .replace('stremio:///discover/', '')
+              .split('/');
+            const newCatalogId = `${addon.instanceId}.${catalogIdAndQuery}`;
+            const newTransportUrl = encodeURIComponent(this.manifestUrl);
+            link.url = `stremio:///discover/${newTransportUrl}/${linkType}/${newCatalogId}`;
+          }
+        }
+      } catch (error) {
+        logger.error(`Error converting discover deep link`, {
+          error: error instanceof Error ? error.message : String(error),
+          link: link.url,
+        });
+        // Ignore errors, leave link as is
+      }
+      return link;
+    });
   }
 
   private async precacheNextEpisode(type: string, id: string) {
