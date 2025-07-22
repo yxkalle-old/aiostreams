@@ -155,7 +155,11 @@ class StreamFetcher {
     };
 
     // If groups are configured, handle group-based fetching
-    if (this.userData.groups && this.userData.groups.length > 0) {
+    if (
+      this.userData.groups &&
+      this.userData.groups.length > 0 &&
+      this.userData.disableGroups !== true
+    ) {
       const groupPromises = this.userData.groups.map((group) => {
         const groupAddons = addons.filter(
           (addon) =>

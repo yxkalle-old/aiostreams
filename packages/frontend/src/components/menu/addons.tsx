@@ -1215,12 +1215,22 @@ function AddonGroupCard() {
         </a>{' '}
         for a detailed guide to using groups.
       </div>
+      <Switch
+        label="Disable Groups"
+        value={userData.disableGroups ?? false}
+        onValueChange={(value) => {
+          setUserData((prev) => ({ ...prev, disableGroups: value }));
+        }}
+        side="right"
+        help="If enabled, groups will be ignored and all addons will be used."
+      />
       {(userData.groups || []).map((group, index) => (
         <div key={index} className="flex gap-2">
           <div className="flex-1 flex gap-2">
             <div className="flex-1">
               <Combobox
                 multiple
+                disabled={userData.disableGroups}
                 value={group.addons}
                 options={getAvailablePresets(index)}
                 emptyMessage="You haven't installed any addons yet or they are already in a group"
@@ -1234,7 +1244,7 @@ function AddonGroupCard() {
             <div className="flex-1">
               <TextInput
                 value={index === 0 ? 'true' : group.condition}
-                disabled={index === 0}
+                disabled={index === 0 || userData.disableGroups}
                 label="Condition"
                 placeholder="Enter condition"
                 onValueChange={(value) => {
@@ -1246,6 +1256,7 @@ function AddonGroupCard() {
           <IconButton
             size="sm"
             rounded
+            disabled={userData.disableGroups}
             icon={<FaRegTrashAlt />}
             intent="alert-subtle"
             onClick={() => {
@@ -1267,6 +1278,7 @@ function AddonGroupCard() {
           size="sm"
           intent="primary-subtle"
           icon={<FaPlus />}
+          disabled={userData.disableGroups}
           onClick={() => {
             setUserData((prev) => {
               const currentGroups = prev.groups || [];
