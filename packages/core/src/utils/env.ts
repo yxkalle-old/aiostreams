@@ -331,24 +331,48 @@ export const Env = cleanEnv(process.env, {
     default: 300,
     desc: 'Cache TTL for manifest files',
   }),
+  MANIFEST_CACHE_MAX_SIZE: num({
+    default: undefined,
+    desc: 'Max number of manifest items to cache',
+  }),
   SUBTITLE_CACHE_TTL: num({
     default: 300,
     desc: 'Cache TTL for subtitle files',
+  }),
+  SUBTITLE_CACHE_MAX_SIZE: num({
+    default: undefined,
+    desc: 'Max number of subtitle items to cache',
   }),
   STREAM_CACHE_TTL: num({
     default: -1,
     desc: 'Cache TTL for stream files. If -1, no caching will be done.',
   }),
+  STREAM_CACHE_MAX_SIZE: num({
+    default: undefined,
+    desc: 'Max number of stream items to cache',
+  }),
   CATALOG_CACHE_TTL: num({
     default: 300,
     desc: 'Cache TTL for catalog files',
   }),
+  CATALOG_CACHE_MAX_SIZE: num({
+    default: 1000,
+    desc: 'Max number of catalog items to cache',
+  }),
   META_CACHE_TTL: num({
     default: 300,
+  }),
+  META_CACHE_MAX_SIZE: num({
+    default: undefined,
+    desc: 'Max number of metadata items to cache',
   }),
   ADDON_CATALOG_CACHE_TTL: num({
     default: 300,
     desc: 'Cache TTL for addon catalog files',
+  }),
+  ADDON_CATALOG_CACHE_MAX_SIZE: num({
+    default: undefined,
+    desc: 'Max number of addon catalog items to cache',
   }),
   RPDB_API_KEY_VALIDITY_CACHE_TTL: num({
     default: 604800, // 7 days

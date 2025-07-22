@@ -42,9 +42,31 @@ import { StreamParser } from './parser';
 import { z } from 'zod';
 
 const logger = createLogger('wrappers');
-// const cache = Cache.getInstance<string, any>('wrappers');
-const manifestCache = Cache.getInstance<string, Manifest>('manifest');
-const resourceCache = Cache.getInstance<string, any>('resources');
+
+const manifestCache = Cache.getInstance<string, Manifest>(
+  'manifest',
+  Env.MANIFEST_CACHE_MAX_SIZE || Env.DEFAULT_MAX_CACHE_SIZE
+);
+const catalogCache = Cache.getInstance<string, MetaPreview[]>(
+  'catalog',
+  Env.CATALOG_CACHE_MAX_SIZE || Env.DEFAULT_MAX_CACHE_SIZE
+);
+const metaCache = Cache.getInstance<string, Meta>(
+  'meta',
+  Env.META_CACHE_MAX_SIZE || Env.DEFAULT_MAX_CACHE_SIZE
+);
+const subtitlesCache = Cache.getInstance<string, Subtitle[]>(
+  'subtitles',
+  Env.SUBTITLE_CACHE_MAX_SIZE || Env.DEFAULT_MAX_CACHE_SIZE
+);
+const addonCatalogCache = Cache.getInstance<string, AddonCatalog[]>(
+  'addon_catalog',
+  Env.ADDON_CATALOG_CACHE_MAX_SIZE || Env.DEFAULT_MAX_CACHE_SIZE
+);
+const streamsCache = Cache.getInstance<string, ParsedStream[]>(
+  'streams',
+  Env.STREAM_CACHE_MAX_SIZE || Env.DEFAULT_MAX_CACHE_SIZE
+);
 
 const RESOURCE_TTL = 5 * 60;
 
@@ -160,7 +182,7 @@ export class Wrapper {
       { type, id },
       this.addon.timeout,
       validator,
-      Env.STREAM_CACHE_TTL != -1,
+      Env.STREAM_CACHE_TTL != -1 ? streamsCache : undefined,
       Env.STREAM_CACHE_TTL
     );
     const start = Date.now();
@@ -174,7 +196,7 @@ export class Wrapper {
     logger.debug(
       `Parsed ${parsedStreams.length} streams for ${this.getAddonName(this.addon)} in ${getTimeTakenSincePoint(start)}`
     );
-    return parsedStreams;
+    return parsedStreams as ParsedStream[];
   }
 
   async getCatalog(
@@ -191,7 +213,7 @@ export class Wrapper {
       { type, id, extras },
       Env.CATALOG_TIMEOUT,
       validator,
-      Env.CATALOG_CACHE_TTL != -1,
+      Env.CATALOG_CACHE_TTL != -1 ? catalogCache : undefined,
       Env.CATALOG_CACHE_TTL
     );
   }
@@ -212,7 +234,7 @@ export class Wrapper {
       { type, id },
       Env.META_TIMEOUT,
       validator,
-      Env.META_CACHE_TTL != -1,
+      Env.META_CACHE_TTL != -1 ? metaCache : undefined,
       Env.META_CACHE_TTL
     );
     return meta;
@@ -232,7 +254,7 @@ export class Wrapper {
       { type, id, extras },
       this.addon.timeout,
       validator,
-      Env.SUBTITLE_CACHE_TTL != -1,
+      Env.SUBTITLE_CACHE_TTL != -1 ? subtitlesCache : undefined,
       Env.SUBTITLE_CACHE_TTL
     );
   }
@@ -251,7 +273,7 @@ export class Wrapper {
       { type, id },
       Env.CATALOG_TIMEOUT,
       validator,
-      Env.ADDON_CATALOG_CACHE_TTL != -1,
+      Env.ADDON_CATALOG_CACHE_TTL != -1 ? addonCatalogCache : undefined,
       Env.ADDON_CATALOG_CACHE_TTL
     );
   }
@@ -269,13 +291,14 @@ export class Wrapper {
     params: ResourceParams,
     timeout: number,
     validator: (data: unknown) => T,
-    cache: boolean = false,
+    cacher: Cache<string, T> | undefined,
     cacheTtl: number = RESOURCE_TTL
   ) {
     const { type, id, extras } = params;
     const url = this.buildResourceUrl(resource, type, id, extras);
-    if (cache) {
-      const cached = resourceCache.get(url);
+    if (cacher) {
+      const cached = cacher.get(url);
+
       if (cached) {
         logger.info(
           `Returning cached ${resource} for ${this.getAddonName(this.addon)} (${makeUrlLogSafe(url)})`
@@ -303,8 +326,8 @@ export class Wrapper {
 
       const validated = validator(data);
 
-      if (cache) {
-        resourceCache.set(url, validated, cacheTtl);
+      if (cacher) {
+        cacher.set(url, validated, cacheTtl);
       }
       return validated;
     } catch (error: any) {
