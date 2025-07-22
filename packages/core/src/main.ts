@@ -1142,13 +1142,7 @@ export class AIOStreams {
             link.url = `stremio:///discover/${newTransportUrl}/${linkType}/${newCatalogId}`;
           }
         }
-      } catch (error) {
-        logger.error(`Error converting discover deep link`, {
-          error: error instanceof Error ? error.message : String(error),
-          link: link.url,
-        });
-        // Ignore errors, leave link as is
-      }
+      } catch {}
       return link;
     });
   }
