@@ -6,6 +6,7 @@ import {
   statusApi,
   formatApi,
   catalogApi,
+  rpdbApi,
 } from './routes/api';
 import {
   configure,
@@ -54,6 +55,7 @@ apiRouter.use('/health', healthApi);
 apiRouter.use('/status', statusApi);
 apiRouter.use('/format', formatApi);
 apiRouter.use('/catalogs', catalogApi);
+apiRouter.use('/rpdb', rpdbApi);
 app.use(`/api/v${constants.API_VERSION}`, apiRouter);
 
 // Stremio Routes

@@ -18,6 +18,7 @@ export enum ErrorCode {
   INTERNAL_SERVER_ERROR = 'INTERNAL_SERVER_ERROR',
   METHOD_NOT_ALLOWED = 'METHOD_NOT_ALLOWED',
   RATE_LIMIT_EXCEEDED = 'RATE_LIMIT_EXCEEDED',
+  BAD_REQUEST = 'BAD_REQUEST',
 }
 
 interface ErrorDetails {
@@ -81,6 +82,10 @@ export const ErrorMap: Record<ErrorCode, ErrorDetails> = {
   [ErrorCode.FORMAT_ERROR]: {
     statusCode: 500,
     message: 'An error occurred while formatting the stream',
+  },
+  [ErrorCode.BAD_REQUEST]: {
+    statusCode: 400,
+    message: 'Bad request',
   },
 };
 

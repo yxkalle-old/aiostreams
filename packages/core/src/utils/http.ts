@@ -32,7 +32,8 @@ export function makeUrlLogSafe(url: string) {
       return component;
     })
     .join('/')
-    .replace(/(?<![^?&])(password=[^&]+)/g, 'password=****');
+    .replace(/(?<![^?&])(password=[^&]+)/g, 'password=****')
+    .replace(/(?<![^?&])(apiKey=[^&]+)/g, 'apiKey=****');
 }
 
 interface RequestOptions {

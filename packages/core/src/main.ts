@@ -373,35 +373,56 @@ export class AIOStreams {
       }
     }
 
-    const rpdb =
+    const rpdbApiKey =
       modification?.rpdb && this.userData.rpdbApiKey
-        ? new RPDB(this.userData.rpdbApiKey)
+        ? this.userData.rpdbApiKey
         : undefined;
-    catalog = catalog.map((item) => {
-      // Apply RPDB poster modification
-      if (rpdb) {
-        const posterUrl = rpdb.getPosterUrl(
-          type,
-          (item as any).imdb_id || item.id
-        );
-        if (posterUrl) item.poster = posterUrl;
-      }
+    const rpdbApi = rpdbApiKey ? new RPDB(rpdbApiKey) : undefined;
 
-      // Apply poster enhancement
-      if (this.userData.enhancePosters && Math.random() < 0.2) {
-        item.poster = Buffer.from(
-          constants.DEFAULT_POSTERS[
-            Math.floor(Math.random() * constants.DEFAULT_POSTERS.length)
-          ],
-          'base64'
-        ).toString('utf-8');
-      }
+    catalog = await Promise.all(
+      catalog.map(async (item) => {
+        // Apply RPDB poster modification
+        if (rpdbApiKey && item.poster) {
+          let posterUrl = item.poster;
+          if (this.userData.rpdbUseRedirectApi !== false && Env.BASE_URL) {
+            const id = (item as any).imdb_id || item.id;
+            const url = new URL(Env.BASE_URL);
+            url.pathname = '/api/v1/rpdb';
+            url.searchParams.set('id', id);
+            url.searchParams.set('type', type);
+            url.searchParams.set('fallback', item.poster);
+            url.searchParams.set('apiKey', rpdbApiKey);
+            posterUrl = url.toString();
+          } else {
+            const rpdbPosterUrl = await rpdbApi!.getPosterUrl(
+              type,
+              (item as any).imdb_id || item.id,
+              false
+            );
+            if (rpdbPosterUrl) {
+              posterUrl = rpdbPosterUrl;
+            }
+          }
 
-      if (item.links) {
-        item.links = this.convertDiscoverDeepLinks(item.links);
-      }
-      return item;
-    });
+          item.poster = posterUrl;
+        }
+
+        // Apply poster enhancement
+        if (this.userData.enhancePosters && Math.random() < 0.2) {
+          item.poster = Buffer.from(
+            constants.DEFAULT_POSTERS[
+              Math.floor(Math.random() * constants.DEFAULT_POSTERS.length)
+            ],
+            'base64'
+          ).toString('utf-8');
+        }
+
+        if (item.links) {
+          item.links = this.convertDiscoverDeepLinks(item.links);
+        }
+        return item;
+      })
+    );
 
     return { success: true, data: catalog, errors: [] };
   }
