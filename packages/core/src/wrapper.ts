@@ -37,7 +37,7 @@ import {
   Env,
   getTimeTakenSincePoint,
 } from './utils';
-import { PresetManager } from './presets';
+import { Preset, PresetManager } from './presets';
 import { StreamParser } from './parser';
 import { z } from 'zod';
 
@@ -80,11 +80,13 @@ export class Wrapper {
   private readonly baseUrl: string;
   private readonly addon: Addon;
   private readonly manifestUrl: string;
+  private readonly preset: typeof Preset;
 
   constructor(addon: Addon) {
     this.addon = addon;
     this.manifestUrl = this.addon.manifestUrl.replace('stremio://', 'https://');
     this.baseUrl = this.manifestUrl.split('/').slice(0, -1).join('/');
+    this.preset = PresetManager.fromId(this.addon.preset.type);
   }
 
   /**
@@ -167,7 +169,12 @@ export class Wrapper {
           );
         }
       },
-      this.manifestUrl,
+      this.preset.getCacheKey({
+        resource: 'manifest',
+        type: 'manifest',
+        id: 'manifest',
+        options: this.addon.preset.options,
+      }) || this.manifestUrl,
       Env.MANIFEST_CACHE_TTL
     );
   }
@@ -183,13 +190,16 @@ export class Wrapper {
       this.addon.timeout,
       validator,
       Env.STREAM_CACHE_TTL != -1 ? streamsCache : undefined,
-      Env.STREAM_CACHE_TTL
+      Env.STREAM_CACHE_TTL,
+      this.preset.getCacheKey({
+        resource: 'stream',
+        type,
+        id,
+        options: this.addon.preset.options,
+      })
     );
     const start = Date.now();
-    const Parser = this.addon.presetType
-      ? PresetManager.fromId(this.addon.presetType).getParser()
-      : StreamParser;
-    const parser = new Parser(this.addon);
+    const parser = new (this.preset.getParser())(this.addon);
     const parsedStreams = streams
       .flatMap((stream: Stream) => parser.parse(stream))
       .filter((stream: any) => !stream.skip);
@@ -214,7 +224,14 @@ export class Wrapper {
       Env.CATALOG_TIMEOUT,
       validator,
       Env.CATALOG_CACHE_TTL != -1 ? catalogCache : undefined,
-      Env.CATALOG_CACHE_TTL
+      Env.CATALOG_CACHE_TTL,
+      this.preset.getCacheKey({
+        resource: 'catalog',
+        type,
+        id,
+        options: this.addon.preset.options,
+        extras,
+      })
     );
   }
 
@@ -235,7 +252,13 @@ export class Wrapper {
       Env.META_TIMEOUT,
       validator,
       Env.META_CACHE_TTL != -1 ? metaCache : undefined,
-      Env.META_CACHE_TTL
+      Env.META_CACHE_TTL,
+      this.preset.getCacheKey({
+        resource: 'meta',
+        type,
+        id,
+        options: this.addon.preset.options,
+      })
     );
     return meta;
   }
@@ -255,7 +278,13 @@ export class Wrapper {
       this.addon.timeout,
       validator,
       Env.SUBTITLE_CACHE_TTL != -1 ? subtitlesCache : undefined,
-      Env.SUBTITLE_CACHE_TTL
+      Env.SUBTITLE_CACHE_TTL,
+      this.preset.getCacheKey({
+        resource: 'subtitles',
+        type,
+        id,
+        options: this.addon.preset.options,
+      })
     );
   }
 
@@ -274,7 +303,13 @@ export class Wrapper {
       Env.CATALOG_TIMEOUT,
       validator,
       Env.ADDON_CATALOG_CACHE_TTL != -1 ? addonCatalogCache : undefined,
-      Env.ADDON_CATALOG_CACHE_TTL
+      Env.ADDON_CATALOG_CACHE_TTL,
+      this.preset.getCacheKey({
+        resource: 'addon_catalog',
+        type,
+        id,
+        options: this.addon.preset.options,
+      })
     );
   }
 
@@ -292,12 +327,13 @@ export class Wrapper {
     timeout: number,
     validator: (data: unknown) => T,
     cacher: Cache<string, T> | undefined,
-    cacheTtl: number = RESOURCE_TTL
+    cacheTtl: number = RESOURCE_TTL,
+    cacheKey?: string
   ) {
     const { type, id, extras } = params;
     const url = this.buildResourceUrl(resource, type, id, extras);
     if (cacher) {
-      const cached = cacher.get(url);
+      const cached = cacher.get(cacheKey || url);
 
       if (cached) {
         logger.info(
@@ -307,7 +343,10 @@ export class Wrapper {
       }
     }
     logger.info(
-      `Fetching ${resource} of type ${type} with id ${id} and extras ${extras} (${makeUrlLogSafe(url)})`
+      `Fetching ${resource} of type ${type} with id ${id} and extras ${extras} (${makeUrlLogSafe(url)})`,
+      {
+        cacheKey: cacheKey ? makeUrlLogSafe(cacheKey) : undefined,
+      }
     );
     try {
       const res = await makeRequest(url, {
@@ -327,7 +366,7 @@ export class Wrapper {
       const validated = validator(data);
 
       if (cacher) {
-        cacher.set(url, validated, cacheTtl);
+        cacher.set(cacheKey || url, validated, cacheTtl);
       }
       return validated;
     } catch (error: any) {

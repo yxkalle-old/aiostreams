@@ -162,9 +162,7 @@ class StreamFetcher {
     ) {
       const groupPromises = this.userData.groups.map((group) => {
         const groupAddons = addons.filter(
-          (addon) =>
-            addon.presetInstanceId &&
-            group.addons.includes(addon.presetInstanceId)
+          (addon) => addon.preset.id && group.addons.includes(addon.preset.id)
         );
         logger.info(
           `Queueing fetch for group with ${groupAddons.length} addons.`

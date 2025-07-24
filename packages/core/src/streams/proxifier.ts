@@ -20,7 +20,7 @@ class Proxifier {
 
     const proxyAddon =
       !proxy.proxiedAddons?.length ||
-      proxy.proxiedAddons.includes(stream.addon.presetInstanceId);
+      proxy.proxiedAddons.includes(stream.addon.preset.id);
     const proxyService =
       !proxy.proxiedServices?.length ||
       proxy.proxiedServices.includes(streamService);

@@ -133,7 +133,7 @@ class StreamFilterer {
 
       if (
         titleMatchingOptions.addons?.length &&
-        !titleMatchingOptions.addons.includes(stream.addon.presetInstanceId)
+        !titleMatchingOptions.addons.includes(stream.addon.preset.id)
       ) {
         return true;
       }
@@ -197,9 +197,7 @@ class StreamFilterer {
 
       if (
         seasonEpisodeMatchingOptions.addons?.length &&
-        !seasonEpisodeMatchingOptions.addons.includes(
-          stream.addon.presetInstanceId
-        )
+        !seasonEpisodeMatchingOptions.addons.includes(stream.addon.preset.id)
       ) {
         return true;
       }
@@ -310,7 +308,7 @@ class StreamFilterer {
       const isAddonFilteredOut =
         addonIds &&
         addonIds.length > 0 &&
-        addonIds.some((addonId) => stream.addon.presetInstanceId === addonId) &&
+        addonIds.some((addonId) => stream.addon.preset.id === addonId) &&
         stream.service?.cached === cached;
       const isServiceFilteredOut =
         serviceIds &&

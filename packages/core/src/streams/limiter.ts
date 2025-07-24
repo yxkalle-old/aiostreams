@@ -104,12 +104,12 @@ class StreamLimiter {
 
       // Check addon limit
       if (addon) {
-        const count = counts.addon.get(stream.addon.presetInstanceId) || 0;
+        const count = counts.addon.get(stream.addon.preset.id) || 0;
         if (count >= addon) {
           indexesToRemove.add(index);
           return;
         }
-        counts.addon.set(stream.addon.presetInstanceId, count + 1);
+        counts.addon.set(stream.addon.preset.id, count + 1);
       }
 
       // Check stream type limit

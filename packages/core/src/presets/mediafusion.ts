@@ -337,8 +337,11 @@ export class MediaFusionPreset extends Preset {
       enabled: true,
       resources: options.resources || this.METADATA.SUPPORTED_RESOURCES,
       timeout: options.timeout || this.METADATA.TIMEOUT,
-      presetType: this.METADATA.ID,
-      presetInstanceId: '',
+      preset: {
+        id: '',
+        type: this.METADATA.ID,
+        options: options,
+      },
       headers: options.url?.endsWith('/manifest.json')
         ? {
             'User-Agent': this.METADATA.USER_AGENT,

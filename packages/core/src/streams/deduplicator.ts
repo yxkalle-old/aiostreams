@@ -162,10 +162,10 @@ class StreamDeduplicator {
               // now look at the addon index
 
               const aAddonIndex = this.userData.presets.findIndex(
-                (preset) => preset.instanceId === a.addon.presetInstanceId
+                (preset) => preset.instanceId === a.addon.preset.id
               );
               const bAddonIndex = this.userData.presets.findIndex(
-                (preset) => preset.instanceId === b.addon.presetInstanceId
+                (preset) => preset.instanceId === b.addon.preset.id
               );
 
               // the addon index MUST exist, its not possible for it to not exist
@@ -215,10 +215,10 @@ class StreamDeduplicator {
             ).map((serviceStreams) => {
               return serviceStreams.sort((a, b) => {
                 let aAddonIndex = this.userData.presets.findIndex(
-                  (preset) => preset.instanceId === a.addon.presetInstanceId
+                  (preset) => preset.instanceId === a.addon.preset.id
                 );
                 let bAddonIndex = this.userData.presets.findIndex(
-                  (preset) => preset.instanceId === b.addon.presetInstanceId
+                  (preset) => preset.instanceId === b.addon.preset.id
                 );
                 aAddonIndex = aAddonIndex === -1 ? Infinity : aAddonIndex;
                 bAddonIndex = bAddonIndex === -1 ? Infinity : bAddonIndex;
@@ -262,9 +262,9 @@ class StreamDeduplicator {
             let perAddonStreams = Object.values(
               typeStreams.reduce(
                 (acc, stream) => {
-                  acc[stream.addon.presetInstanceId] =
-                    acc[stream.addon.presetInstanceId] || [];
-                  acc[stream.addon.presetInstanceId].push(stream);
+                  acc[stream.addon.preset.id] =
+                    acc[stream.addon.preset.id] || [];
+                  acc[stream.addon.preset.id].push(stream);
                   return acc;
                 },
                 {} as Record<string, ParsedStream[]>

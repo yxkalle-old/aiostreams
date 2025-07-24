@@ -159,7 +159,7 @@ class StreamSorter {
           }
 
           const idx = userData.presets.findIndex(
-            (p) => p.instanceId === stream.addon.presetInstanceId
+            (p) => p.instanceId === stream.addon.preset.id
           );
           return multiplier * -(idx === -1 ? Infinity : idx);
 

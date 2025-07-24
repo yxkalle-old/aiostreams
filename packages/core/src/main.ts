@@ -694,13 +694,18 @@ export class AIOStreams {
         preset.options
       );
       this.addons.push(
-        ...addons.map((a) => ({
-          ...a,
-          presetInstanceId: preset.instanceId,
-          // if no identifier is present, we can assume that the preset can only generate one addon at a time and so no
-          // unique identifier is needed as the preset instance id is enough to identify the addon
-          instanceId: `${preset.instanceId}${getSimpleTextHash(`${a.identifier ?? ''}`).slice(0, 4)}`,
-        }))
+        ...addons.map(
+          (a): Addon => ({
+            ...a,
+            preset: {
+              ...a.preset,
+              id: preset.instanceId,
+            },
+            // if no identifier is present, we can assume that the preset can only generate one addon at a time and so no
+            // unique identifier is needed as the preset instance id is enough to identify the addon
+            instanceId: `${preset.instanceId}${getSimpleTextHash(`${a.identifier ?? ''}`).slice(0, 4)}`,
+          })
+        )
       );
     }
 
@@ -1044,7 +1049,7 @@ export class AIOStreams {
       const proxy =
         this.userData.proxy?.enabled &&
         (!this.userData.proxy?.proxiedAddons?.length ||
-          this.userData.proxy.proxiedAddons.includes(addon.presetInstanceId));
+          this.userData.proxy.proxiedAddons.includes(addon.preset.id));
       logger.debug(
         `Using ${proxy ? 'proxy' : 'user'} ip for ${getAddonName(addon)}: ${
           proxy
@@ -1081,12 +1086,12 @@ export class AIOStreams {
       );
     }
     if (
-      addon.presetInstanceId &&
-      FeatureControl.disabledAddons.has(addon.presetInstanceId)
+      addon.preset.type &&
+      FeatureControl.disabledAddons.has(addon.preset.type)
     ) {
       throw new Error(
         `Addon ${getAddonName(addon)} is disabled: ${FeatureControl.disabledAddons.get(
-          addon.presetType
+          addon.preset.type
         )}`
       );
     } else if (

@@ -107,8 +107,11 @@ const ResourceList = z.array(ResourceSchema);
 
 const AddonSchema = z.object({
   instanceId: z.string().min(1).optional(), // uniquely identifies the addon in a given list of addons
-  presetType: z.string().min(1), // reference to the type of the preset that created this addon
-  presetInstanceId: z.string().min(1), // reference to the instance id of the preset that created this addon
+  preset: z.object({
+    id: z.string(),
+    type: z.string(),
+    options: z.record(z.string(), z.any()),
+  }),
   manifestUrl: z.string().url(),
   enabled: z.boolean(),
   resources: ResourceList.optional(),
