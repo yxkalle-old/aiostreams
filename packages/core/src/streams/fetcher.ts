@@ -96,7 +96,6 @@ class StreamFetcher {
 ⏱️ Time       : ${getTimeTakenSincePoint(start)}
 `,
         };
-        allStatisticStreams.push(statisticStream);
 
         return {
           success: true as const,
@@ -104,6 +103,7 @@ class StreamFetcher {
             (s) => s.type !== constants.ERROR_STREAM_TYPE
           ),
           errors: addonErrors,
+          statistics: statisticStream,
           timeTaken: Date.now() - start,
         };
       } catch (error) {
@@ -123,6 +123,7 @@ class StreamFetcher {
         return {
           success: false as const,
           errors: [addonErrors],
+          statistics: [],
           timeTaken: 0,
           streams: [],
         };
@@ -138,7 +139,7 @@ class StreamFetcher {
 
       const groupStreams = results.flatMap((r) => r.streams);
       const groupErrors = results.flatMap((r) => r.errors);
-      allErrors.push(...groupErrors);
+      const groupStatistics = results.flatMap((r) => r.statistics);
 
       const filteredStreams = await this.deduplicate.deduplicate(
         await this.filter.filter(groupStreams, type, id)
@@ -151,6 +152,8 @@ class StreamFetcher {
       return {
         totalTime: Date.now() - groupStart,
         streams: filteredStreams,
+        statistics: groupStatistics,
+        errors: groupErrors,
       };
     };
 
@@ -225,6 +228,8 @@ class StreamFetcher {
               `Condition met for group ${i + 1}, processing streams.`
             );
             allStreams.push(...groupResult.streams);
+            allErrors.push(...groupResult.errors);
+            allStatisticStreams.push(...groupResult.statistics);
             totalTimeTaken += groupResult.totalTime;
             previousGroupStreams = groupResult.streams;
             previousGroupTimeTaken = groupResult.totalTime;
@@ -240,6 +245,8 @@ class StreamFetcher {
       // If no groups configured, fetch from all addons in parallel
       const result = await fetchFromGroup(addons);
       allStreams.push(...result.streams);
+      allErrors.push(...result.errors);
+      allStatisticStreams.push(...result.statistics);
     }
 
     logger.info(
