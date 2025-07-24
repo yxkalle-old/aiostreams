@@ -1172,7 +1172,7 @@ export class AIOStreams {
         )?.episode_count;
       }
     } catch (error) {
-      logger.warning(`Error getting metadata for ${id}`, {
+      logger.warn(`Error getting metadata for ${id}`, {
         error: error instanceof Error ? error.message : String(error),
       });
     }
