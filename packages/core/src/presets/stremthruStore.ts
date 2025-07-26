@@ -79,8 +79,9 @@ export class StremthruStorePreset extends Preset {
       },
       {
         id: 'webDl',
-        name: 'Web DL',
-        description: 'Enable web DL',
+        name: 'Web Downloads',
+        description:
+          'Include downloads from web hosters (e.g. Mega, Zippyshare) in results',
         type: 'boolean',
       },
       {
