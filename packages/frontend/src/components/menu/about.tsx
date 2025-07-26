@@ -40,6 +40,7 @@ import {
 import { Select } from '@/components/ui/select';
 import { cn } from '@/components/ui/core/styling';
 import { Textarea } from '../ui/textarea';
+import { GlowingEffect } from '../shared/glowing-effect';
 
 export function AboutMenu() {
   return (
@@ -338,52 +339,52 @@ function ChangelogCard({
     setPosition({ x, y });
   };
 
-  const stretchContent =
-    className?.includes('h-full') || className?.includes('flex');
-
-  const channelOptions = [
-    { value: 'stable', label: 'Stable' },
-    { value: 'nightly', label: 'Nightly' },
-  ];
-
   return (
     <Card
       ref={cardRef}
       className={cn(
-        'group/settings-card relative overflow-hidden bg-[--paper]',
+        'group/settings-card relative lg:bg-gray-950/70',
         className
       )}
       onMouseMove={handleMouseMove}
     >
+      <GlowingEffect
+        blur={1}
+        spread={20}
+        glow={true}
+        disabled={false}
+        proximity={100}
+        inactiveZone={0.01}
+        className="opacity-25"
+      />
       {title && (
-        <CardHeader className="flex flex-row items-center justify-between">
-          <div>
-            <CardTitle className="font-semibold text-xl text-[--muted] transition-colors group-hover/settings-card:text-[--brand]">
+        <CardHeader className="p-0 pb-4">
+          <div className="flex items-center justify-between">
+            <CardTitle className="font-bold tracking-widest uppercase text-sm transition-colors duration-300 group-hover/settings-card:text-white group-hover/settings-card:from-brand-500/10 group-hover/settings-card:to-purple-500/5 px-4 py-2 border bg-transparent bg-gradient-to-br bg-[--subtle] border-t-0 border-l-0 w-fit rounded-tl-md rounded-br-md">
               {title}
             </CardTitle>
-            {description && <CardDescription>{description}</CardDescription>}
+            <div className="flex-shrink-0 px-4">
+              <Select
+                size="sm"
+                options={[
+                  { value: 'stable', label: 'Stable' },
+                  { value: 'nightly', label: 'Nightly' },
+                ]}
+                value={channel}
+                onValueChange={(value) =>
+                  onChannelChange(value as 'stable' | 'nightly')
+                }
+                placeholder="Select channel"
+                className="w-32"
+              />
+            </div>
           </div>
-          <div className="flex-shrink-0">
-            <Select
-              size="sm"
-              options={channelOptions}
-              value={channel}
-              onValueChange={(value) =>
-                onChannelChange(value as 'stable' | 'nightly')
-              }
-              placeholder="Select channel"
-              className="w-32"
-            />
-          </div>
+          {description && (
+            <CardDescription className="px-4">{description}</CardDescription>
+          )}
         </CardHeader>
       )}
-      <CardContent
-        className={cn(
-          !title && 'pt-4',
-          'space-y-3 flex-wrap',
-          stretchContent && 'flex-1 h-full flex flex-col'
-        )}
-      >
+      <CardContent className={cn(!title && 'pt-4', 'space-y-3 flex-wrap')}>
         {children}
       </CardContent>
     </Card>
@@ -395,7 +396,6 @@ function ChangelogBox({ version }: { version: string }) {
   const [error, setError] = React.useState<string | null>(null);
   const [releases, setReleases] = React.useState<any[]>([]);
   const [visibleCount, setVisibleCount] = React.useState(0);
-  const [autoLoading, setAutoLoading] = React.useState(false);
   const [selectedChannel, setSelectedChannel] = React.useState<
     'stable' | 'nightly'
   >(() => {
@@ -407,7 +407,8 @@ function ChangelogBox({ version }: { version: string }) {
   const [hasMorePages, setHasMorePages] = React.useState(true);
   const [currentPage, setCurrentPage] = React.useState(1);
   const [fetchingMore, setFetchingMore] = React.useState(false);
-  const loadMoreRef = React.useRef<HTMLDivElement>(null);
+  const [showLoadMoreOverlay, setShowLoadMoreOverlay] = React.useState(false);
+  const containerRef = React.useRef<HTMLDivElement>(null);
 
   // Fetch releases with pagination
   const fetchReleases = React.useCallback(
@@ -527,43 +528,28 @@ function ChangelogBox({ version }: { version: string }) {
     filterReleasesByChannel,
   ]);
 
-  // Intersection Observer for auto-loading
+  // Show/hide load more overlay based on scroll position
   React.useEffect(() => {
-    if (!loadMoreRef.current || releases.length <= visibleCount) return;
+    const handleScroll = () => {
+      const container = containerRef.current;
+      if (!container) return;
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (
-            entry.isIntersecting &&
-            !autoLoading &&
-            releases.length > visibleCount
-          ) {
-            setAutoLoading(true);
-            // Small delay to show loading state
-            setTimeout(() => {
-              setVisibleCount((prev) => Math.min(prev + 5, releases.length));
-              setAutoLoading(false);
-            }, 300);
-          }
-        });
-      },
-      { threshold: 0.1 }
-    );
+      const { scrollTop, scrollHeight, clientHeight } = container;
+      const isNearBottom = scrollHeight - scrollTop - clientHeight < 50;
 
-    observer.observe(loadMoreRef.current);
-    return () => observer.disconnect();
-  }, [visibleCount, releases.length, autoLoading]);
+      const hasMoreContent =
+        releases.length > visibleCount || // More releases in memory
+        (hasMorePages && !fetchingMore); // More pages to fetch
 
-  // Check if we need to fetch more releases when reaching the end
-  React.useEffect(() => {
-    if (
-      visibleCount >= releases.length &&
-      hasMorePages &&
-      !fetchingMore &&
-      !loading
-    ) {
-      fetchMoreReleases();
+      setShowLoadMoreOverlay(isNearBottom && hasMoreContent && !loading);
+    };
+
+    const container = containerRef.current;
+    if (container) {
+      container.addEventListener('scroll', handleScroll);
+      // Check on mount and when dependencies change
+      handleScroll();
+      return () => container.removeEventListener('scroll', handleScroll);
     }
   }, [
     visibleCount,
@@ -571,16 +557,29 @@ function ChangelogBox({ version }: { version: string }) {
     hasMorePages,
     fetchingMore,
     loading,
-    fetchMoreReleases,
+    containerRef,
   ]);
 
   const handleLoadMore = () => {
-    setVisibleCount((prev) => Math.min(prev + 5, releases.length));
+    if (releases.length > visibleCount) {
+      // Load more from current releases
+      setVisibleCount((prev) => Math.min(prev + 5, releases.length));
+      // Check if we need to fetch more after increasing visible count
+      if (releases.length <= visibleCount + 5 && hasMorePages) {
+        fetchMoreReleases();
+      }
+    } else if (hasMorePages && !fetchingMore) {
+      // Fetch more releases from API
+      fetchMoreReleases();
+    }
   };
 
   const handleChannelChange = (channel: 'stable' | 'nightly') => {
     setSelectedChannel(channel);
   };
+
+  const hasMoreContent =
+    releases.length > visibleCount || (hasMorePages && !fetchingMore);
 
   return (
     <ChangelogCard
@@ -594,82 +593,128 @@ function ChangelogBox({ version }: { version: string }) {
       channel={selectedChannel}
       onChannelChange={handleChannelChange}
     >
-      <div className="flex flex-col gap-4">
-        {loading ? (
-          <>
-            {[...Array(2)].map((_, i) => (
-              <Skeleton key={i} className="h-24 w-full" />
-            ))}
-          </>
-        ) : error ? (
-          <Alert intent="alert" title="Error" description={error} />
-        ) : releases.length === 0 ? (
-          <Alert
-            intent="info"
-            title="No changelogs found"
-            description={`No ${selectedChannel} changelogs available.`}
-          />
-        ) : (
-          releases.slice(0, visibleCount).map((release, idx) => (
-            <Card
-              key={release.id || release.tag_name}
-              className="bg-gray-900/60 border border-gray-800"
-            >
-              <CardHeader className="pb-2">
-                <div className="flex items-center gap-2">
-                  <CardTitle className="text-lg">
-                    {release.name || release.tag_name}
-                  </CardTitle>
-                  <span className="text-xs text-gray-400">
-                    {new Date(release.published_at).toLocaleDateString()}
-                  </span>
-                </div>
-                <CardDescription className="text-xs text-gray-400">
-                  {release.tag_name}
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="prose prose-invert max-w-none text-xs">
-                <ReactMarkdown>
-                  {release.body || 'No changelog provided.'}
-                </ReactMarkdown>
-              </CardContent>
-              <CardFooter>
-                <a
-                  href={release.html_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-[--brand] hover:underline flex items-center gap-2 text-xs"
+      <div className="relative flex-1" style={{ minHeight: '400px' }}>
+        <div
+          ref={containerRef}
+          className="changelog-container absolute inset-0 pr-2"
+          style={{
+            overflowY: 'auto',
+          }}
+        >
+          {loading ? (
+            <div className="p-4 space-y-4">
+              {[...Array(2)].map((_, i) => (
+                <Skeleton key={i} className="h-24 w-full" />
+              ))}
+            </div>
+          ) : error ? (
+            <div className="p-4">
+              <Alert intent="alert" title="Error" description={error} />
+            </div>
+          ) : releases.length === 0 ? (
+            <div className="p-4">
+              <Alert
+                intent="info"
+                title="No changelogs found"
+                description={`No ${selectedChannel} changelogs available.`}
+              />
+            </div>
+          ) : (
+            <div className="relative min-h-full p-4 space-y-4">
+              {releases.slice(0, visibleCount).map((release, idx) => (
+                <Card
+                  key={release.id || release.tag_name}
+                  className="bg-gray-900/60 border border-gray-800 relative"
                 >
-                  <GithubIcon className="w-4 h-4" />
-                  View on GitHub
-                </a>
-              </CardFooter>
-            </Card>
-          ))
-        )}
-
-        {/* Auto-load trigger element */}
-        {(releases.length > visibleCount || (hasMorePages && !fetchingMore)) &&
-          !loading && (
-            <div ref={loadMoreRef} className="flex justify-center py-4">
-              {autoLoading || fetchingMore ? (
-                <div className="flex items-center gap-2 text-sm text-gray-400">
-                  <div className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"></div>
-                  {fetchingMore
-                    ? 'Loading more releases...'
-                    : 'Loading more...'}
-                </div>
-              ) : (
-                <Button
-                  onClick={handleLoadMore}
-                  intent="primary-outline"
-                  size="sm"
-                >
-                  Load more changelogs
-                </Button>
-              )}
+                  <CardHeader className="pb-2">
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex-shrink-0">
+                        <span className="inline-flex items-center px-3.5 py-1.5 rounded-full text-sm font-semibold bg-[--brand]/20 text-[--brand] border border-[--brand]/30">
+                          {release.tag_name}
+                        </span>
+                      </div>
+                      <div className="flex-shrink-0">
+                        <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-gray-700/60 text-gray-300 border border-gray-600/30">
+                          {new Date(release.published_at).toLocaleDateString()}
+                        </span>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="prose prose-invert prose-sm max-w-none [&_p]:text-sm [&_ul]:text-sm [&_li]:text-sm [&_h1]:text-xl [&_h2]:text-lg [&_h3]:text-base">
+                    <ReactMarkdown>
+                      {release.body || 'No changelog provided.'}
+                    </ReactMarkdown>
+                  </CardContent>
+                  <CardFooter>
+                    <a
+                      href={release.html_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[--brand] hover:underline flex items-center gap-2 text-xs"
+                    >
+                      <GithubIcon className="w-4 h-4" />
+                      View on GitHub
+                    </a>
+                  </CardFooter>
+                </Card>
+              ))}
             </div>
           )}
+        </div>
+
+        {/* Bottom Load More Overlay */}
+        {showLoadMoreOverlay && hasMoreContent && (
+          <div
+            className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent pointer-events-none opacity-0 transition-opacity duration-300 ease-in-out"
+            style={{
+              height: '96px',
+              opacity: showLoadMoreOverlay ? 1 : 0,
+            }}
+          >
+            <div className="h-full flex items-end justify-center pb-4">
+              <div
+                className="flex flex-col items-center gap-2 pointer-events-auto opacity-0 translate-y-4 transition-all duration-300 ease-in-out"
+                style={{
+                  opacity: showLoadMoreOverlay ? 1 : 0,
+                  transform: showLoadMoreOverlay
+                    ? 'translateY(0)'
+                    : 'translateY(1rem)',
+                }}
+              >
+                <span className="text-sm font-medium text-white/90">
+                  {fetchingMore
+                    ? 'Loading...'
+                    : releases.length > visibleCount
+                      ? `Load ${Math.min(5, releases.length - visibleCount)} more`
+                      : 'Load more releases'}
+                </span>
+                <button
+                  onClick={handleLoadMore}
+                  disabled={fetchingMore}
+                  className="group flex items-center justify-center w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 hover:border-white/30 transition-all duration-200 hover:scale-110 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {fetchingMore ? (
+                    <div className="w-5 h-5 border-2 border-white/60 border-t-transparent rounded-full animate-spin"></div>
+                  ) : (
+                    <svg
+                      className="w-6 h-6 text-white/80 group-hover:text-white transition-colors"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M19 14l-7 7m0 0l-7-7m7 7V3"
+                      />
+                    </svg>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </ChangelogCard>
   );
