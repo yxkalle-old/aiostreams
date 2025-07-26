@@ -23,6 +23,12 @@ function matchMultiplePatterns(
 class FileParser {
   static parse(filename: string): ParsedFile {
     const parsed = ptt.parse(filename);
+    if (
+      ['vinland'].includes(parsed.title?.toLowerCase() || '') &&
+      parsed.complete
+    ) {
+      parsed.title += ' Saga';
+    }
     // prevent the title from being parsed for info
     if (parsed.title && parsed.title.length > 4) {
       filename = filename.replace(parsed.title, '').trim();
