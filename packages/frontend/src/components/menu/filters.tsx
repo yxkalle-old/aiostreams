@@ -140,6 +140,10 @@ const tabsListClass = cn(
   'lg:block'
 );
 
+const tabsContentClass = cn(
+  'space-y-4 animate-in fade-in-0 slide-in-from-right-2 duration-300'
+);
+
 interface SizeFilterOptions {
   global?: {
     series?: [number, number];
@@ -221,6 +225,7 @@ function Content() {
         className={tabsRootClass}
         triggerClass={tabsTriggerClass}
         listClass={tabsListClass}
+        contentClass={tabsContentClass}
       >
         <TabsList className="flex-wrap max-w-full lg:space-y-2">
           <SettingsNavCard>
@@ -308,7 +313,7 @@ function Content() {
 
         <div className="space-y-0 relative">
           <TabsContent value="cache" className="space-y-4">
-            <PageWrapper>
+            <>
               <HeadingWithPageControls heading="Cache" />
               <div className="space-y-4">
                 <SettingsCard
@@ -516,11 +521,11 @@ function Content() {
                   </div>
                 </SettingsCard>
               </div>
-            </PageWrapper>
+            </>
           </TabsContent>
 
           <TabsContent value="resolution" className="space-y-4">
-            <PageWrapper>
+            <>
               <HeadingWithPageControls heading="Resolution" />
               <FilterSettings<Resolution>
                 filterName="Resolutions"
@@ -559,10 +564,10 @@ function Content() {
                   value: resolution,
                 }))}
               />
-            </PageWrapper>
+            </>
           </TabsContent>
           <TabsContent value="quality" className="space-y-4">
-            <PageWrapper>
+            <>
               <HeadingWithPageControls heading="Quality" />
               <FilterSettings<Quality>
                 filterName="Qualities"
@@ -601,10 +606,10 @@ function Content() {
                   value: quality,
                 }))}
               />
-            </PageWrapper>
+            </>
           </TabsContent>
           <TabsContent value="encode" className="space-y-4">
-            <PageWrapper>
+            <>
               <HeadingWithPageControls heading="Encode" />
               <FilterSettings<Encode>
                 filterName="Encodes"
@@ -643,10 +648,10 @@ function Content() {
                   value: encode,
                 }))}
               />
-            </PageWrapper>
+            </>
           </TabsContent>
           <TabsContent value="stream-type" className="space-y-4">
-            <PageWrapper>
+            <>
               <HeadingWithPageControls heading="Stream Type" />
               <FilterSettings<StreamType>
                 filterName="Stream Types"
@@ -685,10 +690,10 @@ function Content() {
                   value: streamType,
                 }))}
               />
-            </PageWrapper>
+            </>
           </TabsContent>
           <TabsContent value="visual-tag" className="space-y-4">
-            <PageWrapper>
+            <>
               <HeadingWithPageControls heading="Visual Tag" />
               <FilterSettings<VisualTag>
                 filterName="Visual Tags"
@@ -727,10 +732,10 @@ function Content() {
                   value: visualTag,
                 }))}
               />
-            </PageWrapper>
+            </>
           </TabsContent>
           <TabsContent value="audio-tag" className="space-y-4">
-            <PageWrapper>
+            <>
               <HeadingWithPageControls heading="Audio Tag" />
               <FilterSettings<AudioTag>
                 filterName="Audio Tags"
@@ -767,10 +772,10 @@ function Content() {
                   value: audioTag,
                 }))}
               />
-            </PageWrapper>
+            </>
           </TabsContent>
           <TabsContent value="audio-channel" className="space-y-4">
-            <PageWrapper>
+            <>
               <HeadingWithPageControls heading="Audio Channel" />
               <FilterSettings<AudioChannel>
                 filterName="Audio Channels"
@@ -807,10 +812,10 @@ function Content() {
                   value: audioChannel,
                 }))}
               />
-            </PageWrapper>
+            </>
           </TabsContent>
           <TabsContent value="language" className="space-y-4">
-            <PageWrapper>
+            <>
               <HeadingWithPageControls heading="Language" />
               <FilterSettings<Language>
                 filterName="Languages"
@@ -850,10 +855,10 @@ function Content() {
                   value: language,
                 }))}
               />
-            </PageWrapper>
+            </>
           </TabsContent>
           <TabsContent value="seeders" className="space-y-4">
-            <PageWrapper>
+            <>
               <HeadingWithPageControls heading="Seeders" />
               <SettingsCard
                 title="Seeder Filters"
@@ -1109,10 +1114,10 @@ function Content() {
                   </div>
                 </div>
               </SettingsCard>
-            </PageWrapper>
+            </>
           </TabsContent>
           <TabsContent value="title-matching" className="space-y-4">
-            <PageWrapper>
+            <>
               <HeadingWithPageControls heading="Matching" />
               <div className="space-y-4">
                 <SettingsCard
@@ -1296,10 +1301,10 @@ function Content() {
                   </div>
                 </SettingsCard>
               </div>
-            </PageWrapper>
+            </>
           </TabsContent>
           <TabsContent value="stream-expression" className="space-y-4">
-            <PageWrapper>
+            <>
               <HeadingWithPageControls heading="Stream Expression" />
               <div className="mb-4">
                 <p className="text-sm text-[--muted]">
@@ -1484,10 +1489,10 @@ function Content() {
                   }}
                 />
               </div>
-            </PageWrapper>
+            </>
           </TabsContent>
           <TabsContent value="keyword" className="space-y-4">
-            <PageWrapper>
+            <>
               <HeadingWithPageControls heading="Keyword" />
               <div className="mb-4">
                 <p className="text-sm text-[--muted]">
@@ -1585,10 +1590,10 @@ function Content() {
                   }}
                 />
               </div>
-            </PageWrapper>
+            </>
           </TabsContent>
           <TabsContent value="regex" className="space-y-4">
-            <PageWrapper>
+            <>
               <HeadingWithPageControls heading="Regex" />
               <div className="mb-4">
                 <p className="text-sm text-[--muted]">
@@ -1735,10 +1740,10 @@ function Content() {
                   }}
                 />
               </div>
-            </PageWrapper>
+            </>
           </TabsContent>
           <TabsContent value="size" className="space-y-4">
-            <PageWrapper>
+            <>
               <HeadingWithPageControls heading="Size" />
               <div className="mb-4">
                 <p className="text-sm text-[--muted]">
@@ -1841,10 +1846,10 @@ function Content() {
                   </div>
                 </SettingsCard>
               </div>
-            </PageWrapper>
+            </>
           </TabsContent>
           <TabsContent value="limit" className="space-y-4">
-            <PageWrapper>
+            <>
               <HeadingWithPageControls heading="Result Limits" />
               <SettingsCard description="Apply limits to specific kinds of results">
                 <div className="space-y-4">
@@ -1962,10 +1967,10 @@ function Content() {
                   />
                 </div>
               </SettingsCard>
-            </PageWrapper>
+            </>
           </TabsContent>
           <TabsContent value="deduplicator" className="space-y-4">
-            <PageWrapper>
+            <>
               <HeadingWithPageControls heading="Deduplicator" />
               <div className="mb-4">
                 <p className="text-sm text-[--muted]">
@@ -2119,7 +2124,7 @@ function Content() {
                   />
                 </SettingsCard>
               </div>
-            </PageWrapper>
+            </>
           </TabsContent>
         </div>
       </Tabs>

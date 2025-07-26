@@ -80,7 +80,7 @@ function Content() {
           />
         </SettingsCard>
         <SettingsCard
-          title="Show Statistics"
+          title="Statistic Streams"
           description="AIOStreams will return the statistics of stream fetches and response times for each addon if enabled."
         >
           <Switch
