@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { PageWrapper } from '../shared/page-wrapper';
 import { useStatus } from '@/context/status';
 import { useUserData } from '@/context/userData';
@@ -73,6 +73,15 @@ import { PiStarFill, PiStarBold } from 'react-icons/pi';
 import { IoExtensionPuzzle } from 'react-icons/io5';
 import { NumberInput } from '../ui/number-input';
 import { useDisclosure } from '@/hooks/disclosure';
+import { GlowingEffect } from '@/components/shared/glowing-effect';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { cn } from '@/components/ui/core/styling';
 
 interface CatalogModification {
   id: string;
@@ -1003,6 +1012,7 @@ function AddonModal({
   return (
     <Modal
       open={open}
+      description={presetMetadata?.DESCRIPTION}
       onOpenChange={onOpenChange}
       title={
         mode === 'add'
@@ -1294,6 +1304,72 @@ function AddonGroupCard() {
   );
 }
 
+function SettingsCardWithActions({
+  title,
+  description,
+  children,
+  className,
+  action,
+}: {
+  title?: string;
+  description?: string;
+  children: React.ReactNode;
+  className?: string;
+  action?: React.ReactNode;
+}) {
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const cardRef = useRef<HTMLDivElement>(null);
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!cardRef.current) return;
+    const rect = cardRef.current.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    setPosition({ x, y });
+  };
+
+  return (
+    <Card
+      ref={cardRef}
+      className={cn(
+        'group/settings-card relative lg:bg-gray-950/70',
+        className
+      )}
+      onMouseMove={handleMouseMove}
+    >
+      <GlowingEffect
+        blur={1}
+        spread={20}
+        glow={true}
+        disabled={false}
+        proximity={100}
+        inactiveZone={0.01}
+        className="opacity-25"
+      />
+      {title && (
+        <CardHeader className="p-0 pb-4">
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex-1">
+              <CardTitle className="font-bold tracking-widest uppercase text-sm transition-colors duration-300 group-hover/settings-card:text-white group-hover/settings-card:from-brand-500/10 group-hover/settings-card:to-purple-500/5 px-4 py-2 border bg-transparent bg-gradient-to-br bg-[--subtle] border-t-0 border-l-0 w-fit rounded-tl-md rounded-br-md">
+                {title}
+              </CardTitle>
+              {description && (
+                <CardDescription className="px-4 mt-2">
+                  {description}
+                </CardDescription>
+              )}
+            </div>
+            {action && <div className="flex-shrink-0 px-4 pt-2">{action}</div>}
+          </div>
+        </CardHeader>
+      )}
+      <CardContent className={cn(!title && 'pt-4', 'space-y-3 flex-wrap')}>
+        {children}
+      </CardContent>
+    </Card>
+  );
+}
+
 function CatalogSettingsCard() {
   const { userData, setUserData } = useUserData();
   const [loading, setLoading] = useState(false);
@@ -1455,18 +1531,10 @@ function CatalogSettingsCard() {
   };
 
   return (
-    <div className="rounded-[--radius] border bg-[--paper] shadow-sm p-4">
-      <div className="flex items-center justify-between mb-4">
-        <div>
-          <h3 className="font-semibold text-xl text-[--muted] transition-colors hover:text-[--brand]">
-            Catalogs
-          </h3>
-          <p className="text-[--muted] text-sm">
-            Rename, Reorder, and toggle your catalogs, and apply modifications
-            like RPDB posters and shuffling. If you reorder the addons, you need
-            to reinstall the addon
-          </p>
-        </div>
+    <SettingsCard
+      title="Catalogs"
+      description="Rename, Reorder, and toggle your catalogs, and apply modifications like RPDB posters and shuffling. If you reorder the addons, you need to reinstall the addon"
+      action={
         <IconButton
           size="sm"
           intent="warning-subtle"
@@ -1477,7 +1545,8 @@ function CatalogSettingsCard() {
           }}
           loading={loading}
         />
-      </div>
+      }
+    >
       {!userData.catalogModifications?.length && (
         <p className="text-[--muted] text-base text-center my-8">
           Your addons don't have any catalogs... or you haven't fetched them yet
@@ -1523,7 +1592,7 @@ function CatalogSettingsCard() {
             </SortableContext>
           </DndContext>
         )}
-    </div>
+    </SettingsCard>
   );
 }
 

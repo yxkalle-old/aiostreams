@@ -13,6 +13,8 @@ type SettingsCardProps = {
   title?: string;
   description?: string;
   children: React.ReactNode;
+  className?: string;
+  action?: React.ReactNode;
 };
 
 export function SettingsNavCard({ title, children }: SettingsCardProps) {
@@ -60,7 +62,8 @@ export function SettingsCard({
   description,
   children,
   className,
-}: SettingsCardProps & { className?: string }) {
+  action,
+}: SettingsCardProps) {
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [isHovered, setIsHovered] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
@@ -92,23 +95,23 @@ export function SettingsCard({
           inactiveZone={0.01}
           className="opacity-25"
         />
-        {/* <div
-                    className="pointer-events-none absolute -inset-px transition-opacity duration-300 opacity-0 group-hover/settings-card:opacity-100"
-                    style={{
-                        background: `radial-gradient(700px circle at ${position.x}px ${position.y}px, rgb(255 255 255 / 0.025), transparent 40%)`,
-                    }}
-                 /> */}
         {title && (
           <CardHeader className="p-0 pb-4">
-            {/* <CardTitle className="font-semibold tracking-wide text-base transition-colors duration-300 group-hover/settings-card:text-white bg-gradient-to-br group-hover/settings-card:from-brand-500/10 group-hover/settings-card:to-purple-500/5 px-4 py-2 bg-[--subtle] w-fit rounded-tl-md rounded-br-md ">
-                     {title}
-                     </CardTitle> */}
-            <CardTitle className="font-bold tracking-widest uppercase text-sm transition-colors duration-300 group-hover/settings-card:text-white group-hover/settings-card:from-brand-500/10 group-hover/settings-card:to-purple-500/5 px-4 py-2 border bg-transparent bg-gradient-to-br bg-[--subtle] border-t-0 border-l-0 w-fit rounded-tl-md rounded-br-md ">
-              {title}
-            </CardTitle>
-            {description && (
-              <CardDescription className="px-4">{description}</CardDescription>
-            )}
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex-1">
+                <CardTitle className="font-bold tracking-widest uppercase text-sm transition-colors duration-300 group-hover/settings-card:text-white group-hover/settings-card:from-brand-500/10 group-hover/settings-card:to-purple-500/5 px-4 py-2 border bg-transparent bg-gradient-to-br bg-[--subtle] border-t-0 border-l-0 w-fit rounded-tl-md rounded-br-md">
+                  {title}
+                </CardTitle>
+                {description && (
+                  <CardDescription className="px-4 mt-2">
+                    {description}
+                  </CardDescription>
+                )}
+              </div>
+              {action && (
+                <div className="flex-shrink-0 px-4 pt-2">{action}</div>
+              )}
+            </div>
           </CardHeader>
         )}
         <CardContent className={cn(!title && 'pt-4', 'space-y-3 flex-wrap')}>

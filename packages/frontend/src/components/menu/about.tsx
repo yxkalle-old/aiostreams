@@ -312,85 +312,6 @@ function Content() {
   );
 }
 
-// Custom card component that matches SettingsCard design with dropdown
-function ChangelogCard({
-  title,
-  description,
-  children,
-  className,
-  channel,
-  onChannelChange,
-}: {
-  title?: string;
-  description?: string;
-  children: React.ReactNode;
-  className?: string;
-  channel: 'stable' | 'nightly';
-  onChannelChange: (channel: 'stable' | 'nightly') => void;
-}) {
-  const [position, setPosition] = useState({ x: 0, y: 0 });
-  const cardRef = useRef<HTMLDivElement>(null);
-
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!cardRef.current) return;
-    const rect = cardRef.current.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    setPosition({ x, y });
-  };
-
-  return (
-    <Card
-      ref={cardRef}
-      className={cn(
-        'group/settings-card relative lg:bg-gray-950/70',
-        className
-      )}
-      onMouseMove={handleMouseMove}
-    >
-      <GlowingEffect
-        blur={1}
-        spread={20}
-        glow={true}
-        disabled={false}
-        proximity={100}
-        inactiveZone={0.01}
-        className="opacity-25"
-      />
-      {title && (
-        <CardHeader className="p-0 pb-4">
-          <div className="flex items-center justify-between">
-            <CardTitle className="font-bold tracking-widest uppercase text-sm transition-colors duration-300 group-hover/settings-card:text-white group-hover/settings-card:from-brand-500/10 group-hover/settings-card:to-purple-500/5 px-4 py-2 border bg-transparent bg-gradient-to-br bg-[--subtle] border-t-0 border-l-0 w-fit rounded-tl-md rounded-br-md">
-              {title}
-            </CardTitle>
-            <div className="flex-shrink-0 px-4">
-              <Select
-                size="sm"
-                options={[
-                  { value: 'stable', label: 'Stable' },
-                  { value: 'nightly', label: 'Nightly' },
-                ]}
-                value={channel}
-                onValueChange={(value) =>
-                  onChannelChange(value as 'stable' | 'nightly')
-                }
-                placeholder="Select channel"
-                className="w-32"
-              />
-            </div>
-          </div>
-          {description && (
-            <CardDescription className="px-4">{description}</CardDescription>
-          )}
-        </CardHeader>
-      )}
-      <CardContent className={cn(!title && 'pt-4', 'space-y-3 flex-wrap')}>
-        {children}
-      </CardContent>
-    </Card>
-  );
-}
-
 function ChangelogBox({ version }: { version: string }) {
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
@@ -578,7 +499,7 @@ function ChangelogBox({ version }: { version: string }) {
     releases.length > visibleCount || (hasMorePages && !fetchingMore);
 
   return (
-    <ChangelogCard
+    <SettingsCard
       title="What's New"
       description={
         loading
@@ -586,8 +507,21 @@ function ChangelogBox({ version }: { version: string }) {
           : `View the latest changes for ${selectedChannel} releases`
       }
       className="h-full flex flex-col"
-      channel={selectedChannel}
-      onChannelChange={handleChannelChange}
+      action={
+        <Select
+          size="sm"
+          options={[
+            { value: 'stable', label: 'Stable' },
+            { value: 'nightly', label: 'Nightly' },
+          ]}
+          value={selectedChannel}
+          onValueChange={(value) =>
+            handleChannelChange(value as 'stable' | 'nightly')
+          }
+          placeholder="Select channel"
+          className="w-32"
+        />
+      }
     >
       <div className="relative flex-1" style={{ minHeight: '400px' }}>
         <div
@@ -712,7 +646,7 @@ function ChangelogBox({ version }: { version: string }) {
           </div>
         )}
       </div>
-    </ChangelogCard>
+    </SettingsCard>
   );
 }
 
