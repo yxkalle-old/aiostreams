@@ -1298,7 +1298,7 @@ function CatalogSettingsCard() {
   const { userData, setUserData } = useUserData();
   const [loading, setLoading] = useState(false);
 
-  const fetchCatalogs = async () => {
+  const fetchCatalogs = async (hideToast = false) => {
     setLoading(true);
     try {
       const response = await UserConfigAPI.getCatalogs(userData);
@@ -1357,7 +1357,9 @@ function CatalogSettingsCard() {
             catalogModifications: filteredMods,
           };
         });
-        toast.success('Catalogs fetched successfully');
+        if (!hideToast) {
+          toast.success('Catalogs fetched successfully');
+        }
       } else {
         toast.error(response.error?.message || 'Failed to fetch catalogs');
       }
@@ -1367,6 +1369,11 @@ function CatalogSettingsCard() {
       setLoading(false);
     }
   };
+
+  // Auto-fetch catalogs when component mounts
+  useEffect(() => {
+    fetchCatalogs(true);
+  }, []); // Empty dependency array means this runs once when component mounts
 
   const capitalise = (str: string | undefined) => {
     if (!str) return '';
@@ -1447,15 +1454,6 @@ function CatalogSettingsCard() {
     setIsDragging(true);
   };
 
-  const confirmRefreshCatalogs = useConfirmationDialog({
-    title: 'Refresh Catalogs',
-    description:
-      'Are you sure you want to refresh the catalogs? This will remove any catalogs that are no longer available',
-    onConfirm: () => {
-      fetchCatalogs();
-    },
-  });
-
   return (
     <div className="rounded-[--radius] border bg-[--paper] shadow-sm p-4">
       <div className="flex items-center justify-between mb-4">
@@ -1475,23 +1473,17 @@ function CatalogSettingsCard() {
           icon={<MdRefresh />}
           rounded
           onClick={() => {
-            if (userData.catalogModifications?.length) {
-              confirmRefreshCatalogs.open();
-            } else {
-              fetchCatalogs();
-            }
+            fetchCatalogs();
           }}
           loading={loading}
         />
       </div>
-
       {!userData.catalogModifications?.length && (
         <p className="text-[--muted] text-base text-center my-8">
           Your addons don't have any catalogs... or you haven't fetched them yet
           :/
         </p>
       )}
-
       {userData.catalogModifications &&
         userData.catalogModifications.length > 0 && (
           <DndContext
@@ -1531,8 +1523,6 @@ function CatalogSettingsCard() {
             </SortableContext>
           </DndContext>
         )}
-
-      <ConfirmationDialog {...confirmRefreshCatalogs} />
     </div>
   );
 }
