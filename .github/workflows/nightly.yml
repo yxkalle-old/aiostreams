@@ -78,9 +78,7 @@ jobs:
           COMMIT_MSGS: ${{ steps.commit_msgs.outputs.commit_msgs }}
         run: |
           RELEASE_NOTES=$(cat <<EOF
-          ## Nightly Build $TAG_NAME
-
-          Changes since last nightly build (${LAST_NIGHTLY_TAG:-initial nightly build}):
+          ## $TAG_NAME
 
           $COMMIT_MSGS
           EOF
