@@ -208,6 +208,10 @@ export class DebridioTvPreset extends Preset {
         return undefined;
       }
     } catch {}
-    return `${resource}-${type}-${id}-${extras}`;
+    let cacheKey = `${this.METADATA.ID}-${resource}-${type}-${id}-${extras}`;
+    if (resource === 'manifest') {
+      cacheKey += `-${presetOptions.debridioApiKey}-${presetOptions.channels}`;
+    }
+    return cacheKey;
   }
 }
