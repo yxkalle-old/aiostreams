@@ -363,6 +363,9 @@ export class DebridioTmdbPreset extends Preset {
     ) {
       cacheKey += `-${presetOptions.language}`;
     }
+    if (resource === 'manifest') {
+      cacheKey += `-${presetOptions.debridioApiKey}`;
+    }
     return cacheKey;
   }
 }

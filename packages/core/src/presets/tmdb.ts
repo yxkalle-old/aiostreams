@@ -378,12 +378,15 @@ export class TMDBAddonPreset extends Preset {
       }
     } catch {}
 
-    let cacheKey = `${this.METADATA.ID}-${type}-${id}-${extras}-${presetOptions.language}`;
+    let cacheKey = `${this.METADATA.ID}-${type}-${id}-${extras}`;
     if (resource === constants.META_RESOURCE) {
-      cacheKey += `-${presetOptions.hideEpisodeThumbnails}`;
+      cacheKey += `-${presetOptions.hideEpisodeThumbnails}-${presetOptions.language}`;
     }
     if (resource === constants.CATALOG_RESOURCE) {
-      cacheKey += `-${presetOptions.ageRating}-${presetOptions.includeAdult}`;
+      cacheKey += `-${presetOptions.ageRating}-${presetOptions.includeAdult}-${presetOptions.language}`;
+    }
+    if (resource === 'manifest') {
+      cacheKey += `-${presetOptions.provideImdbId}`;
     }
     return cacheKey;
   }
