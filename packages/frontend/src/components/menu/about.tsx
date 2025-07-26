@@ -19,9 +19,9 @@ import { BiDonateHeart } from 'react-icons/bi';
 import { AiOutlineDiscord } from 'react-icons/ai';
 import { FiGithub } from 'react-icons/fi';
 import Image from 'next/image';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import ReactMarkdown from 'react-markdown';
-import { Skeleton } from '@/components/ui/skeleton/skeleton';
+import { Skeleton } from '@/components/ui/skeleton';
 import { useDisclosure } from '@/hooks/disclosure';
 import { Modal } from '../ui/modal';
 import { SiGithubsponsors, SiKofi } from 'react-icons/si';
@@ -29,6 +29,16 @@ import { useUserData } from '@/context/userData';
 import { toast } from 'sonner';
 import { useMenu } from '@/context/menu';
 import { DonationModal } from '../shared/donation-modal';
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  CardFooter,
+} from '@/components/ui/card';
+import { Select } from '@/components/ui/select';
+import { cn } from '@/components/ui/core/styling';
 
 export function AboutMenu() {
   return (
@@ -295,68 +305,367 @@ function Content() {
   );
 }
 
+// Custom card component that matches SettingsCard design with dropdown
+function ChangelogCard({
+  title,
+  description,
+  children,
+  className,
+  channel,
+  onChannelChange,
+}: {
+  title?: string;
+  description?: string;
+  children: React.ReactNode;
+  className?: string;
+  channel: 'stable' | 'nightly';
+  onChannelChange: (channel: 'stable' | 'nightly') => void;
+}) {
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const cardRef = useRef<HTMLDivElement>(null);
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!cardRef.current) return;
+    const rect = cardRef.current.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    setPosition({ x, y });
+  };
+
+  const stretchContent =
+    className?.includes('h-full') || className?.includes('flex');
+
+  const channelOptions = [
+    { value: 'stable', label: 'Stable' },
+    { value: 'nightly', label: 'Nightly' },
+  ];
+
+  return (
+    <Card
+      ref={cardRef}
+      className={cn(
+        'group/settings-card relative overflow-hidden bg-[--paper]',
+        className
+      )}
+      onMouseMove={handleMouseMove}
+    >
+      {title && (
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div>
+            <CardTitle className="font-semibold text-xl text-[--muted] transition-colors group-hover/settings-card:text-[--brand]">
+              {title}
+            </CardTitle>
+            {description && <CardDescription>{description}</CardDescription>}
+          </div>
+          <div className="flex-shrink-0">
+            <Select
+              size="sm"
+              options={channelOptions}
+              value={channel}
+              onValueChange={(value) =>
+                onChannelChange(value as 'stable' | 'nightly')
+              }
+              placeholder="Select channel"
+              className="w-32"
+            />
+          </div>
+        </CardHeader>
+      )}
+      <CardContent
+        className={cn(
+          !title && 'pt-4',
+          'space-y-3 flex-wrap',
+          stretchContent && 'flex-1 h-full flex flex-col'
+        )}
+      >
+        {children}
+      </CardContent>
+    </Card>
+  );
+}
+
 function ChangelogBox({ version }: { version: string }) {
   const [loading, setLoading] = React.useState(true);
-  const [markdown, setMarkdown] = React.useState<string | null>(null);
   const [error, setError] = React.useState<string | null>(null);
+  const [releases, setReleases] = React.useState<any[]>([]);
+  const [visibleCount, setVisibleCount] = React.useState(0);
+  const [autoLoading, setAutoLoading] = React.useState(false);
+  const [selectedChannel, setSelectedChannel] = React.useState<
+    'stable' | 'nightly'
+  >(() => {
+    // Determine initial channel based on current version
+    if (version.startsWith('v')) return 'stable';
+    if (version.endsWith('-nightly')) return 'nightly';
+    return 'stable'; // default fallback
+  });
+  const [hasMorePages, setHasMorePages] = React.useState(true);
+  const [currentPage, setCurrentPage] = React.useState(1);
+  const [fetchingMore, setFetchingMore] = React.useState(false);
+  const loadMoreRef = React.useRef<HTMLDivElement>(null);
 
+  // Fetch releases with pagination
+  const fetchReleases = React.useCallback(
+    async (page: number = 1, append: boolean = false) => {
+      try {
+        const response = await fetch(
+          `https://api.github.com/repos/viren070/aiostreams/releases?per_page=100&page=${page}`
+        );
+
+        if (!response.ok) throw new Error('Failed to fetch releases');
+
+        const newReleases = await response.json();
+
+        // Check if there are more pages
+        const linkHeader = response.headers.get('link');
+        const hasNextPage = linkHeader && linkHeader.includes('rel="next"');
+        setHasMorePages(!!hasNextPage);
+
+        return newReleases;
+      } catch (error) {
+        throw error;
+      }
+    },
+    []
+  );
+
+  // Filter releases by channel
+  const filterReleasesByChannel = React.useCallback(
+    (releases: any[], channel: 'stable' | 'nightly') => {
+      if (channel === 'stable') {
+        return releases.filter(
+          (r: any) =>
+            r.tag_name.startsWith('v') && !r.tag_name.includes('nightly')
+        );
+      } else {
+        return releases.filter((r: any) => r.tag_name.endsWith('-nightly'));
+      }
+    },
+    []
+  );
+
+  // Determine channel and minor prefix based on selected channel
   React.useEffect(() => {
     if (!version || version.toLowerCase() === 'unknown') {
       setError('No version available.');
       setLoading(false);
       return;
     }
-    setLoading(true);
     setError(null);
-    setMarkdown(null);
-    fetch(
-      `https://api.github.com/repos/viren070/aiostreams/releases/tags/${version}`
-    )
-      .then((res) => {
-        if (!res.ok) throw new Error('Failed to fetch changelog');
-        return res.json();
+    setLoading(true);
+    setReleases([]);
+    setVisibleCount(0);
+    setCurrentPage(1);
+    setHasMorePages(true);
+
+    // Helper: get channel and minor prefix
+    let channel: 'stable' | 'nightly';
+
+    if (selectedChannel === 'stable') {
+      channel = 'stable';
+    } else {
+      channel = 'nightly';
+    }
+
+    // Fetch initial releases
+    fetchReleases(1, false)
+      .then((allReleases) => {
+        // Filter by channel
+        const filtered = filterReleasesByChannel(allReleases, channel);
+
+        // Sort by published date descending
+        filtered.sort(
+          (a, b) =>
+            new Date(b.published_at).getTime() -
+            new Date(a.published_at).getTime()
+        );
+        setReleases(filtered);
+        setVisibleCount(Math.min(5, filtered.length));
       })
-      .then((data) => {
-        if (!data.body) setError('No changelog found for this version.');
-        setMarkdown(data.body);
-      })
-      .catch((err) => {
-        setError('Failed to load changelog.');
-      })
+      .catch(() => setError('Failed to load changelogs.'))
       .finally(() => setLoading(false));
-  }, [version]);
+  }, [version, selectedChannel, fetchReleases, filterReleasesByChannel]);
+
+  // Function to fetch more releases when needed
+  const fetchMoreReleases = React.useCallback(async () => {
+    if (!hasMorePages || fetchingMore) return;
+
+    setFetchingMore(true);
+    try {
+      const nextPage = currentPage + 1;
+      const newReleases = await fetchReleases(nextPage, false);
+
+      // Filter the new releases by current channel
+      const filtered = filterReleasesByChannel(newReleases, selectedChannel);
+
+      if (filtered.length > 0) {
+        // Sort by published date descending
+        filtered.sort(
+          (a, b) =>
+            new Date(b.published_at).getTime() -
+            new Date(a.published_at).getTime()
+        );
+        setReleases((prev) => [...prev, ...filtered]);
+        setCurrentPage(nextPage);
+      }
+    } catch (error) {
+      console.error('Failed to fetch more releases:', error);
+    } finally {
+      setFetchingMore(false);
+    }
+  }, [
+    hasMorePages,
+    fetchingMore,
+    currentPage,
+    fetchReleases,
+    selectedChannel,
+    filterReleasesByChannel,
+  ]);
+
+  // Intersection Observer for auto-loading
+  React.useEffect(() => {
+    if (!loadMoreRef.current || releases.length <= visibleCount) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (
+            entry.isIntersecting &&
+            !autoLoading &&
+            releases.length > visibleCount
+          ) {
+            setAutoLoading(true);
+            // Small delay to show loading state
+            setTimeout(() => {
+              setVisibleCount((prev) => Math.min(prev + 5, releases.length));
+              setAutoLoading(false);
+            }, 300);
+          }
+        });
+      },
+      { threshold: 0.1 }
+    );
+
+    observer.observe(loadMoreRef.current);
+    return () => observer.disconnect();
+  }, [visibleCount, releases.length, autoLoading]);
+
+  // Check if we need to fetch more releases when reaching the end
+  React.useEffect(() => {
+    if (
+      visibleCount >= releases.length &&
+      hasMorePages &&
+      !fetchingMore &&
+      !loading
+    ) {
+      fetchMoreReleases();
+    }
+  }, [
+    visibleCount,
+    releases.length,
+    hasMorePages,
+    fetchingMore,
+    loading,
+    fetchMoreReleases,
+  ]);
+
+  const handleLoadMore = () => {
+    setVisibleCount((prev) => Math.min(prev + 5, releases.length));
+  };
+
+  const handleChannelChange = (channel: 'stable' | 'nightly') => {
+    setSelectedChannel(channel);
+  };
 
   return (
-    <SettingsCard
+    <ChangelogCard
       title="What's New"
-      description="View the latest changes for this version"
+      description={
+        loading
+          ? 'Loading changelogs...'
+          : `View the latest changes for ${selectedChannel} releases`
+      }
       className="h-full flex flex-col"
+      channel={selectedChannel}
+      onChannelChange={handleChannelChange}
     >
-      {loading ? (
-        <div className="flex-1 flex flex-col w-full h-full gap-6">
-          <Skeleton className="h-12 w-full flex-shrink-0" />
-          <Skeleton className="flex-1 w-full" />
-          <Skeleton className="h-12 w-full flex-shrink-0" />
-        </div>
-      ) : error ? (
-        <div className="text-xs text-muted-foreground">{error}</div>
-      ) : markdown ? (
-        <div className="prose prose-invert max-w-none text-xs">
-          <div className="text-sm">
-            <ReactMarkdown>{markdown}</ReactMarkdown>
-          </div>
-          <a
-            href={`https://github.com/Viren070/AIOStreams/releases/tag/${version}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-[--brand] hover:underline flex items-center gap-2 mt-2"
-          >
-            <GithubIcon className="w-4 h-4" />
-            View on GitHub
-          </a>
-        </div>
-      ) : null}
-    </SettingsCard>
+      <div className="flex flex-col gap-4">
+        {loading ? (
+          <>
+            {[...Array(2)].map((_, i) => (
+              <Skeleton key={i} className="h-24 w-full" />
+            ))}
+          </>
+        ) : error ? (
+          <Alert intent="alert" title="Error" description={error} />
+        ) : releases.length === 0 ? (
+          <Alert
+            intent="info"
+            title="No changelogs found"
+            description={`No ${selectedChannel} changelogs available.`}
+          />
+        ) : (
+          releases.slice(0, visibleCount).map((release, idx) => (
+            <Card
+              key={release.id || release.tag_name}
+              className="bg-gray-900/60 border border-gray-800"
+            >
+              <CardHeader className="pb-2">
+                <div className="flex items-center gap-2">
+                  <CardTitle className="text-lg">
+                    {release.name || release.tag_name}
+                  </CardTitle>
+                  <span className="text-xs text-gray-400">
+                    {new Date(release.published_at).toLocaleDateString()}
+                  </span>
+                </div>
+                <CardDescription className="text-xs text-gray-400">
+                  {release.tag_name}
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="prose prose-invert max-w-none text-xs">
+                <ReactMarkdown>
+                  {release.body || 'No changelog provided.'}
+                </ReactMarkdown>
+              </CardContent>
+              <CardFooter>
+                <a
+                  href={release.html_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[--brand] hover:underline flex items-center gap-2 text-xs"
+                >
+                  <GithubIcon className="w-4 h-4" />
+                  View on GitHub
+                </a>
+              </CardFooter>
+            </Card>
+          ))
+        )}
+
+        {/* Auto-load trigger element */}
+        {(releases.length > visibleCount || (hasMorePages && !fetchingMore)) &&
+          !loading && (
+            <div ref={loadMoreRef} className="flex justify-center py-4">
+              {autoLoading || fetchingMore ? (
+                <div className="flex items-center gap-2 text-sm text-gray-400">
+                  <div className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"></div>
+                  {fetchingMore
+                    ? 'Loading more releases...'
+                    : 'Loading more...'}
+                </div>
+              ) : (
+                <Button
+                  onClick={handleLoadMore}
+                  intent="primary-outline"
+                  size="sm"
+                >
+                  Load more changelogs
+                </Button>
+              )}
+            </div>
+          )}
+      </div>
+    </ChangelogCard>
   );
 }
 
