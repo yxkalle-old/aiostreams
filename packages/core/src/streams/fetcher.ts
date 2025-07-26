@@ -183,6 +183,8 @@ class StreamFetcher {
 
         if (i === 0) {
           allStreams.push(...groupResult.streams);
+          allErrors.push(...groupResult.errors);
+          allStatisticStreams.push(...groupResult.statistics);
           totalTimeTaken = groupResult.totalTime;
           previousGroupStreams = groupResult.streams;
           previousGroupTimeTaken = groupResult.totalTime;
