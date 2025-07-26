@@ -1012,7 +1012,7 @@ function AddonModal({
   return (
     <Modal
       open={open}
-      description={presetMetadata?.DESCRIPTION}
+      description={<MarkdownLite>{presetMetadata?.DESCRIPTION}</MarkdownLite>}
       onOpenChange={onOpenChange}
       title={
         mode === 'add'
