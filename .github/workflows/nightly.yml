@@ -73,15 +73,23 @@ jobs:
       - name: Create GitHub prerelease
         env:
           GH_TOKEN: ${{ github.token }}
+          TAG_NAME: ${{ steps.gen_tag.outputs.tag_name }}
+          LAST_NIGHTLY_TAG: ${{ steps.get_last_nightly_tag.outputs.last_nightly_tag }}
+          COMMIT_MSGS: ${{ steps.commit_msgs.outputs.commit_msgs }}
         run: |
-          RELEASE_NOTES="## Nightly Build ${{ steps.gen_tag.outputs.tag_name }}\n\n"
-          RELEASE_NOTES+="Changes since last nightly build (${{ steps.get_last_nightly_tag.outputs.last_nightly_tag || 'initial nightly build' }}):\n\n"
-          RELEASE_NOTES+="${{ steps.commit_msgs.outputs.commit_msgs }}"
+          RELEASE_NOTES=$(cat <<EOF
+          ## Nightly Build $TAG_NAME
 
-          gh release create "${{ steps.gen_tag.outputs.tag_name }}" \
+          Changes since last nightly build (${LAST_NIGHTLY_TAG:-initial nightly build}):
+
+          $COMMIT_MSGS
+          EOF
+          )
+
+          gh release create "$TAG_NAME" \
             --repo "${GITHUB_REPOSITORY}" \
-            --title "${{ steps.gen_tag.outputs.tag_name }}" \
-            --notes "${RELEASE_NOTES}" \
+            --title "$TAG_NAME" \
+            --notes "$RELEASE_NOTES" \
             --prerelease
 
       - name: Trigger Docker Image Publish
