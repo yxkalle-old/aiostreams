@@ -396,14 +396,10 @@ function ChangelogBox({ version }: { version: string }) {
   const [error, setError] = React.useState<string | null>(null);
   const [releases, setReleases] = React.useState<any[]>([]);
   const [visibleCount, setVisibleCount] = React.useState(0);
+  const defaultChannel = version.startsWith('v') ? 'stable' : 'nightly';
   const [selectedChannel, setSelectedChannel] = React.useState<
     'stable' | 'nightly'
-  >(() => {
-    // Determine initial channel based on current version
-    if (version.startsWith('v')) return 'stable';
-    if (version.endsWith('-nightly')) return 'nightly';
-    return 'stable'; // default fallback
-  });
+  >(defaultChannel);
   const [hasMorePages, setHasMorePages] = React.useState(true);
   const [currentPage, setCurrentPage] = React.useState(1);
   const [fetchingMore, setFetchingMore] = React.useState(false);
