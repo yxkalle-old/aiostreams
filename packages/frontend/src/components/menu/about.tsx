@@ -315,42 +315,71 @@ function Content() {
 function ChangelogBox({ version }: { version: string }) {
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
-  const [releases, setReleases] = React.useState<any[]>([]);
+  const [allReleases, setAllReleases] = React.useState<any[]>([]);
+  const [currentReleases, setCurrentReleases] = React.useState<any[]>([]);
+  const [newerReleases, setNewerReleases] = React.useState<any[]>([]);
   const [visibleCount, setVisibleCount] = React.useState(0);
-  const defaultChannel = version.startsWith('v') ? 'stable' : 'nightly';
-  const [selectedChannel, setSelectedChannel] = React.useState<
-    'stable' | 'nightly'
-  >(defaultChannel);
+  const [showUpdates, setShowUpdates] = React.useState(false);
   const [hasMorePages, setHasMorePages] = React.useState(true);
   const [currentPage, setCurrentPage] = React.useState(1);
   const [fetchingMore, setFetchingMore] = React.useState(false);
   const [showLoadMoreOverlay, setShowLoadMoreOverlay] = React.useState(false);
   const containerRef = React.useRef<HTMLDivElement>(null);
 
-  // Fetch releases with pagination
-  const fetchReleases = React.useCallback(
-    async (page: number = 1, append: boolean = false) => {
-      try {
-        const response = await fetch(
-          `https://api.github.com/repos/viren070/aiostreams/releases?per_page=100&page=${page}`
-        );
+  // Determine channel from version
+  const currentChannel = React.useMemo(() => {
+    return version.startsWith('v') ? 'stable' : 'nightly';
+  }, [version]);
 
-        if (!response.ok) throw new Error('Failed to fetch releases');
+  // Version comparison function
+  const compareVersions = React.useCallback(
+    (releaseVersion: string, currentVersion: string) => {
+      if (currentChannel === 'stable') {
+        // For stable versions, compare semver (e.g., v2.5.1 vs v2.5.2)
+        const releaseV = releaseVersion.replace('v', '').split('.').map(Number);
+        const currentV = currentVersion.replace('v', '').split('.').map(Number);
 
-        const newReleases = await response.json();
+        for (let i = 0; i < Math.max(releaseV.length, currentV.length); i++) {
+          const r = releaseV[i] || 0;
+          const c = currentV[i] || 0;
+          if (r > c) return 1; // release is newer
+          if (r < c) return -1; // release is older
+        }
+        return 0; // same version
+      } else {
+        // For nightly versions, compare date-time (e.g., 2024.01.01.1200-nightly)
+        const releaseDate = releaseVersion.replace('-nightly', '');
+        const currentDate = currentVersion.replace('-nightly', '');
 
-        // Check if there are more pages
-        const linkHeader = response.headers.get('link');
-        const hasNextPage = linkHeader && linkHeader.includes('rel="next"');
-        setHasMorePages(!!hasNextPage);
-
-        return newReleases;
-      } catch (error) {
-        throw error;
+        if (releaseDate > currentDate) return 1; // release is newer
+        if (releaseDate < currentDate) return -1; // release is older
+        return 0; // same version
       }
     },
-    []
+    [currentChannel]
   );
+
+  // Fetch releases with pagination
+  const fetchReleases = React.useCallback(async (page: number = 1) => {
+    try {
+      const response = await fetch(
+        `https://api.github.com/repos/viren070/aiostreams/releases?per_page=100&page=${page}`
+      );
+
+      if (!response.ok) throw new Error('Failed to fetch releases');
+
+      const newReleases = await response.json();
+
+      // Check if there are more pages
+      const linkHeader = response.headers.get('link');
+      const hasNextPage = linkHeader && linkHeader.includes('rel="next"');
+      setHasMorePages(!!hasNextPage);
+
+      return newReleases;
+    } catch (error) {
+      throw error;
+    }
+  }, []);
 
   // Filter releases by channel
   const filterReleasesByChannel = React.useCallback(
@@ -367,34 +396,29 @@ function ChangelogBox({ version }: { version: string }) {
     []
   );
 
-  // Determine channel and minor prefix based on selected channel
+  // Initial fetch and setup
   React.useEffect(() => {
     if (!version || version.toLowerCase() === 'unknown') {
       setError('No version available.');
       setLoading(false);
       return;
     }
+
     setError(null);
     setLoading(true);
-    setReleases([]);
+    setAllReleases([]);
+    setCurrentReleases([]);
+    setNewerReleases([]);
     setVisibleCount(0);
     setCurrentPage(1);
     setHasMorePages(true);
-
-    // Helper: get channel and minor prefix
-    let channel: 'stable' | 'nightly';
-
-    if (selectedChannel === 'stable') {
-      channel = 'stable';
-    } else {
-      channel = 'nightly';
-    }
+    setShowUpdates(false);
 
     // Fetch initial releases
-    fetchReleases(1, false)
-      .then((allReleases) => {
-        // Filter by channel
-        const filtered = filterReleasesByChannel(allReleases, channel);
+    fetchReleases(1)
+      .then((releases) => {
+        // Filter by current channel
+        const filtered = filterReleasesByChannel(releases, currentChannel);
 
         // Sort by published date descending
         filtered.sort(
@@ -402,12 +426,35 @@ function ChangelogBox({ version }: { version: string }) {
             new Date(b.published_at).getTime() -
             new Date(a.published_at).getTime()
         );
-        setReleases(filtered);
-        setVisibleCount(Math.min(5, filtered.length));
+
+        setAllReleases(filtered);
+
+        // Split releases based on current version
+        const newer: any[] = [];
+        const currentAndOlder: any[] = [];
+
+        filtered.forEach((release) => {
+          const comparison = compareVersions(release.tag_name, version);
+          if (comparison > 0) {
+            newer.push(release);
+          } else {
+            currentAndOlder.push(release);
+          }
+        });
+
+        setNewerReleases(newer);
+        setCurrentReleases(currentAndOlder);
+        setVisibleCount(Math.min(5, currentAndOlder.length));
       })
       .catch(() => setError('Failed to load changelogs.'))
       .finally(() => setLoading(false));
-  }, [version, selectedChannel, fetchReleases, filterReleasesByChannel]);
+  }, [
+    version,
+    currentChannel,
+    fetchReleases,
+    filterReleasesByChannel,
+    compareVersions,
+  ]);
 
   // Function to fetch more releases when needed
   const fetchMoreReleases = React.useCallback(async () => {
@@ -416,10 +463,10 @@ function ChangelogBox({ version }: { version: string }) {
     setFetchingMore(true);
     try {
       const nextPage = currentPage + 1;
-      const newReleases = await fetchReleases(nextPage, false);
+      const newReleases = await fetchReleases(nextPage);
 
       // Filter the new releases by current channel
-      const filtered = filterReleasesByChannel(newReleases, selectedChannel);
+      const filtered = filterReleasesByChannel(newReleases, currentChannel);
 
       if (filtered.length > 0) {
         // Sort by published date descending
@@ -428,7 +475,25 @@ function ChangelogBox({ version }: { version: string }) {
             new Date(b.published_at).getTime() -
             new Date(a.published_at).getTime()
         );
-        setReleases((prev) => [...prev, ...filtered]);
+
+        // Add to all releases
+        setAllReleases((prev) => [...prev, ...filtered]);
+
+        // Split new releases based on current version
+        const newer: any[] = [];
+        const currentAndOlder: any[] = [];
+
+        filtered.forEach((release) => {
+          const comparison = compareVersions(release.tag_name, version);
+          if (comparison > 0) {
+            newer.push(release);
+          } else {
+            currentAndOlder.push(release);
+          }
+        });
+
+        setNewerReleases((prev) => [...prev, ...newer]);
+        setCurrentReleases((prev) => [...prev, ...currentAndOlder]);
         setCurrentPage(nextPage);
       }
     } catch (error) {
@@ -441,9 +506,19 @@ function ChangelogBox({ version }: { version: string }) {
     fetchingMore,
     currentPage,
     fetchReleases,
-    selectedChannel,
+    currentChannel,
     filterReleasesByChannel,
+    compareVersions,
+    version,
   ]);
+
+  // Get the releases to display
+  const displayReleases = React.useMemo(() => {
+    if (showUpdates) {
+      return [...newerReleases, ...currentReleases];
+    }
+    return currentReleases;
+  }, [showUpdates, newerReleases, currentReleases]);
 
   // Show/hide load more overlay based on scroll position
   React.useEffect(() => {
@@ -455,7 +530,7 @@ function ChangelogBox({ version }: { version: string }) {
       const isNearBottom = scrollHeight - scrollTop - clientHeight < 50;
 
       const hasMoreContent =
-        releases.length > visibleCount || // More releases in memory
+        displayReleases.length > visibleCount || // More releases in memory
         (hasMorePages && !fetchingMore); // More pages to fetch
 
       setShowLoadMoreOverlay(isNearBottom && hasMoreContent && !loading);
@@ -470,19 +545,18 @@ function ChangelogBox({ version }: { version: string }) {
     }
   }, [
     visibleCount,
-    releases.length,
+    displayReleases.length,
     hasMorePages,
     fetchingMore,
     loading,
-    containerRef,
   ]);
 
   const handleLoadMore = () => {
-    if (releases.length > visibleCount) {
+    if (displayReleases.length > visibleCount) {
       // Load more from current releases
-      setVisibleCount((prev) => Math.min(prev + 5, releases.length));
+      setVisibleCount((prev) => Math.min(prev + 5, displayReleases.length));
       // Check if we need to fetch more after increasing visible count
-      if (releases.length <= visibleCount + 5 && hasMorePages) {
+      if (displayReleases.length <= visibleCount + 5 && hasMorePages) {
         fetchMoreReleases();
       }
     } else if (hasMorePages && !fetchingMore) {
@@ -491,12 +565,21 @@ function ChangelogBox({ version }: { version: string }) {
     }
   };
 
-  const handleChannelChange = (channel: 'stable' | 'nightly') => {
-    setSelectedChannel(channel);
+  const handleShowUpdates = () => {
+    setShowUpdates(true);
+    setVisibleCount(Math.min(5, newerReleases.length + currentReleases.length));
   };
 
   const hasMoreContent =
-    releases.length > visibleCount || (hasMorePages && !fetchingMore);
+    displayReleases.length > visibleCount || (hasMorePages && !fetchingMore);
+
+  // Check if a release is newer than current version
+  const isNewerVersion = React.useCallback(
+    (releaseVersion: string) => {
+      return compareVersions(releaseVersion, version) > 0;
+    },
+    [compareVersions, version]
+  );
 
   return (
     <SettingsCard
@@ -504,23 +587,16 @@ function ChangelogBox({ version }: { version: string }) {
       description={
         loading
           ? 'Loading changelogs...'
-          : `View the latest changes for ${selectedChannel} releases`
+          : `View the latest changes for ${currentChannel} releases`
       }
       className="h-full flex flex-col"
       action={
-        <Select
-          size="sm"
-          options={[
-            { value: 'stable', label: 'Stable' },
-            { value: 'nightly', label: 'Nightly' },
-          ]}
-          value={selectedChannel}
-          onValueChange={(value) =>
-            handleChannelChange(value as 'stable' | 'nightly')
-          }
-          placeholder="Select channel"
-          className="w-32"
-        />
+        newerReleases.length > 0 ? (
+          <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-amber-500/20 text-amber-400 border border-amber-500/30">
+            {newerReleases.length} available update
+            {newerReleases.length > 1 ? 's' : ''}
+          </span>
+        ) : undefined
       }
     >
       <div className="relative flex-1" style={{ minHeight: '400px' }}>
@@ -541,27 +617,46 @@ function ChangelogBox({ version }: { version: string }) {
             <div className="p-4">
               <Alert intent="alert" title="Error" description={error} />
             </div>
-          ) : releases.length === 0 ? (
+          ) : displayReleases.length === 0 ? (
             <div className="p-4">
               <Alert
                 intent="info"
                 title="No changelogs found"
-                description={`No ${selectedChannel} changelogs available.`}
+                description={`No ${currentChannel} changelogs available.`}
               />
             </div>
           ) : (
             <div className="relative min-h-full p-4 space-y-4">
-              {releases.slice(0, visibleCount).map((release, idx) => (
+              {/* Show updates button */}
+              {newerReleases.length > 0 && !showUpdates && (
+                <div className="flex justify-center mb-4">
+                  <Button
+                    intent="primary-outline"
+                    size="sm"
+                    onClick={handleShowUpdates}
+                  >
+                    Show {newerReleases.length} available update
+                    {newerReleases.length > 1 ? 's' : ''}
+                  </Button>
+                </div>
+              )}
+
+              {displayReleases.slice(0, visibleCount).map((release, idx) => (
                 <Card
                   key={release.id || release.tag_name}
                   className="bg-gray-900/60 border border-gray-800 relative"
                 >
                   <CardHeader className="pb-2">
                     <div className="flex items-start justify-between gap-4">
-                      <div className="flex-shrink-0">
+                      <div className="flex items-center gap-2 flex-shrink-0">
                         <span className="inline-flex items-center px-3.5 py-1.5 rounded-full text-sm font-semibold bg-[--brand]/20 text-[--brand] border border-[--brand]/30">
                           {release.tag_name}
                         </span>
+                        {isNewerVersion(release.tag_name) && (
+                          <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-amber-500/20 text-amber-400 border border-amber-500/30">
+                            Update Needed!
+                          </span>
+                        )}
                       </div>
                       <div className="flex-shrink-0">
                         <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-gray-700/60 text-gray-300 border border-gray-600/30">
@@ -614,8 +709,8 @@ function ChangelogBox({ version }: { version: string }) {
                 <span className="text-sm font-medium text-white/90">
                   {fetchingMore
                     ? 'Loading...'
-                    : releases.length > visibleCount
-                      ? `Load ${Math.min(5, releases.length - visibleCount)} more`
+                    : displayReleases.length > visibleCount
+                      ? `Load ${Math.min(5, displayReleases.length - visibleCount)} more`
                       : 'Load more releases'}
                 </span>
                 <button
