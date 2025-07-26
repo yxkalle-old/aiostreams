@@ -766,7 +766,7 @@ export const Env = cleanEnv(process.env, {
 
   // Peerflix settings
   PEERFLIX_URL: url({
-    default: 'https://peerflix-addon.onrender.com',
+    default: 'https://addon.peerflix.mov',
     desc: 'Peerflix URL',
   }),
   DEFAULT_PEERFLIX_TIMEOUT: num({
