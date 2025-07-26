@@ -106,7 +106,7 @@ export class DebridioTvdbPreset extends Preset {
       }
     } catch {}
     // allows cache key to be shared across different debridio users.
-    let cacheKey = `${resource}-${type}-${id}-${extras}`;
+    let cacheKey = `${this.METADATA.ID}-${resource}-${type}-${id}-${extras}`;
     if (resource === 'manifest') {
       cacheKey += `-${presetOptions.debridioApiKey}`;
     }
