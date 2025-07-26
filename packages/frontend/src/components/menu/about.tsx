@@ -39,6 +39,7 @@ import {
 } from '@/components/ui/card';
 import { Select } from '@/components/ui/select';
 import { cn } from '@/components/ui/core/styling';
+import { Textarea } from '../ui/textarea';
 
 export function AboutMenu() {
   return (
@@ -56,6 +57,14 @@ function Content() {
   const { userData, setUserData } = useUserData();
   const addonName =
     userData.addonName || status?.settings?.addonName || 'AIOStreams';
+  const defaultDescription = `
+  AIOStreams consolidates multiple Stremio addons and debrid
+  services into a single, easily configurable addon. It allows
+  highly customisable filtering, sorting, and formatting of results
+  and supports proxying all your streams through MediaFlow Proxy or
+  StremThru for improved compatibility and IP restriction bypassing.
+  `;
+  const addonDescription = userData.addonDescription || defaultDescription;
   const version = status?.tag || 'Unknown';
   const githubUrl = 'https://github.com/Viren070/AIOStreams';
   const releasesUrl = 'https://github.com/Viren070/AIOStreams/releases';
@@ -124,11 +133,7 @@ function Content() {
               </span>
             </div>
             <div className="text-base md:text-lg text-[--muted] font-medium mb-2">
-              AIOStreams consolidates multiple Stremio addons and debrid
-              services into a single, easily configurable addon. It allows
-              highly customisable filtering, sorting, and formatting of results
-              and supports proxying all your streams through MediaFlow Proxy or
-              StremThru for improved compatibility and IP restriction bypassing.
+              {addonDescription}
             </div>
           </div>
         </div>
@@ -300,6 +305,7 @@ function Content() {
         onOpenChange={customizeModal.toggle}
         currentName={addonName}
         currentLogo={userData.addonLogo}
+        currentDescription={userData.addonDescription}
       />
     </>
   );
@@ -674,21 +680,24 @@ function CustomizeModal({
   onOpenChange,
   currentName,
   currentLogo,
+  currentDescription,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   currentName: string;
   currentLogo: string | undefined;
+  currentDescription: string | undefined;
 }) {
   const { userData, setUserData } = useUserData();
   const [name, setName] = useState(currentName);
   const [logo, setLogo] = useState(currentLogo);
-
+  const [description, setDescription] = useState(currentDescription);
   // Update state when props change
   useEffect(() => {
     setName(currentName);
     setLogo(currentLogo);
-  }, [currentName, currentLogo]);
+    setDescription(currentDescription);
+  }, [currentName, currentLogo, currentDescription]);
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -701,6 +710,7 @@ function CustomizeModal({
       ...prev,
       addonName: name.trim(),
       addonLogo: logo?.trim(),
+      addonDescription: description?.trim(),
     }));
 
     toast.success('Customization saved');
@@ -738,6 +748,19 @@ function CustomizeModal({
             <p className="text-xs text-[--muted]">
               Enter a valid URL for your addon's logo image. Leave blank for
               default logo.
+            </p>
+          </div>
+
+          <div className="space-y-2">
+            <Textarea
+              label="Addon Description"
+              value={description}
+              onValueChange={setDescription}
+              placeholder="Enter addon description"
+              rows={3}
+            />
+            <p className="text-xs text-[--muted]">
+              This description will be displayed in Stremio
             </p>
           </div>
 
