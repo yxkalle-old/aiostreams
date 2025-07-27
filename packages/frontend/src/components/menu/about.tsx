@@ -647,25 +647,25 @@ function ChangelogBox({ version }: { version: string }) {
                   className="bg-gray-900/60 border border-gray-800 relative"
                 >
                   <CardHeader className="pb-2">
-                    <div className="flex items-start justify-between gap-4">
+                    <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2 sm:gap-4">
                       <div className="flex items-center gap-2 flex-shrink-0">
-                        <span className="inline-flex items-center px-3.5 py-1.5 rounded-full text-sm font-semibold bg-[--brand]/20 text-[--brand] border border-[--brand]/30">
+                        <span className="inline-flex items-center px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-full text-xs sm:text-sm font-semibold bg-[--brand]/20 text-[--brand] border border-[--brand]/30 break-all">
                           {release.tag_name}
                         </span>
                         {isNewerVersion(release.tag_name) && (
-                          <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-amber-500/20 text-amber-400 border border-amber-500/30">
-                            Update Needed!
+                          <span className="inline-flex items-center px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full text-xs font-medium bg-amber-500/20 text-amber-400 border border-amber-500/30">
+                            Update!
                           </span>
                         )}
                       </div>
                       <div className="flex-shrink-0">
-                        <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-gray-700/60 text-gray-300 border border-gray-600/30">
+                        <span className="inline-flex items-center px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full text-xs font-medium bg-gray-700/60 text-gray-300 border border-gray-600/30">
                           {new Date(release.published_at).toLocaleDateString()}
                         </span>
                       </div>
                     </div>
                   </CardHeader>
-                  <CardContent className="prose prose-invert prose-sm max-w-none [&_p]:text-sm [&_ul]:text-sm [&_li]:text-sm [&_h1]:text-xl [&_h2]:text-lg [&_h3]:text-base">
+                  <CardContent className="prose prose-invert prose-sm max-w-none [&_p]:text-sm [&_ul]:text-sm [&_li]:text-sm [&_h1]:text-xl [&_h2]:text-lg [&_h3]:text-base [&_*]:break-all">
                     <ReactMarkdown>
                       {release.body || 'No changelog provided.'}
                     </ReactMarkdown>
