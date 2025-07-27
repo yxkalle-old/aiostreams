@@ -1,4 +1,3 @@
-import { GlowingEffect } from '@/components/shared/glowing-effect';
 import {
   Card,
   CardContent,
@@ -37,14 +36,6 @@ export function SettingsNavCard({ title, children }: SettingsCardProps) {
         className="lg:p-2 lg:border lg:rounded-[--radius] lg:bg-gray-950/70 contents lg:block relative group/settings-nav"
         // className=" contents lg:block relative group/settings-nav overflow-hidden"
       >
-        <GlowingEffect
-          spread={40}
-          glow={true}
-          disabled={false}
-          proximity={100}
-          inactiveZone={0.01}
-          className="opacity-25"
-        />
         {/* <div
                     className="pointer-events-none absolute -inset-px transition-opacity duration-300 opacity-0 group-hover/settings-nav:opacity-100 hidden lg:block"
                     style={{
@@ -86,15 +77,6 @@ export function SettingsCard({
         )}
         onMouseMove={handleMouseMove}
       >
-        <GlowingEffect
-          blur={1}
-          spread={20}
-          glow={true}
-          disabled={false}
-          proximity={100}
-          inactiveZone={0.01}
-          className="opacity-25"
-        />
         {title && (
           <CardHeader className="p-0 pb-4">
             <div className="flex items-start justify-between gap-4">

@@ -40,7 +40,6 @@ import {
 import { Select } from '@/components/ui/select';
 import { cn } from '@/components/ui/core/styling';
 import { Textarea } from '../ui/textarea';
-import { GlowingEffect } from '../shared/glowing-effect';
 
 export function AboutMenu() {
   return (
