@@ -744,7 +744,7 @@ export class AIOStreams {
       if (!manifest) continue;
 
       // Convert string resources to StrictManifestResource objects
-      const addonResources = manifest.resources.map((resource) => {
+      let addonResources = manifest.resources.map((resource) => {
         if (typeof resource === 'string') {
           return {
             name: resource as Resource,
@@ -762,12 +762,6 @@ export class AIOStreams {
         continue;
       }
 
-      logger.verbose(
-        `Determined that ${getAddonName(addon)} (Instance ID: ${instanceId}) has support for the following resources: ${JSON.stringify(
-          addonResources
-        )}`
-      );
-
       // Filter and merge resources
       for (const resource of addonResources) {
         if (
@@ -775,6 +769,9 @@ export class AIOStreams {
           addon.resources.length > 0 &&
           !addon.resources.includes(resource.name)
         ) {
+          addonResources = addonResources.filter(
+            (r) => r.name !== resource.name
+          );
           continue;
         }
 
@@ -829,6 +826,12 @@ export class AIOStreams {
           });
         }
       }
+
+      logger.verbose(
+        `Determined that ${getAddonName(addon)} (Instance ID: ${instanceId}) has support for the following resources: ${JSON.stringify(
+          addonResources
+        )}`
+      );
 
       // Add catalogs with prefixed  IDs (ensure to check that if addon.resources is defined and does not have catalog
       // then we do not add the catalogs)
