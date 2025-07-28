@@ -1296,6 +1296,19 @@ export const Env = cleanEnv(process.env, {
     desc: 'Default SubHero user agent',
   }),
 
+  STREAMASIA_URL: url({
+    default: 'https://stremio-dramacool-addon.xyz',
+    desc: 'StreamAsia URL',
+  }),
+  DEFAULT_STREAMASIA_TIMEOUT: num({
+    default: undefined,
+    desc: 'Default StreamAsia timeout',
+  }),
+  DEFAULT_STREAMASIA_USER_AGENT: userAgent({
+    default: undefined,
+    desc: 'Default StreamAsia user agent',
+  }),
+
   // Rate limiting settings
   DISABLE_RATE_LIMITS: bool({
     default: false,

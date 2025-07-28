@@ -53,10 +53,13 @@ class StreamParser {
   constructor(protected readonly addon: Addon) {}
 
   parse(stream: Stream): ParsedStream | { skip: true } {
+    stream.description = stream.description || stream.title;
+
     let parsedStream: ParsedStream = {
       id: this.getRandomId(),
       addon: this.addon,
       type: 'http',
+      proxied: this.isProxied(stream),
       url: this.applyUrlModifications(stream.url ?? undefined),
       externalUrl: stream.externalUrl ?? undefined,
       ytId: stream.ytId ?? undefined,
@@ -67,8 +70,6 @@ class StreamParser {
       originalName: stream.name ?? undefined,
       originalDescription: (stream.description || stream.title) ?? undefined,
     };
-
-    stream.description = stream.description || stream.title;
 
     this.raiseErrorIfNecessary(stream, parsedStream);
 
@@ -281,6 +282,10 @@ class StreamParser {
     }
 
     return undefined;
+  }
+
+  protected isProxied(stream: Stream): boolean {
+    return false;
   }
 
   protected getIndexer(

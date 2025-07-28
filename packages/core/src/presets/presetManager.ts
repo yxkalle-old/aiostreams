@@ -44,6 +44,7 @@ import { AISearchPreset } from './aiSearch';
 import { FKStreamPreset } from './fkstream';
 import { AIOSubtitlePreset } from './aiosubtitle';
 import { SubHeroPreset } from './subhero';
+import { StreamAsiaPreset } from './streamasia';
 
 const PRESET_LIST: string[] = [
   'custom',
@@ -66,6 +67,7 @@ const PRESET_LIST: string[] = [
   'dmm-cast',
   'nuvio-streams',
   'webstreamr',
+  'streamasia',
   'usa-tv',
   'argentina-tv',
   'debridio-tv',
@@ -202,6 +204,8 @@ export class PresetManager {
         return AIOSubtitlePreset;
       case 'subhero':
         return SubHeroPreset;
+      case 'streamasia':
+        return StreamAsiaPreset;
       default:
         throw new Error(`Preset ${id} not found`);
     }
