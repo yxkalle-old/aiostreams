@@ -54,6 +54,8 @@ class StreamLimiter {
         indexesToRemove.add(index);
         return;
       }
+      // if stream is passthrough, skip
+      if (stream.addon.resultPassthrough) return;
 
       // Check indexer limit
       if (indexer && stream.indexer) {

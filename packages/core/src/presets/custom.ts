@@ -37,6 +37,15 @@ export class CustomPreset extends Preset {
         type: 'boolean',
       },
       {
+        id: 'resultPassthrough',
+        name: 'Result Passthrough',
+        description:
+          'If enabled, all results from this addon will never be filtered out and always included in the final stream list.',
+        type: 'boolean',
+        required: false,
+        default: false,
+      },
+      {
         id: 'timeout',
         name: 'Timeout',
         description: 'The timeout for this addon',
@@ -115,6 +124,7 @@ export class CustomPreset extends Preset {
         options: options,
       },
       streamPassthrough: options.streamPassthrough ?? false,
+      resultPassthrough: options.resultPassthrough ?? false,
       headers: {
         'User-Agent': this.METADATA.USER_AGENT,
       },

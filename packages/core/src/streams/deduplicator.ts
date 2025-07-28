@@ -115,6 +115,10 @@ class StreamDeduplicator {
         if ((type === 'debrid' || type === 'usenet') && stream.service) {
           type = stream.service.cached ? 'cached' : 'uncached';
         }
+        if (stream.addon.resultPassthrough) {
+          // ensure that passthrough streams are not deduplicated by adding each to a separate group
+          type = `passthrough-${Math.random()}`;
+        }
         const typeGroup = streamsByType.get(type) || [];
         typeGroup.push(stream);
         streamsByType.set(type, typeGroup);
