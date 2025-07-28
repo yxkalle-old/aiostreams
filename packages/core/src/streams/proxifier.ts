@@ -14,7 +14,16 @@ class Proxifier {
   private shouldProxyStream(stream: ParsedStream): boolean {
     const streamService = stream.service ? stream.service.id : 'none';
     const proxy = this.userData.proxy;
-    if (!stream.url || !proxy?.enabled) {
+    if (!stream.url || !proxy?.enabled || !proxy.url) {
+      return false;
+    }
+    if (stream.proxied) {
+      return false;
+    }
+    const streamUrl = new URL(stream.url);
+    const proxyUrl = new URL(proxy.url);
+    if (streamUrl.host === proxyUrl.host) {
+      stream.proxied = true;
       return false;
     }
 
