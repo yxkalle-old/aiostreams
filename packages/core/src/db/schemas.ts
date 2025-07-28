@@ -423,7 +423,7 @@ export const TABLES = {
 const strictManifestResourceSchema = z.object({
   name: z.enum(constants.RESOURCES),
   types: z.array(z.string()),
-  idPrefixes: z.array(z.string().min(1)).or(z.null()).optional(),
+  idPrefixes: z.array(z.string()).or(z.null()).optional(),
 });
 
 export type StrictManifestResource = z.infer<
@@ -461,7 +461,7 @@ export const ManifestSchema = z
     description: z.string(),
     version: z.string(),
     types: z.array(z.string()),
-    idPrefixes: z.array(z.string().min(1)).or(z.null()).optional(),
+    idPrefixes: z.array(z.string()).or(z.null()).optional(),
     resources: z.array(ManifestResourceSchema),
     catalogs: z.array(ManifestCatalogSchema),
     addonCatalogs: z.array(AddonCatalogDefinitionSchema).optional(),
