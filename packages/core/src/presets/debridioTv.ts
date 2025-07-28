@@ -7,10 +7,10 @@ import {
   UserData,
 } from '../db';
 import { CacheKeyRequestOptions, Preset, baseOptions } from './preset';
-import { constants, createLogger, Env } from '../utils';
+import { constants, Env } from '../utils';
 import { debridioSocialOption } from './debridio';
 import { FileParser, StreamParser } from '../parser';
-const logger = createLogger('DebridioTvPreset');
+
 class DebridioTvStreamParser extends StreamParser {
   protected override getParsedFile(
     stream: Stream,
@@ -20,7 +20,6 @@ class DebridioTvStreamParser extends StreamParser {
     if (!parsed) {
       return undefined;
     }
-    logger.debug(`resolution: ${parsed}`);
 
     return {
       ...parsed,
@@ -31,7 +30,6 @@ class DebridioTvStreamParser extends StreamParser {
     stream: Stream,
     currentParsedStream: ParsedStream
   ): string | undefined {
-    logger.debug('returning undefined for filename');
     return undefined;
   }
 
@@ -123,6 +121,15 @@ export class DebridioTvPreset extends Preset {
         options: channels,
         default: channels.map((channel) => channel.value),
       },
+      {
+        id: 'resultPassthrough',
+        name: 'Result Passthrough',
+        description:
+          'Ensure no Debridio TV results are filtered out by anything',
+        required: false,
+        type: 'boolean',
+        default: true,
+      },
       debridioSocialOption,
     ];
 
@@ -185,6 +192,7 @@ export class DebridioTvPreset extends Preset {
       library: false,
       resources: options.resources || this.METADATA.SUPPORTED_RESOURCES,
       timeout: options.timeout || this.METADATA.TIMEOUT,
+      resultPassthrough: options.resultPassthrough ?? true,
       preset: {
         id: '',
         type: this.METADATA.ID,
