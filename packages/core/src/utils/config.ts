@@ -470,6 +470,9 @@ function ensureDecrypted(config: UserData): UserData {
     decryptedConfig.proxy.url = decryptedConfig.proxy.url
       ? tryDecrypt(decryptedConfig.proxy.url, 'proxy URL')
       : undefined;
+    decryptedConfig.proxy.publicUrl = decryptedConfig.proxy.publicUrl
+      ? tryDecrypt(decryptedConfig.proxy.publicUrl, 'proxy public URL')
+      : undefined;
   }
 
   return decryptedConfig;
@@ -678,8 +681,11 @@ async function validateProxy(
       Env.FORCE_PUBLIC_PROXY_PROTOCOL !== undefined ||
       Env.FORCE_PUBLIC_PROXY_PORT !== undefined)
   ) {
-    const proxyUrl = new URL(proxy.url);
-    forcedPublicUrl = `${Env.FORCE_PUBLIC_PROXY_PROTOCOL ?? proxyUrl.protocol}://${Env.FORCE_PUBLIC_PROXY_HOST ?? proxyUrl.hostname}:${Env.FORCE_PUBLIC_PROXY_PORT ?? proxyUrl.port}`;
+    const proxyUrl = new URL(
+      isEncrypted(proxy.url) ? decryptString(proxy.url).data || '' : proxy.url
+    );
+    const port = Env.FORCE_PUBLIC_PROXY_PORT ?? proxyUrl.port;
+    forcedPublicUrl = `${Env.FORCE_PUBLIC_PROXY_PROTOCOL ?? proxyUrl.protocol}://${Env.FORCE_PUBLIC_PROXY_HOST ?? proxyUrl.hostname}${port ? `:${port}` : ''}`;
   }
   forcedPublicUrl = Env.FORCE_PROXY_PUBLIC_URL;
   proxy.publicUrl = forcedPublicUrl
@@ -732,7 +738,6 @@ async function validateProxy(
       }
       proxy.publicUrl = data;
     }
-
     // use decrypted proxy config for validation.
     const ProxyService = createProxy(decryptedProxy);
 
