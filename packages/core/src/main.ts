@@ -16,6 +16,7 @@ import {
   CatalogExtras,
   TMDBMetadata,
   Metadata,
+  makeUrlLogSafe,
 } from './utils';
 import { Wrapper } from './wrapper';
 import { PresetManager } from './presets';
@@ -46,7 +47,7 @@ import { getAddonName } from './utils/general';
 const logger = createLogger('core');
 
 const shuffleCache = Cache.getInstance<string, MetaPreview[]>('shuffle');
-const precacheCache = Cache.getInstance<string, ParsedStream[]>('precache');
+const precacheCache = Cache.getInstance<string, boolean>('precache');
 
 export interface AIOStreamsError {
   title?: string;
@@ -1155,95 +1156,172 @@ export class AIOStreams {
     });
   }
 
+  private async getMetadata(id: string): Promise<Metadata | undefined> {
+    try {
+      const metadata = await new TMDBMetadata(
+        this.userData.tmdbAccessToken
+      ).getMetadata(id, 'series');
+      return metadata;
+    } catch (error) {
+      logger.warn(`Error getting metadata for ${id}`, {
+        error: error instanceof Error ? error.message : String(error),
+      });
+      return undefined;
+    }
+  }
+
+  private _getNextEpisode(
+    currentSeason: number,
+    currentEpisode: number,
+    metadata?: Metadata
+  ): {
+    season: number;
+    episode: number;
+  } {
+    let season = currentSeason;
+    let episode = currentEpisode + 1;
+    const episodeCount = metadata?.seasons?.find(
+      (s) => s.season_number === Number(season)
+    )?.episode_count;
+
+    // If we are at the last episode of the season, try to move to the next season
+    if (episodeCount && currentEpisode === episodeCount) {
+      const nextSeasonNumber = currentSeason + 1;
+      if (
+        metadata?.seasons?.find((s) => s.season_number === nextSeasonNumber)
+      ) {
+        logger.debug(
+          `Current episode is the last of season ${currentSeason}, moving to S${nextSeasonNumber}E01.`
+        );
+        season = nextSeasonNumber;
+        episode = 1;
+      }
+    }
+    return { season, episode };
+  }
+
+  private async _fetchAndHandleRedirects(stream: ParsedStream, id: string) {
+    const wrapper = new Wrapper(stream.addon);
+    if (!stream.url) {
+      throw new Error(`Stream URL is undefined`);
+    }
+    const initialResponse = await wrapper.makeRequest(stream.url, {
+      timeout: 30000,
+      rawOptions: { redirect: 'manual' },
+    });
+
+    // If it's a redirect, handle it
+    if (initialResponse.status >= 300 && initialResponse.status < 400) {
+      const redirectUrl = initialResponse.headers.get('Location');
+      if (!redirectUrl) {
+        throw new Error(
+          `Redirect response (${initialResponse.status}) has no Location header.`
+        );
+      }
+
+      const absoluteRedirectUrl = new URL(redirectUrl, stream.url).toString();
+      const originalHost = new URL(stream.url).host;
+      const redirectHost = new URL(absoluteRedirectUrl).host;
+
+      if (redirectHost !== originalHost) {
+        throw new Error(
+          `Host mismatch during redirect: original (${originalHost}) vs redirect (${redirectHost}). Not following.`
+        );
+      }
+
+      logger.debug(
+        `Following same-domain redirect to ${makeUrlLogSafe(absoluteRedirectUrl)} for precaching ${id}`
+      );
+      return wrapper.makeRequest(absoluteRedirectUrl, { timeout: 30000 });
+    }
+
+    return initialResponse;
+  }
+
   private async precacheNextEpisode(type: string, id: string) {
     const seasonEpisodeRegex = /:(\d+):(\d+)$/;
     const match = id.match(seasonEpisodeRegex);
     if (!match) {
       return;
     }
-    const season = match[1];
-    const episode = match[2];
-    let episodeCount = undefined;
-    let metadata: Metadata | undefined;
-    try {
-      metadata = await new TMDBMetadata(
-        this.userData.tmdbAccessToken
-      ).getMetadata(id, type as any);
-      if (metadata?.seasons) {
-        episodeCount = metadata.seasons.find(
-          (s) => s.season_number === Number(season)
-        )?.episode_count;
-      }
-    } catch (error) {
-      logger.warn(`Error getting metadata for ${id}`, {
-        error: error instanceof Error ? error.message : String(error),
-      });
-    }
-
     const titleId = id.replace(seasonEpisodeRegex, '');
-    let episodeToPrecache = Number(episode) + 1;
-    let seasonToPrecache = season;
-    if (episodeCount && Number(episode) === episodeCount) {
-      const nextSeason = Number(season) + 1;
-      if (metadata?.seasons?.find((s) => s.season_number === nextSeason)) {
-        logger.debug(
-          `Detected that the current episode is the last episode of the season, precaching first episode of next season instead`
-        );
-        episodeToPrecache = 1;
-        seasonToPrecache = nextSeason.toString();
-      }
-    }
+    const currentSeason = Number(match[1]);
+    const currentEpisode = Number(match[2]);
+
+    const metadata = await this.getMetadata(id);
+
+    const { season: seasonToPrecache, episode: episodeToPrecache } =
+      this._getNextEpisode(currentSeason, currentEpisode, metadata);
+
     const precacheId = `${titleId}:${seasonToPrecache}:${episodeToPrecache}`;
     logger.info(`Pre-caching next episode of ${titleId}`, {
-      season,
-      episode,
+      currentSeason,
+      currentEpisode,
       episodeToPrecache,
       seasonToPrecache,
       precacheId,
     });
+
     // modify userData to remove the excludeUncached filter
     const userData = structuredClone(this.userData);
     userData.excludeUncached = false;
     userData.groups = undefined;
     this.setUserData(userData);
+
     const nextStreamsResponse = await this.getStreams(precacheId, type, true);
-    if (nextStreamsResponse.success) {
-      const nextStreams = nextStreamsResponse.data.streams;
-      const serviceStreams = nextStreams.filter((stream) => stream.service);
-      if (
-        serviceStreams.every((stream) => stream.service?.cached === false) || // only if all streams are uncached
-        this.userData.alwaysPrecache // or if alwaysPrecache is true
-      ) {
-        const firstUncachedStream = serviceStreams.find(
-          (stream) => stream.service?.cached === false
+    if (!nextStreamsResponse.success) {
+      logger.error(`Failed to get streams during precaching ${id}`, {
+        error: nextStreamsResponse.errors,
+      });
+      return;
+    }
+
+    const serviceStreams = nextStreamsResponse.data.streams.filter(
+      (stream) => stream.service
+    );
+    const shouldPrecache =
+      serviceStreams.every((stream) => stream.service?.cached === false) ||
+      this.userData.alwaysPrecache;
+
+    if (!shouldPrecache) {
+      logger.debug(
+        `Skipping precaching ${id} as all streams are cached or Always Precache is disabled`
+      );
+      return;
+    }
+
+    const firstUncachedStream = serviceStreams.find(
+      (stream) => stream.service?.cached === false
+    );
+    if (!firstUncachedStream || !firstUncachedStream.url) {
+      logger.debug(
+        `Skipping precaching ${id} as no uncached streams were found or it had no URL`
+      );
+      return;
+    }
+
+    logger.debug(
+      `Selected following stream for precaching:\n${firstUncachedStream.originalName}\n${firstUncachedStream.originalDescription}`
+    );
+
+    try {
+      const response = await this._fetchAndHandleRedirects(
+        firstUncachedStream,
+        precacheId
+      );
+      logger.debug(`Response: ${response.status} ${response.statusText}`);
+      if (!response.ok) {
+        throw new Error(
+          `Final Response not OK: ${response.status} ${response.statusText}`
         );
-        if (firstUncachedStream && firstUncachedStream.url) {
-          try {
-            const wrapper = new Wrapper(firstUncachedStream.addon);
-            logger.debug(
-              `The following stream was selected for precaching:\n${firstUncachedStream.originalName}\n${firstUncachedStream.originalDescription}`
-            );
-            const response = await wrapper.makeRequest(
-              firstUncachedStream.url,
-              30000
-            );
-            if (!response.ok) {
-              throw new Error(`${response.status} ${response.statusText}`);
-            }
-            const cacheKey = `precache-${type}-${id}-${this.userData.uuid}`;
-            precacheCache.set(
-              cacheKey,
-              nextStreams,
-              Env.PRECACHE_NEXT_EPISODE_MIN_INTERVAL
-            );
-            logger.debug(`Response: ${response.status} ${response.statusText}`);
-          } catch (error) {
-            logger.error(`Error pinging url of first uncached stream`, {
-              error: error instanceof Error ? error.message : String(error),
-            });
-          }
-        }
       }
+      const cacheKey = `precache-${type}-${id}-${this.userData.uuid}`;
+      precacheCache.set(cacheKey, true, Env.PRECACHE_NEXT_EPISODE_MIN_INTERVAL);
+      logger.info(`Successfully precached a stream for ${id} (${type})`);
+    } catch (error) {
+      logger.error(`Error pinging url of first uncached stream`, {
+        error: error instanceof Error ? error.message : String(error),
+      });
     }
   }
 }

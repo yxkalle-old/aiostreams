@@ -36,7 +36,7 @@ export function makeUrlLogSafe(url: string) {
     .replace(/(?<![^?&])(apiKey=[^&]+)/g, 'apiKey=****');
 }
 
-interface RequestOptions {
+export interface RequestOptions {
   timeout: number;
   method?: string;
   forwardIp?: string;

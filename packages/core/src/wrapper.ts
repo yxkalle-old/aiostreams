@@ -36,6 +36,7 @@ import {
   PossibleRecursiveRequestError,
   Env,
   getTimeTakenSincePoint,
+  RequestOptions,
 } from './utils';
 import { Preset, PresetManager } from './presets';
 import { StreamParser } from './parser';
@@ -313,11 +314,11 @@ export class Wrapper {
     );
   }
 
-  async makeRequest(url: string, timeout: number = this.addon.timeout) {
+  async makeRequest(url: string, options: RequestOptions) {
     return await makeRequest(url, {
-      timeout: timeout,
       headers: this.addon.headers,
       forwardIp: this.addon.ip,
+      ...options,
     });
   }
 
