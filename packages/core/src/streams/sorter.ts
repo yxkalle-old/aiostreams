@@ -5,6 +5,10 @@ import { AUDIO_TAGS } from '../utils/constants';
 
 const logger = createLogger('sorter');
 
+type InternalSortCriterion =
+  | SortCriterion
+  | { key: 'forceToTop'; direction: 'asc' | 'desc' };
+
 class StreamSorter {
   private userData: UserData;
 
@@ -16,9 +20,12 @@ class StreamSorter {
     streams: ParsedStream[],
     type: string
   ): Promise<ParsedStream[]> {
-    let primarySortCriteria = this.userData.sortCriteria.global;
-    let cachedSortCriteria = this.userData.sortCriteria.cached;
-    let uncachedSortCriteria = this.userData.sortCriteria.uncached;
+    let primarySortCriteria: InternalSortCriterion[] =
+      this.userData.sortCriteria.global;
+    let cachedSortCriteria: InternalSortCriterion[] | undefined =
+      this.userData.sortCriteria.cached;
+    let uncachedSortCriteria: InternalSortCriterion[] | undefined =
+      this.userData.sortCriteria.uncached;
 
     const start = Date.now();
 
@@ -59,6 +66,24 @@ class StreamSorter {
     }
 
     let sortedStreams = [];
+
+    // append the forcedToTop criteria to all sort criteria at the start
+    primarySortCriteria = [
+      { key: 'forceToTop', direction: 'desc' },
+      ...primarySortCriteria,
+    ];
+    if (cachedSortCriteria && cachedSortCriteria.length > 0) {
+      cachedSortCriteria = [
+        { key: 'forceToTop', direction: 'desc' },
+        ...cachedSortCriteria,
+      ];
+    }
+    if (uncachedSortCriteria && uncachedSortCriteria.length > 0) {
+      uncachedSortCriteria = [
+        { key: 'forceToTop', direction: 'desc' },
+        ...uncachedSortCriteria,
+      ];
+    }
 
     if (
       cachedSortCriteria?.length &&
@@ -126,13 +151,18 @@ class StreamSorter {
 
   private dynamicSortKey(
     stream: ParsedStream,
-    sortCriteria: SortCriterion[],
+    sortCriteria: InternalSortCriterion[],
     type: string
   ): any[] {
-    function keyValue(sortCriterion: SortCriterion, userData: UserData) {
+    function keyValue(
+      sortCriterion: InternalSortCriterion,
+      userData: UserData
+    ) {
       const { key, direction } = sortCriterion;
       const multiplier = direction === 'asc' ? 1 : -1;
       switch (key) {
+        case 'forceToTop':
+          return multiplier * (stream.addon.forceToTop ? 1 : 0);
         case 'cached':
           return multiplier * (stream.service?.cached !== false ? 1 : 0);
 

@@ -46,6 +46,15 @@ export class CustomPreset extends Preset {
         default: false,
       },
       {
+        id: 'forceToTop',
+        name: 'Force to Top',
+        description:
+          'Whether to force results from this addon to be pushed to the top of the stream list.',
+        type: 'boolean',
+        required: false,
+        default: false,
+      },
+      {
         id: 'timeout',
         name: 'Timeout',
         description: 'The timeout for this addon',
@@ -125,6 +134,7 @@ export class CustomPreset extends Preset {
       },
       streamPassthrough: options.streamPassthrough ?? false,
       resultPassthrough: options.resultPassthrough ?? false,
+      forceToTop: options.forceToTop ?? false,
       headers: {
         'User-Agent': this.METADATA.USER_AGENT,
       },

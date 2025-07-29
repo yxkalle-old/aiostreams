@@ -122,6 +122,7 @@ const AddonSchema = z.object({
   library: z.boolean().optional(),
   streamPassthrough: z.boolean().optional(),
   resultPassthrough: z.boolean().optional(),
+  forceToTop: z.boolean().optional(),
   headers: z.record(z.string().min(1), z.string().min(1)).optional(),
   ip: z.string().ip().optional(),
 });
