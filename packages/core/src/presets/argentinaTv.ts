@@ -101,6 +101,7 @@ export class ArgentinaTVPreset extends Preset {
       library: false,
       resources: options.resources || this.METADATA.SUPPORTED_RESOURCES,
       timeout: options.timeout || this.METADATA.TIMEOUT,
+      resultPassthrough: true,
       preset: {
         id: '',
         type: this.METADATA.ID,
