@@ -63,11 +63,6 @@ function Content() {
               }));
             }}
           />
-          <Alert
-            intent="warning"
-            title="Warning"
-            description="This feature works by pinging the first uncached stream. This can cause issues when that uncached stream is actually a cached stream, meaning that to your debrid service, it looks like this AIOStreams instance is (for a short moment) streaming that episode. If your service has an IP restriction, this can get you banned if you stream the previous episode at the same time of that ping."
-          />
         </SettingsCard>
         <SettingsCard
           title="External Downloads"
