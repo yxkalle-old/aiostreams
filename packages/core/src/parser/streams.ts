@@ -201,7 +201,7 @@ class StreamParser {
     return filename
       ?.trim()
       ?.replace(/^\p{Emoji_Presentation}+/gu, '')
-      ?.replace(/^[^:]+:\s*/g, '');
+      ?.replace(/^[^\s:]+:\s*/, '');
   }
 
   protected getFolder(
