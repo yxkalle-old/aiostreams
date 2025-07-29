@@ -64,6 +64,15 @@ export class TmdbCollectionsPreset extends Preset {
         required: false,
       },
       {
+        id: 'moveStreamLinkToTop',
+        name: 'Move Stream Link to Top',
+        description:
+          'Push any streams from the above option to the top of the stream list.',
+        type: 'boolean',
+        default: true,
+        required: false,
+      },
+      {
         id: 'language',
         name: 'Language',
         description: 'The language of the catalogs',
@@ -870,6 +879,7 @@ export class TmdbCollectionsPreset extends Preset {
       library: false,
       resources: options.resources || this.METADATA.SUPPORTED_RESOURCES,
       timeout: options.timeout || this.METADATA.TIMEOUT,
+      forceToTop: options.moveStreamLinkToTop ?? true,
       preset: {
         id: '',
         type: this.METADATA.ID,

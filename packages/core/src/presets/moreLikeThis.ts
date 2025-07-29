@@ -330,6 +330,15 @@ export class MoreLikeThisPreset extends Preset {
         default: true,
       },
       {
+        id: 'forceToTop',
+        name: 'Force To Top',
+        description:
+          'Force streams from this addon to be pushed to the top of the stream list.',
+        type: 'boolean',
+        default: true,
+        required: false,
+      },
+      {
         id: 'socials',
         name: '',
         description: '',
@@ -377,6 +386,7 @@ export class MoreLikeThisPreset extends Preset {
       library: false,
       resources: options.resources || this.METADATA.SUPPORTED_RESOURCES,
       timeout: options.timeout || this.METADATA.TIMEOUT,
+      forceToTop: options.forceToTop ?? true,
       resultPassthrough: true,
       preset: {
         id: '',
