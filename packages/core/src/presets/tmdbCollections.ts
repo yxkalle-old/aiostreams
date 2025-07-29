@@ -880,6 +880,7 @@ export class TmdbCollectionsPreset extends Preset {
       resources: options.resources || this.METADATA.SUPPORTED_RESOURCES,
       timeout: options.timeout || this.METADATA.TIMEOUT,
       forceToTop: options.moveStreamLinkToTop ?? true,
+      resultPassthrough: true,
       preset: {
         id: '',
         type: this.METADATA.ID,
