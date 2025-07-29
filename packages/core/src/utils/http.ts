@@ -10,6 +10,7 @@ import {
   ProxyAgent,
   RequestInit,
 } from 'undici';
+import { socksDispatcher } from 'fetch-socks';
 
 const logger = createLogger('http');
 const urlCount = Cache.getInstance<string, number>('url-count');
@@ -93,11 +94,27 @@ export function makeRequest(url: string, options: RequestOptions) {
     method: options.method,
     body: options.body,
     headers: headers,
-    dispatcher: useProxy ? new ProxyAgent(Env.ADDON_PROXY!) : undefined,
+    dispatcher: useProxy ? getProxyAgent(Env.ADDON_PROXY!) : undefined,
     signal: AbortSignal.timeout(options.timeout),
   });
 
   return response;
+}
+
+function getProxyAgent(proxyUrl: string) {
+  if (!proxyUrl) {
+    return undefined;
+  }
+  const proxyUrlObj = new URL(proxyUrl);
+  if (proxyUrlObj.protocol === 'socks5:') {
+    return socksDispatcher({
+      type: 5,
+      port: parseInt(proxyUrlObj.port),
+      host: proxyUrlObj.hostname,
+    });
+  } else {
+    return new ProxyAgent(proxyUrl);
+  }
 }
 
 function shouldProxy(url: string) {
