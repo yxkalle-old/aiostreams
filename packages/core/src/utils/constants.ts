@@ -466,7 +466,7 @@ const SERVICE_DETAILS: Record<
       "Don't have an account? [Sign up here](https://www.seedr.cc/?r=6542079)",
     credentials: [
       {
-        id: 'apiKey',
+        id: 'encodedToken',
         name: 'Encoded Token',
         description:
           'Please authorise at MediaFusion and copy the token into here.',
