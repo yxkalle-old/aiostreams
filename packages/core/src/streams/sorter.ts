@@ -5,10 +5,6 @@ import { AUDIO_TAGS } from '../utils/constants';
 
 const logger = createLogger('sorter');
 
-type InternalSortCriterion =
-  | SortCriterion
-  | { key: 'forceToTop'; direction: 'asc' | 'desc' };
-
 class StreamSorter {
   private userData: UserData;
 
@@ -17,15 +13,17 @@ class StreamSorter {
   }
 
   public async sort(
-    streams: ParsedStream[],
+    allStreams: ParsedStream[],
     type: string
   ): Promise<ParsedStream[]> {
-    let primarySortCriteria: InternalSortCriterion[] =
-      this.userData.sortCriteria.global;
-    let cachedSortCriteria: InternalSortCriterion[] | undefined =
-      this.userData.sortCriteria.cached;
-    let uncachedSortCriteria: InternalSortCriterion[] | undefined =
-      this.userData.sortCriteria.uncached;
+    const forcedToTopStreams = allStreams.filter(
+      (stream) => stream.addon.forceToTop
+    );
+    const streams = allStreams.filter((stream) => !stream.addon.forceToTop);
+
+    let primarySortCriteria = this.userData.sortCriteria.global;
+    let cachedSortCriteria = this.userData.sortCriteria.cached;
+    let uncachedSortCriteria = this.userData.sortCriteria.uncached;
 
     const start = Date.now();
 
@@ -66,24 +64,6 @@ class StreamSorter {
     }
 
     let sortedStreams = [];
-
-    // append the forcedToTop criteria to all sort criteria at the start
-    primarySortCriteria = [
-      { key: 'forceToTop', direction: 'desc' },
-      ...primarySortCriteria,
-    ];
-    if (cachedSortCriteria && cachedSortCriteria.length > 0) {
-      cachedSortCriteria = [
-        { key: 'forceToTop', direction: 'desc' },
-        ...cachedSortCriteria,
-      ];
-    }
-    if (uncachedSortCriteria && uncachedSortCriteria.length > 0) {
-      uncachedSortCriteria = [
-        { key: 'forceToTop', direction: 'desc' },
-        ...uncachedSortCriteria,
-      ];
-    }
 
     if (
       cachedSortCriteria?.length &&
@@ -144,25 +124,24 @@ class StreamSorter {
     }
 
     logger.info(
-      `Sorted ${sortedStreams.length} streams in ${getTimeTakenSincePoint(start)}`
+      `Sorted ${sortedStreams.length}${
+        forcedToTopStreams.length > 0
+          ? ` + ${forcedToTopStreams.length} forced to top`
+          : ''
+      } streams in ${getTimeTakenSincePoint(start)}`
     );
-    return sortedStreams;
+    return [...forcedToTopStreams, ...sortedStreams];
   }
 
   private dynamicSortKey(
     stream: ParsedStream,
-    sortCriteria: InternalSortCriterion[],
+    sortCriteria: SortCriterion[],
     type: string
   ): any[] {
-    function keyValue(
-      sortCriterion: InternalSortCriterion,
-      userData: UserData
-    ) {
+    function keyValue(sortCriterion: SortCriterion, userData: UserData) {
       const { key, direction } = sortCriterion;
       const multiplier = direction === 'asc' ? 1 : -1;
       switch (key) {
-        case 'forceToTop':
-          return multiplier * (stream.addon.forceToTop ? 1 : 0);
         case 'cached':
           return multiplier * (stream.service?.cached !== false ? 1 : 0);
 
