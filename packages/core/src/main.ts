@@ -22,9 +22,6 @@ import { Wrapper } from './wrapper';
 import { PresetManager } from './presets';
 import {
   AddonCatalog,
-  Extras,
-  ExtrasSchema,
-  ExtrasTypesSchema,
   Meta,
   MetaPreview,
   ParsedStream,
