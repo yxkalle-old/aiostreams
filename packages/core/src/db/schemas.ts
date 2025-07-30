@@ -644,12 +644,22 @@ export const AddonCatalogResponseSchema = z.object({
 export type AddonCatalogResponse = z.infer<typeof AddonCatalogResponseSchema>;
 export type AddonCatalog = z.infer<typeof AddonCatalogSchema>;
 
-export const ExtrasTypesSchema = z.enum(['skip', 'genre', 'search']);
+export const ExtrasTypesSchema = z.enum([
+  'skip',
+  'genre',
+  'search',
+  'filename',
+  'videoHash',
+  'videoSize',
+]);
 export type ExtrasTypes = z.infer<typeof ExtrasTypesSchema>;
 export const ExtrasSchema = z.object({
   skip: z.coerce.number().optional(),
   genre: z.string().optional(),
   search: z.string().optional(),
+  filename: z.string().optional(),
+  videoHash: z.string().optional(),
+  videoSize: z.coerce.number().optional(),
 });
 export type Extras = z.infer<typeof ExtrasSchema>;
 

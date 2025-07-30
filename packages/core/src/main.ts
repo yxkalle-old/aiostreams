@@ -13,7 +13,7 @@ import {
   getTimeTakenSincePoint,
   maskSensitiveInfo,
   Cache,
-  CatalogExtras,
+  ExtrasParser,
   TMDBMetadata,
   Metadata,
   makeUrlLogSafe,
@@ -318,7 +318,7 @@ export class AIOStreams {
       // reset the type from the request (which is the overriden type) to the actual type
       type = modification.type;
     }
-    const parsedExtras = new CatalogExtras(extras);
+    const parsedExtras = new ExtrasParser(extras);
     logger.debug(`Parsed extras: ${JSON.stringify(parsedExtras)}`);
     if (parsedExtras.genre === 'None') {
       logger.debug(`Genre extra is None, removing genre extra`);
@@ -592,6 +592,8 @@ export class AIOStreams {
         }
       }
     }
+    const parsedExtras = new ExtrasParser(extras);
+    logger.debug(`Parsed extras: ${JSON.stringify(parsedExtras)}`);
 
     // Request subtitles from all supported addons in parallel
     let errors: AIOStreamsError[] = this.addonInitialisationErrors.map(
@@ -608,7 +610,7 @@ export class AIOStreams {
           const subtitles = await new Wrapper(addon).getSubtitles(
             type,
             id,
-            extras
+            parsedExtras.toString()
           );
           if (subtitles) {
             allSubtitles.push(...subtitles);

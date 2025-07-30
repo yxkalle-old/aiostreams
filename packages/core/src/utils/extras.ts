@@ -1,6 +1,6 @@
 import { Extras, ExtrasSchema, ExtrasTypesSchema } from '../db/schemas';
 
-export class CatalogExtras {
+export class ExtrasParser {
   private extras: Partial<Extras>;
 
   constructor(extras?: string) {
@@ -13,7 +13,7 @@ export class CatalogExtras {
     }
     const mapped = extras.split('&').map((e) => {
       const [key, value] = e.split('=');
-      return { key, value };
+      return { key, value: encodeURIComponent(value) };
     });
     const extrasObject = Object.fromEntries(
       mapped.map(({ key, value }) => {

@@ -12,5 +12,5 @@ export * from './config';
 export * from './languages';
 export * from './dsu';
 export * from './startup';
-export * from './catalogExtras';
+export * from './extras';
 export * from './rpdb';
