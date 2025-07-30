@@ -427,7 +427,13 @@ there is no need to provide these details here.
         debugFlags: '',
         mediaflowProxyConfigs:
           proxyUrl && proxyPassword
-            ? [{ label: '', url: proxyUrl, pwd: proxyPassword }]
+            ? [
+                {
+                  label: '',
+                  url: proxyUrl,
+                  pwd: encodeURIComponent(proxyPassword),
+                },
+              ]
             : [],
         debridConfig: debridConfig,
         hideUnsupportedHosters: options.hideUnsupportedHosters,
