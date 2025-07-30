@@ -126,6 +126,10 @@ class StreamDeduplicator {
 
       // Process each type according to its deduplication mode
       for (const [type, typeStreams] of streamsByType.entries()) {
+        if (type.startsWith('passthrough-')) {
+          typeStreams.forEach((stream) => processedStreams.add(stream));
+          continue;
+        }
         const mode = deduplicator[type as keyof typeof deduplicator] as string;
         if (mode === 'disabled') {
           typeStreams.forEach((stream) => processedStreams.add(stream));
