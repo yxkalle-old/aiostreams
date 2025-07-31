@@ -687,7 +687,7 @@ async function validateProxy(
     const port = Env.FORCE_PUBLIC_PROXY_PORT ?? proxyUrl.port;
     forcedPublicUrl = `${Env.FORCE_PUBLIC_PROXY_PROTOCOL ?? proxyUrl.protocol}://${Env.FORCE_PUBLIC_PROXY_HOST ?? proxyUrl.hostname}${port ? `:${port}` : ''}`;
   }
-  forcedPublicUrl = Env.FORCE_PROXY_PUBLIC_URL;
+  forcedPublicUrl = Env.FORCE_PROXY_PUBLIC_URL ?? forcedPublicUrl;
   proxy.publicUrl = forcedPublicUrl
     ? (encryptString(forcedPublicUrl).data ?? undefined)
     : (proxy.publicUrl ?? undefined);
