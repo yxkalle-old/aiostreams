@@ -279,9 +279,11 @@ export class UsenetSourceHandler extends SourceHandler {
                 }),
               ];
             default:
+              logger.error(`Error fetching NZBs for ${id}: ${error.message}`);
               throw error;
           }
         }
+        logger.error(`Unexpected error fetching NZBs for ${id}: ${error}`);
         throw error;
       }
     } else {
