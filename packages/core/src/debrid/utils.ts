@@ -1,4 +1,7 @@
 import { ParsedFile } from '../db/schemas';
+import { createLogger } from '../utils';
+
+const logger = createLogger('debrid');
 
 interface FileWithParsedInfo {
   name: string;
@@ -16,7 +19,8 @@ export function findMatchingFileInTorrent(
   requestedFilename?: string,
   requestedTitle?: string,
   season?: string,
-  episode?: string
+  episode?: string,
+  expectLinks?: boolean
 ): FileWithParsedInfo | null {
   for (const file of files) {
     if (!file.isVideo || file.name?.includes('sample')) {
@@ -55,9 +59,9 @@ export function findMatchingFileInTorrent(
     if (fileIdx) return fileIdx;
   }
 
-  if (files.length > 0 && files.some((file) => file.link)) {
+  if (files.length > 0 && (!expectLinks || files.some((file) => file.link))) {
     return files
-      .filter((file) => file.link)
+      .filter((file) => !expectLinks || file.link)
       .reduce((largest, current) =>
         current.size > largest.size ? current : largest
       );

@@ -67,7 +67,7 @@ export class DebridService {
     const cachedFiles = this.debridCache.get(cacheKey);
     if (cachedFiles) {
       logger.debug(
-        `[${this.serviceConfig.id}] Using cached debrid results for ${torrents.length} torrents.`
+        `[${this.serviceConfig.id}] Using cached debrid results for ${torrents.length} torrents with ${cachedFiles.length} files`
       );
       return cachedFiles;
     }
@@ -86,6 +86,9 @@ export class DebridService {
         );
 
         if (!item) {
+          logger.debug(
+            `[${this.serviceConfig.id}] Hash ${torrent.hash} not found in instant availability response`
+          );
           continue;
         }
 
@@ -101,7 +104,8 @@ export class DebridService {
                 undefined,
                 requestedTitle,
                 season,
-                episode
+                episode,
+                false
               )
             : { name: torrent.title, size: torrent.size, index: -1 }; // Fallback for torrents with no file list
 
@@ -152,6 +156,7 @@ export class DebridService {
             };
         }
       }
+      logger.error(`Unexpected error during debrid check:`, error);
       return [];
     }
   }

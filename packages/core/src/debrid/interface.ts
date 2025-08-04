@@ -146,7 +146,8 @@ export class DebridInterface {
       filename,
       requestedTitle,
       season,
-      episode
+      episode,
+      true
     );
 
     if (!file || !file.link) {
