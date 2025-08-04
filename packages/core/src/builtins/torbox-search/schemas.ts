@@ -45,12 +45,14 @@ const TorBoxSearchApiTorrentSchema = z.object({
     site: z.string().optional(),
   }),
   magnet: z.union([z.string(), z.null()]),
-  torrent: z.union([z.string(), z.null()]),
+  torrent: z.union([z.string(), z.null()]).optional(),
   last_known_seeders: z.number(),
   last_known_peers: z.number(),
   size: z.coerce.number(),
   tracker: z.string(),
-  categories: z.array(z.string()),
+  categories: z
+    .union([z.array(z.union([z.string(), z.number()])), z.null()])
+    .optional(),
   files: z.coerce.number(),
   type: z.union([z.literal('torrent'), z.literal('usenet')]),
   nzb: z.union([z.string(), z.null()]),
