@@ -40,7 +40,7 @@ export class TorboxSearchParser extends StreamParser {
     service: ParsedStream['service'],
     currentParsedStream: ParsedStream
   ): ParsedStream['type'] {
-    return (stream as any).behaviorHints?.type === 'usenet'
+    return (stream as any).type === 'usenet'
       ? 'usenet'
       : super.getStreamType(stream, service, currentParsedStream);
   }

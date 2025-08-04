@@ -42,7 +42,7 @@ abstract class SourceHandler {
     userData: z.infer<typeof TorBoxSearchAddonUserDataSchema>,
     season?: string,
     episode?: string
-  ): Stream & { behaviorHints: { type: 'torrent' | 'usenet' } } {
+  ): Stream & { type: 'torrent' | 'usenet' } {
     const storeAuth = {
       storeName: file.service.id,
       storeCredential: userData.services.find(
@@ -69,10 +69,10 @@ abstract class SourceHandler {
       url: `${Env.BASE_URL}/api/v1/debrid/resolve/${encodeURIComponent(Buffer.from(JSON.stringify(storeAuth)).toString('base64'))}/${encodeURIComponent(Buffer.from(JSON.stringify(playbackInfo)).toString('base64'))}/${encodeURIComponent(file.filename || torrent.title)}`,
       name,
       description,
+      type: torrent.type,
       behaviorHints: {
         videoSize: file.size,
         filename: file.filename,
-        type: torrent.type,
       },
     };
   }
