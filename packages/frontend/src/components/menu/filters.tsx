@@ -79,6 +79,7 @@ import { toast } from 'sonner';
 import { Slider } from '../ui/slider/slider';
 import { TbFilterCode } from 'react-icons/tb';
 import { PasswordInput } from '../ui/password-input';
+import MarkdownLite from '../shared/markdown-lite';
 
 type Resolution = (typeof RESOLUTIONS)[number];
 type Quality = (typeof QUALITIES)[number];
@@ -289,7 +290,8 @@ function Content() {
                 <TbFilterCode className="text-lg mr-3" />
                 Stream Expression
               </TabsTrigger>
-              {status?.settings.regexFilterAccess !== 'none' && (
+              {(status?.settings.regexFilterAccess !== 'none' ||
+                status?.settings.allowedRegexPatterns) && (
                 <TabsTrigger value="regex">
                   <BsRegex className="text-lg mr-3" />
                   Regex
@@ -1155,6 +1157,24 @@ function Content() {
                     }}
                   />
 
+                  <NumberInput
+                    label="Year Tolerance"
+                    disabled={!userData.titleMatching?.matchYear}
+                    value={userData.titleMatching?.yearTolerance ?? 1}
+                    onValueChange={(value) => {
+                      setUserData((prev) => ({
+                        ...prev,
+                        titleMatching: {
+                          ...prev.titleMatching,
+                          yearTolerance: value,
+                        },
+                      }));
+                    }}
+                    min={0}
+                    max={100}
+                    help="The number of years to tolerate when matching years. For example, if the year tolerance is 5, then a stream with a year of 2020 will match a request for 2025."
+                  />
+
                   <Select
                     disabled={!userData.titleMatching?.enabled}
                     label="Matching Mode"
@@ -1606,15 +1626,35 @@ function Content() {
                 {status?.settings.regexFilterAccess === 'trusted' && (
                   <Alert
                     intent="info"
-                    title="Admin Only"
+                    title="Trusted Users Only"
                     description={
                       <>
                         <p>
                           Regex filters are only available to trusted users due
-                          to the potential for abuse. Ask the owner of the
-                          instance to add your UUID to the{' '}
+                          to the potential for abuse. If you are the owner of
+                          the instance, you can add your UUID to the{' '}
                           <code className="font-mono">TRUSTED_UUIDS</code>{' '}
                           environment variable.
+                        </p>
+                      </>
+                    }
+                  />
+                )}
+                {status?.settings.allowedRegexPatterns && (
+                  <Alert
+                    intent="info"
+                    title="Allowed Regex Patterns"
+                    description={
+                      <>
+                        <p>
+                          This instance has allowed a specific set of regexes to
+                          be used by all users.
+                        </p>
+                        <p>
+                          <MarkdownLite>
+                            {status?.settings.allowedRegexPatterns
+                              .description || ''}
+                          </MarkdownLite>
                         </p>
                       </>
                     }

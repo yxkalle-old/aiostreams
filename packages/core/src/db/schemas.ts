@@ -185,10 +185,19 @@ const OptionDefinition = z.object({
     'url',
     'alert',
     'socials',
+    'oauth',
   ]),
+  oauth: z
+    .object({
+      authorisationUrl: z.string().url(),
+      oauthResultField: z.object({
+        name: z.string().min(1),
+        description: z.string().min(1),
+      }),
+    })
+    .optional(),
   required: z.boolean().optional(),
   default: z.any().optional(),
-  // sensitive: z.boolean().optional(),
   forced: z.any().optional(),
   options: z
     .array(
@@ -387,6 +396,7 @@ export const UserDataSchema = z.object({
     .object({
       mode: z.enum(['exact', 'contains']).optional(),
       matchYear: z.boolean().optional(),
+      yearTolerance: z.number().min(0).max(100).optional(),
       enabled: z.boolean().optional(),
       requestTypes: z.array(z.string()).optional(),
       addons: z.array(z.string()).optional(),
@@ -560,7 +570,7 @@ const MetaLinkSchema = z
 
 const MetaVideoSchema = z
   .object({
-    id: z.string().min(1),
+    id: z.string(),
     title: z.string().or(z.null()).optional(),
     name: z.string().or(z.null()).optional(),
     released: z.string().datetime().or(z.null()).optional(),
@@ -806,6 +816,7 @@ const PresetMetadataSchema = z.object({
   DESCRIPTION: z.string(),
   URL: z.string(),
   TIMEOUT: z.number(),
+  BUILTIN: z.boolean().optional(),
   USER_AGENT: z.string(),
   SUPPORTED_SERVICES: z.array(z.string()),
   OPTIONS: z.array(OptionDefinition),
@@ -829,6 +840,7 @@ const PresetMinimalMetadataSchema = z.object({
   SUPPORTED_STREAM_TYPES: z.array(StreamTypes),
   SUPPORTED_SERVICES: z.array(z.string()),
   OPTIONS: z.array(OptionDefinition),
+  BUILTIN: z.boolean().optional(),
 });
 
 const StatusResponseSchema = z.object({
@@ -844,6 +856,12 @@ const StatusResponseSchema = z.object({
     customHtml: z.string().optional(),
     protected: z.boolean(),
     regexFilterAccess: z.enum(['none', 'trusted', 'all']),
+    allowedRegexPatterns: z
+      .object({
+        patterns: z.array(z.string()),
+        description: z.string().optional(),
+      })
+      .optional(),
     loggingSensitiveInfo: z.boolean(),
     tmdbApiAvailable: z.boolean(),
     forced: z.object({

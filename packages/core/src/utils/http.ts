@@ -1,5 +1,5 @@
 import { Cache } from './cache';
-import { HEADERS_FOR_IP_FORWARDING } from './constants';
+import { HEADERS_FOR_IP_FORWARDING, INTERNAL_SECRET_HEADER } from './constants';
 import { Env } from './env';
 import { createLogger, maskSensitiveInfo } from './logger';
 import {
@@ -58,6 +58,10 @@ export function makeRequest(url: string, options: RequestOptions) {
 
   if (headers.get('User-Agent') === 'none') {
     headers.delete('User-Agent');
+  }
+
+  if (url.startsWith(Env.INTERNAL_URL)) {
+    headers.set(INTERNAL_SECRET_HEADER, Env.INTERNAL_SECRET);
   }
 
   let domainUserAgent = domainHasUserAgent(url);

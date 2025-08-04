@@ -15,7 +15,7 @@ router.get('/', async (req: Request, res: Response) => {
   const userCount = await UserRepository.getUserCount();
   let forcedPublicProxyUrl = Env.FORCE_PROXY_PUBLIC_URL;
   if (Env.FORCE_PUBLIC_PROXY_HOST) {
-    forcedPublicProxyUrl = `${Env.FORCE_PUBLIC_PROXY_PROTOCOL}://${Env.FORCE_PUBLIC_PROXY_HOST}:${Env.FORCE_PUBLIC_PROXY_PORT}`;
+    forcedPublicProxyUrl = `${Env.FORCE_PUBLIC_PROXY_PROTOCOL}://${Env.FORCE_PUBLIC_PROXY_HOST}:${Env.FORCE_PUBLIC_PROXY_PORT ?? ''}`;
   }
   const info: StatusResponse = {
     version: Env.VERSION,
@@ -31,6 +31,13 @@ router.get('/', async (req: Request, res: Response) => {
       protected: !!Env.ADDON_PASSWORD,
       tmdbApiAvailable: !!Env.TMDB_ACCESS_TOKEN,
       regexFilterAccess: Env.REGEX_FILTER_ACCESS,
+      allowedRegexPatterns:
+        Env.ALLOWED_REGEX_PATTERNS.length > 0
+          ? {
+              patterns: Env.ALLOWED_REGEX_PATTERNS,
+              description: Env.ALLOWED_REGEX_PATTERNS_DESCRIPTION,
+            }
+          : undefined,
       loggingSensitiveInfo: Env.LOG_SENSITIVE_INFO,
       forced: {
         proxy: {

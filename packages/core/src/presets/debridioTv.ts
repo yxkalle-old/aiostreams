@@ -39,6 +39,14 @@ class DebridioTvStreamParser extends StreamParser {
   ): string | undefined {
     return `${stream.name} - ${stream.description}`;
   }
+
+  protected getStreamType(
+    stream: Stream,
+    service: ParsedStream['service'],
+    currentParsedStream: ParsedStream
+  ): ParsedStream['type'] {
+    return constants.LIVE_STREAM_TYPE;
+  }
 }
 export class DebridioTvPreset extends Preset {
   static override getParser(): typeof StreamParser {

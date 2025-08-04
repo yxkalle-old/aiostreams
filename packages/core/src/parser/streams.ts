@@ -11,6 +11,10 @@ class StreamParser {
         pattern: /invalid\s+\w+\s+(account|apikey|token)/i,
         message: 'Invalid account or apikey or token',
       },
+      {
+        pattern: /public\s+rate[-\s]?limit\s+exceeded/i,
+        message: 'Public rate limit exceeded',
+      },
     ];
   }
   protected get filenameRegex(): RegExp | undefined {
@@ -53,6 +57,9 @@ class StreamParser {
   constructor(protected readonly addon: Addon) {}
 
   parse(stream: Stream): ParsedStream | { skip: true } {
+    if (this.shouldSkip(stream)) {
+      return { skip: true };
+    }
     stream.description = stream.description || stream.title;
 
     let parsedStream: ParsedStream = {
@@ -136,6 +143,10 @@ class StreamParser {
 
   protected applyUrlModifications(url: string | undefined): string | undefined {
     return url;
+  }
+
+  protected shouldSkip(stream: Stream): boolean {
+    return false;
   }
 
   protected raiseErrorIfNecessary(

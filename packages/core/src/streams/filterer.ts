@@ -2,9 +2,7 @@ import { ParsedStream, UserData } from '../db/schemas';
 import {
   createLogger,
   FeatureControl,
-  Metadata,
   getTimeTakenSincePoint,
-  TMDBMetadata,
   constants,
 } from '../utils';
 import { TYPES } from '../utils/constants';
@@ -14,6 +12,7 @@ import { safeRegexTest } from '../utils/regex';
 import { StreamType } from '../utils/constants';
 import { StreamSelector } from '../parser/streamExpression';
 import StreamUtils from './utils';
+import { TMDBMetadata, TMDBMetadataResponse } from '../metadata/tmdb';
 
 const logger = createLogger('filterer');
 
@@ -88,12 +87,12 @@ class StreamFilterer {
     const start = Date.now();
     const isRegexAllowed = FeatureControl.isRegexAllowed(this.userData);
 
-    let requestedMetadata: Metadata | undefined;
+    let requestedMetadata: TMDBMetadataResponse | undefined;
     if (this.userData.titleMatching?.enabled && TYPES.includes(type as any)) {
       try {
-        requestedMetadata = await new TMDBMetadata(
-          this.userData.tmdbAccessToken
-        ).getMetadata(id, type as any);
+        requestedMetadata = await new TMDBMetadata({
+          accessToken: this.userData.tmdbAccessToken,
+        }).getMetadata(id, type as any);
         logger.info(`Fetched metadata for ${id}`, requestedMetadata);
       } catch (error) {
         logger.error(`Error fetching titles for ${id}: ${error}`);
@@ -112,6 +111,7 @@ class StreamFilterer {
       // const titleMatchingOptions = this.userData.titleMatching;
       const titleMatchingOptions = {
         mode: 'exact',
+        yearTolerance: 1,
         ...(this.userData.titleMatching ?? {}),
       };
       if (!titleMatchingOptions || !titleMatchingOptions.enabled) {
@@ -148,7 +148,10 @@ class StreamFilterer {
       }
       const yearMatch =
         titleMatchingOptions.matchYear && streamYear
-          ? requestedMetadata?.year === streamYear
+          ? requestedMetadata.year === streamYear ||
+            (titleMatchingOptions.yearTolerance &&
+              Math.abs(Number(requestedMetadata.year) - Number(streamYear)) <=
+                titleMatchingOptions.yearTolerance)
           : true;
 
       if (titleMatchingOptions.mode === 'exact') {

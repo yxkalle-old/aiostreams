@@ -14,6 +14,13 @@ class MediaFusionStreamParser extends StreamParser {
     if (stream.description?.includes('Content Warning')) {
       throw new Error(stream.description);
     }
+    super.raiseErrorIfNecessary(stream, currentParsedStream);
+  }
+
+  protected override shouldSkip(stream: Stream): boolean {
+    return (
+      stream.description?.includes('🚫 Streams Found\n⚙️ Filtered') ?? false
+    );
   }
 
   protected override get indexerEmojis(): string[] {

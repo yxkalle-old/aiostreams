@@ -806,7 +806,13 @@ function AddonCard({
   onAdd: () => void;
 }) {
   return (
-    <div className="flex flex-col min-h-72 h-auto bg-[--background] border border-[--border] rounded-lg shadow-sm p-4 relative">
+    <div className="flex flex-col min-h-72 h-auto bg-[--background] border border-[--border] rounded-lg shadow-sm p-4 relative overflow-hidden">
+      {/* Built-in ribbon */}
+      {preset.BUILTIN && (
+        <div className="absolute -left-[30px] top-[20px] bg-[rgb(var(--color-brand-500))] text-white text-xs font-semibold py-1 w-[120px] text-center transform -rotate-45 shadow-md">
+          Built-in
+        </div>
+      )}
       {/* Top: Logo + Name/Description */}
       <div className="flex gap-4 items-start">
         {preset.ID === 'custom' ? (

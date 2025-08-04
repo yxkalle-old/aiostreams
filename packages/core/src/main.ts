@@ -14,8 +14,6 @@ import {
   maskSensitiveInfo,
   Cache,
   ExtrasParser,
-  TMDBMetadata,
-  Metadata,
   makeUrlLogSafe,
 } from './utils';
 import { Wrapper } from './wrapper';
@@ -41,6 +39,7 @@ import {
   StreamUtils,
 } from './streams';
 import { getAddonName } from './utils/general';
+import { TMDBMetadata, TMDBMetadataResponse } from './metadata/tmdb';
 const logger = createLogger('core');
 
 const shuffleCache = Cache.getInstance<string, MetaPreview[]>('shuffle');
@@ -1069,7 +1068,7 @@ export class AIOStreams {
   }
 
   private validateAddon(addon: Addon) {
-    const manifestUrl = new URL(addon.manifestUrl);
+    const manifestUrl = new URL(addon.manifestUrl, Env.BASE_URL);
     const baseUrl = Env.BASE_URL ? new URL(Env.BASE_URL) : undefined;
     if (this.userData.uuid && addon.manifestUrl.includes(this.userData.uuid)) {
       logger.warn(
@@ -1082,6 +1081,7 @@ export class AIOStreams {
       ((baseUrl && manifestUrl.host === baseUrl.host) ||
         (manifestUrl.host.startsWith('localhost') &&
           manifestUrl.port === Env.PORT.toString())) &&
+      !manifestUrl.pathname.startsWith('/builtins') &&
       Env.DISABLE_SELF_SCRAPING === true
     ) {
       throw new Error(
@@ -1155,11 +1155,13 @@ export class AIOStreams {
     });
   }
 
-  private async getMetadata(id: string): Promise<Metadata | undefined> {
+  private async getMetadata(
+    id: string
+  ): Promise<TMDBMetadataResponse | undefined> {
     try {
-      const metadata = await new TMDBMetadata(
-        this.userData.tmdbAccessToken
-      ).getMetadata(id, 'series');
+      const metadata = await new TMDBMetadata({
+        accessToken: this.userData.tmdbAccessToken,
+      }).getMetadata(id, 'series');
       return metadata;
     } catch (error) {
       logger.warn(`Error getting metadata for ${id}`, {
@@ -1172,7 +1174,7 @@ export class AIOStreams {
   private _getNextEpisode(
     currentSeason: number,
     currentEpisode: number,
-    metadata?: Metadata
+    metadata?: TMDBMetadataResponse
   ): {
     season: number;
     episode: number;

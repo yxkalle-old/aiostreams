@@ -1,4 +1,4 @@
-import { Addon, Option, UserData, Resource, Stream } from '../db';
+import { Addon, Option, UserData, Resource, Stream, ParsedStream } from '../db';
 import { baseOptions, Preset } from './preset';
 import { Env } from '../utils';
 import { constants, ServiceId } from '../utils';
@@ -31,6 +31,32 @@ class StremthruStoreStreamParser extends StreamParser {
       return urlObj.toString();
     }
     return url;
+  }
+  // ensure release groups aren't misidentified as indexers
+  protected override getIndexer(
+    stream: Stream,
+    currentParsedStream: ParsedStream
+  ): string | undefined {
+    return undefined;
+  }
+
+  protected override getFolderSize(
+    stream: Stream,
+    currentParsedStream: ParsedStream
+  ): number | undefined {
+    let folderSize = this.calculateBytesFromSizeString(
+      stream.description ?? '',
+      /📦\s*(\d+(\.\d+)?)\s?(KB|MB|GB|TB)/i
+    );
+    if (folderSize && currentParsedStream.size) {
+      if (
+        Math.abs(folderSize - currentParsedStream.size) <=
+        currentParsedStream.size * 0.05
+      ) {
+        return undefined;
+      }
+    }
+    return folderSize;
   }
 }
 

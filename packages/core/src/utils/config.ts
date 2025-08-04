@@ -10,7 +10,8 @@ import {
 import { AIOStreams } from '../main';
 import { Preset, PresetManager } from '../presets';
 import { createProxy } from '../proxy';
-import { constants, TMDBMetadata } from '.';
+import { constants } from '.';
+import { TMDBMetadata } from '../metadata/tmdb';
 import { isEncrypted, decryptString, encryptString } from './crypto';
 import { Env } from './env';
 import { createLogger, maskSensitiveInfo } from './logger';
@@ -347,17 +348,11 @@ export async function validateConfig(
     );
   }
 
-  if (config.proxy) {
-    const decryptedProxy = ensureDecrypted(config).proxy;
-    if (decryptedProxy) {
-      config.proxy = await validateProxy(
-        config.proxy,
-        decryptedProxy,
-        skipErrorsFromAddonsOrProxies,
-        decryptValues
-      );
-    }
-  }
+  config.proxy = await validateProxy(
+    config,
+    skipErrorsFromAddonsOrProxies,
+    decryptValues
+  );
 
   if (config.rpdbApiKey) {
     try {
@@ -373,7 +368,9 @@ export async function validateConfig(
 
   if (config.titleMatching?.enabled === true) {
     try {
-      const tmdb = new TMDBMetadata(config.tmdbAccessToken);
+      const tmdb = new TMDBMetadata({
+        accessToken: config.tmdbAccessToken,
+      });
       await tmdb.validateAccessToken();
     } catch (error) {
       if (!skipErrorsFromAddonsOrProxies) {
@@ -408,24 +405,28 @@ async function validateRegexes(config: UserData) {
   const preferredRegexes = config.preferredRegexPatterns;
   const regexAllowed = FeatureControl.isRegexAllowed(config);
 
-  if (
-    !regexAllowed &&
-    (excludedRegexes?.length ||
-      includedRegexes?.length ||
-      requiredRegexes?.length ||
-      preferredRegexes?.length)
-  ) {
-    throw new Error(
-      'You do not have permission to use regex filters, please remove them from your config'
-    );
-  }
-
   const regexes = [
     ...(excludedRegexes ?? []),
     ...(includedRegexes ?? []),
     ...(requiredRegexes ?? []),
     ...(preferredRegexes ?? []).map((regex) => regex.pattern),
   ];
+
+  if (!regexAllowed && regexes.length > 0) {
+    const allowedRegexes = regexes.filter((regex) =>
+      FeatureControl.allowedRegexPatterns.patterns.includes(regex)
+    );
+    if (allowedRegexes.length === 0) {
+      throw new Error(
+        'You do not have permission to use regex filters, please remove them from your config'
+      );
+    }
+    if (allowedRegexes.length !== regexes.length) {
+      throw new Error(
+        `You are only permitted to use specific regex patterns, you have ${regexes.length - allowedRegexes.length} / ${regexes.length} regexes that are not allowed. Please remove them from your config.`
+      );
+    }
+  }
 
   await Promise.all(
     regexes.map(async (regex) => {
@@ -663,12 +664,12 @@ function validateOption(
 }
 
 async function validateProxy(
-  proxy: StreamProxyConfig,
-  decryptedProxy: StreamProxyConfig,
+  config: UserData,
   skipProxyErrors: boolean = false,
   decryptCredentials: boolean = false
 ): Promise<StreamProxyConfig> {
   // apply forced values if they exist
+  const proxy = config.proxy ?? {};
   proxy.enabled = Env.FORCE_PROXY_ENABLED ?? proxy.enabled;
   proxy.id = Env.FORCE_PROXY_ID ?? proxy.id;
   proxy.url = Env.FORCE_PROXY_URL
@@ -738,8 +739,9 @@ async function validateProxy(
       }
       proxy.publicUrl = data;
     }
+
     // use decrypted proxy config for validation.
-    const ProxyService = createProxy(decryptedProxy);
+    const ProxyService = createProxy(ensureDecrypted(config).proxy ?? {});
 
     try {
       proxy.publicIp || (await ProxyService.getPublicIp());
