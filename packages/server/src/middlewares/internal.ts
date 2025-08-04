@@ -8,7 +8,10 @@ export const internalMiddleware = (
   next: NextFunction
 ) => {
   const internalSecret = req.get(constants.INTERNAL_SECRET_HEADER);
-  if (internalSecret !== Env.INTERNAL_SECRET) {
+  if (
+    internalSecret !== Env.INTERNAL_SECRET &&
+    Env.NODE_ENV !== 'development'
+  ) {
     res.status(403).json(
       createResponse({
         success: false,
