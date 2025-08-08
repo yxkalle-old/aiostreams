@@ -26,6 +26,15 @@ import {
 const router = Router();
 const logger = createLogger('server');
 
+// block HEAD requests
+router.use((req: Request, res: Response, next: NextFunction) => {
+  if (req.method === 'HEAD') {
+    res.status(405).send('Method not allowed');
+  } else {
+    next();
+  }
+});
+
 router.get(
   '/resolve/:encodedStoreAuth/:encodedPlaybackInfo/:filename',
   async (req: Request, res: Response, next: NextFunction) => {
@@ -97,6 +106,7 @@ router.get(
         }
 
         res.status(302).redirect(`/static/${staticFile}`);
+        return;
       }
 
       if (!streamUrl) {
