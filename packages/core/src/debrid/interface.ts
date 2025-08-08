@@ -179,7 +179,6 @@ export class DebridInterface {
     if (!this.torboxApi) {
       throw new Error('Torbox API not available');
     }
-    logger.debug(`Creating usenet download for ${nzb}`);
 
     const nzbFile = await this.torboxApi.usenet.createUsenetDownload('v1', {
       link: nzb,
@@ -196,23 +195,23 @@ export class DebridInterface {
       return undefined;
     }
 
-    if (nzbFile.data?.error) {
+    if (nzbFile.data?.error || !nzbFile.data?.data?.usenetdownloadId) {
       throw new Error(
-        `Usenet download failed: ${nzbFile.data.error} ${nzbFile.data.detail}`
+        `Usenet download failed: ${nzbFile.data?.error} ${nzbFile.data?.detail}`
       );
     }
 
-    const link = await this.torboxApi.usenet.requestDownloadLink1('v1', {
-      usenetId: nzbFile.data?.data?.usenetdownloadId,
+    const link = await this.torboxApi.usenet.requestDownloadLink('v1', {
+      usenetId: nzbFile.data?.data?.usenetdownloadId?.toString(),
       userIp: this.clientIp,
       redirect: 'false',
       token: this.storeAuth.storeCredential,
     });
 
     logger.debug(
-      `Requested usenet download link for ${nzb}: ${link.data} ${link.metadata.status}`
+      `Requested usenet download link for ${nzb}: ${link.data?.data} ${link.metadata.status}`
     );
 
-    return link.data ?? undefined;
+    return link.data?.data ?? undefined;
   }
 }
