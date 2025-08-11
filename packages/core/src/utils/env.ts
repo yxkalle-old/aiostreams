@@ -1339,6 +1339,20 @@ export const Env = cleanEnv(process.env, {
     desc: 'Default More Like This user agent',
   }),
 
+  CONTENT_DEEP_DIVE_URL: url({
+    default:
+      'https://stremio-content-deepdive-addon-dc8f7b513289.herokuapp.com',
+    desc: 'Content Deep Dive URL',
+  }),
+  DEFAULT_CONTENT_DEEP_DIVE_TIMEOUT: num({
+    default: undefined,
+    desc: 'Default Content Deep Dive timeout',
+  }),
+  DEFAULT_CONTENT_DEEP_DIVE_USER_AGENT: userAgent({
+    default: undefined,
+    desc: 'Default Content Deep Dive user agent',
+  }),
+
   BUILTIN_STREMTHRU_URL: url({
     default: 'https://stremthru.13377001.xyz',
     desc: 'Builtin StremThru URL',

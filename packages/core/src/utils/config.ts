@@ -258,6 +258,8 @@ export async function validateConfig(
     throw new Error(formatZodError(error));
   }
 
+  applyMigrations(config);
+
   if (Env.ADDON_PASSWORD && config.addonPassword !== Env.ADDON_PASSWORD) {
     throw new Error(
       'Invalid addon password. Please enter the value of the ADDON_PASSWORD environment variable '
@@ -396,6 +398,18 @@ export async function validateConfig(
   ).initialise();
 
   return config;
+}
+
+export function applyMigrations(config: UserData) {
+  if (config.titleMatching?.matchYear) {
+    config.yearMatching = {
+      enabled: true,
+      tolerance: config.titleMatching.yearTolerance ? 2 : 0,
+      requestTypes: config.titleMatching.requestTypes ?? [],
+      addons: config.titleMatching.addons ?? [],
+    };
+    delete config.titleMatching.matchYear;
+  }
 }
 
 async function validateRegexes(config: UserData) {
