@@ -173,6 +173,7 @@ function Content() {
   const { status } = useStatus();
   const previousTab = useRef(tab);
   const { userData, setUserData } = useUserData();
+  const allowedRegexModal = useDisclosure(false);
   useEffect(() => {
     if (tab !== previousTab.current) {
       previousTab.current = tab;
@@ -1693,7 +1694,7 @@ function Content() {
                     }
                   />
                 )}
-                {status?.settings.allowedRegexPatterns && (
+                {status?.settings.allowedRegexPatterns?.patterns.length && (
                   <Alert
                     intent="info"
                     title="Allowed Regex Patterns"
@@ -1703,12 +1704,27 @@ function Content() {
                           This instance has allowed a specific set of regexes to
                           be used by all users.
                         </p>
-                        <p>
-                          <MarkdownLite>
-                            {status?.settings.allowedRegexPatterns
-                              .description || ''}
-                          </MarkdownLite>
-                        </p>
+                        <br />
+                        {status?.settings.allowedRegexPatterns.description ? (
+                          <>
+                            <p>
+                              <MarkdownLite>
+                                {status?.settings.allowedRegexPatterns
+                                  .description || ''}
+                              </MarkdownLite>
+                            </p>
+                            <br />
+                          </>
+                        ) : (
+                          <></>
+                        )}
+                        <Button
+                          intent="primary-outline"
+                          size="sm"
+                          onClick={allowedRegexModal.open}
+                        >
+                          View Allowed Patterns
+                        </Button>
                       </>
                     }
                   />
@@ -2221,6 +2237,43 @@ function Content() {
           </TabsContent>
         </div>
       </Tabs>
+
+      {/* Modal for Allowed Regex Patterns */}
+      <Modal
+        open={allowedRegexModal.isOpen}
+        onOpenChange={allowedRegexModal.close}
+        title="Allowed Regex Patterns"
+      >
+        <div className="space-y-4">
+          {status?.settings.allowedRegexPatterns?.description && (
+            <div className="text-sm text-muted-foreground">
+              <MarkdownLite>
+                {status.settings.allowedRegexPatterns.description}
+              </MarkdownLite>
+            </div>
+          )}
+          <div className="border rounded-md bg-gray-900 border-gray-800 p-4 max-h-96 overflow-auto">
+            <div className="space-y-2">
+              {status?.settings.allowedRegexPatterns?.patterns.map(
+                (pattern, index) => (
+                  <div
+                    key={index}
+                    className="font-mono text-sm bg-gray-800 rounded px-3 py-2 break-all whitespace-pre-wrap"
+                  >
+                    {pattern}
+                  </div>
+                )
+              )}
+              {(!status?.settings.allowedRegexPatterns?.patterns ||
+                status.settings.allowedRegexPatterns.patterns.length === 0) && (
+                <div className="text-muted-foreground text-sm text-center">
+                  No allowed regex patterns configured
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </Modal>
     </>
   );
 }
