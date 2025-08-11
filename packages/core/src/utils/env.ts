@@ -7,6 +7,7 @@ import {
   bool,
   json,
   makeValidator,
+  makeExactValidator,
   num,
   EnvError,
   port,
@@ -31,6 +32,17 @@ const secretKey = makeValidator((x) => {
     throw new EnvError('Secret key must be a 64-character hex string');
   }
   return x;
+});
+
+const commaSeparated = makeExactValidator<string[]>((x) => {
+  if (x === '') {
+    return [];
+  }
+  const parsed = x.split(',').map((item) => item.trim());
+  if (parsed.some((item) => item === '')) {
+    throw new EnvError('Comma separated values cannot be empty');
+  }
+  return parsed;
 });
 
 const regexes = makeValidator((x) => {
@@ -231,10 +243,10 @@ export const Env = cleanEnv(process.env, {
     desc: 'Secret key for the addon, used for encryption and must be 64 characters of hex',
     example: 'Generate using: openssl rand -hex 32',
   }),
-  ADDON_PASSWORD: str({
+  ADDON_PASSWORD: commaSeparated({
     default:
-      typeof process.env.API_KEY === 'string' ? process.env.API_KEY : undefined,
-    desc: 'Password required to create and modify addon configurations',
+      typeof process.env.API_KEY === 'string' ? [process.env.API_KEY] : [],
+    desc: 'Password required to create and modify addon configurations. Supports multiple passwords separated by commas.',
   }),
   DATABASE_URI: str({
     default: 'sqlite://./data/db.sqlite',

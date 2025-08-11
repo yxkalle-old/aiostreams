@@ -260,7 +260,10 @@ export async function validateConfig(
 
   applyMigrations(config);
 
-  if (Env.ADDON_PASSWORD && config.addonPassword !== Env.ADDON_PASSWORD) {
+  if (
+    Env.ADDON_PASSWORD.length > 0 &&
+    !Env.ADDON_PASSWORD.includes(config.addonPassword || '')
+  ) {
     throw new Error(
       'Invalid addon password. Please enter the value of the ADDON_PASSWORD environment variable '
     );
