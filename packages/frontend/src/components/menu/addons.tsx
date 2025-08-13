@@ -544,6 +544,9 @@ function SortableAddonItem({
 }) {
   const { userData, setUserData } = useUserData();
   const [isConfigurable, setIsConfigurable] = useState(false);
+  const [logo, setLogo] = useState<string | undefined>(
+    preset.logo || presetMetadata.LOGO
+  );
   const [step, setStep] = useState(1);
   // const [configModalOpen, setConfigModalOpen] = useState(false);
   const configModalOpen = useDisclosure(false);
@@ -583,6 +586,7 @@ function SortableAddonItem({
       const cached = manifestCache.get(manifestUrl);
       if (cached) {
         setIsConfigurable(cached.behaviorHints?.configurable === true);
+        setLogo(cached.logo);
         return; // Don't fetch again
       }
 
@@ -592,6 +596,7 @@ function SortableAddonItem({
           manifestCache.set(manifestUrl, manifest);
           if (active) {
             setIsConfigurable(manifest?.behaviorHints?.configurable === true);
+            setLogo(manifest?.logo);
           }
         })
         .catch(() => {
@@ -671,11 +676,11 @@ function SortableAddonItem({
         />
         <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
           <div className="relative flex-shrink-0 h-8 w-8 hidden sm:block">
-            {presetMetadata.ID === 'custom' || !presetMetadata.LOGO ? (
+            {!logo ? (
               <IoExtensionPuzzle className="w-full h-full object-contain" />
             ) : (
               <Image
-                src={presetMetadata.LOGO}
+                src={logo}
                 alt={presetMetadata.NAME}
                 fill
                 className="w-full h-full object-contain rounded-md"
