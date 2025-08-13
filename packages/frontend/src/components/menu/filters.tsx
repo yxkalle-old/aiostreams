@@ -1676,7 +1676,7 @@ function Content() {
                   group
                 </p>
               </div>
-              <div className="mb-4">
+              <div className="mb-4 space-y-4">
                 {status?.settings.regexFilterAccess === 'trusted' && (
                   <Alert
                     intent="info"
@@ -1699,22 +1699,20 @@ function Content() {
                     intent="info"
                     title="Allowed Regex Patterns"
                     description={
-                      <>
+                      <div className="space-y-2">
                         <p>
                           This instance has allowed a specific set of regexes to
                           be used by all users.
                         </p>
-                        <br />
                         {status?.settings.allowedRegexPatterns.description ? (
-                          <>
+                          <div className="space-y-2 break-words">
                             <p>
                               <MarkdownLite>
                                 {status?.settings.allowedRegexPatterns
                                   .description || ''}
                               </MarkdownLite>
                             </p>
-                            <br />
-                          </>
+                          </div>
                         ) : (
                           <></>
                         )}
@@ -1725,7 +1723,7 @@ function Content() {
                         >
                           View Allowed Patterns
                         </Button>
-                      </>
+                      </div>
                     }
                   />
                 )}
@@ -2243,15 +2241,15 @@ function Content() {
         open={allowedRegexModal.isOpen}
         onOpenChange={allowedRegexModal.close}
         title="Allowed Regex Patterns"
+        description={
+          status?.settings.allowedRegexPatterns?.description && (
+            <MarkdownLite>
+              {status?.settings.allowedRegexPatterns?.description}
+            </MarkdownLite>
+          )
+        }
       >
         <div className="space-y-4">
-          {status?.settings.allowedRegexPatterns?.description && (
-            <div className="text-sm text-muted-foreground">
-              <MarkdownLite>
-                {status.settings.allowedRegexPatterns.description}
-              </MarkdownLite>
-            </div>
-          )}
           <div className="border rounded-md bg-gray-900 border-gray-800 p-4 max-h-96 overflow-auto">
             <div className="space-y-2">
               {status?.settings.allowedRegexPatterns?.patterns.map(
