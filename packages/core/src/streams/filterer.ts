@@ -97,7 +97,9 @@ class StreamFilterer {
         }).getMetadata(id, type as any);
         logger.info(`Fetched metadata for ${id}`, requestedMetadata);
       } catch (error) {
-        logger.error(`Error fetching titles for ${id}: ${error}`);
+        logger.warn(
+          `Error fetching titles for ${id}, title/year matching will not be performed: ${error}`
+        );
       }
     }
 

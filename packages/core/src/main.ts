@@ -1172,9 +1172,12 @@ export class AIOStreams {
       }).getMetadata(id, 'series');
       return metadata;
     } catch (error) {
-      logger.warn(`Error getting metadata for ${id}`, {
-        error: error instanceof Error ? error.message : String(error),
-      });
+      logger.warn(
+        `Error getting metadata for ${id}, will not be able to precache next season if necessary`,
+        {
+          error: error instanceof Error ? error.message : String(error),
+        }
+      );
       return undefined;
     }
   }
