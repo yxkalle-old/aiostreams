@@ -86,7 +86,11 @@ class StreamFilterer {
     };
 
     const start = Date.now();
-    const isRegexAllowed = FeatureControl.isRegexAllowed(this.userData);
+    const isRegexAllowed = FeatureControl.isRegexAllowed(this.userData, [
+      ...(this.userData.excludedRegexPatterns ?? []),
+      ...(this.userData.requiredRegexPatterns ?? []),
+      ...(this.userData.includedRegexPatterns ?? []),
+    ]);
 
     let requestedMetadata: TMDBMetadataResponse | undefined;
     if (this.userData.titleMatching?.enabled && TYPES.includes(type as any)) {
