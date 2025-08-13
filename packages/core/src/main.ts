@@ -1075,7 +1075,7 @@ export class AIOStreams {
   }
 
   private validateAddon(addon: Addon) {
-    const manifestUrl = new URL(addon.manifestUrl, Env.BASE_URL);
+    const manifestUrl = new URL(addon.manifestUrl);
     const baseUrl = Env.BASE_URL ? new URL(Env.BASE_URL) : undefined;
     if (this.userData.uuid && addon.manifestUrl.includes(this.userData.uuid)) {
       logger.warn(
@@ -1168,6 +1168,7 @@ export class AIOStreams {
     try {
       const metadata = await new TMDBMetadata({
         accessToken: this.userData.tmdbAccessToken,
+        apiKey: this.userData.tmdbApiKey,
       }).getMetadata(id, 'series');
       return metadata;
     } catch (error) {
