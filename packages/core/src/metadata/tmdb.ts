@@ -41,11 +41,19 @@ export class TMDBMetadata {
   private static readonly validationCache: Cache<string, boolean> =
     Cache.getInstance<string, boolean>('tmdb_validation');
   public constructor(auth?: { accessToken?: string; apiKey?: string }) {
-    if (!auth?.accessToken && !Env.TMDB_ACCESS_TOKEN && !auth?.apiKey) {
+    if (
+      !auth?.accessToken &&
+      !Env.TMDB_ACCESS_TOKEN &&
+      !auth?.apiKey &&
+      !Env.TMDB_API_KEY
+    ) {
       throw new Error('TMDB Access Token or API Key is not set');
     }
-    this.accessToken = auth?.accessToken || Env.TMDB_ACCESS_TOKEN;
-    this.apiKey = auth?.apiKey;
+    if (auth?.apiKey || Env.TMDB_API_KEY) {
+      this.apiKey = auth?.apiKey || Env.TMDB_API_KEY;
+    } else if (auth?.accessToken || Env.TMDB_ACCESS_TOKEN) {
+      this.accessToken = auth?.accessToken || Env.TMDB_ACCESS_TOKEN;
+    }
   }
 
   private getHeaders(): Record<string, string> {

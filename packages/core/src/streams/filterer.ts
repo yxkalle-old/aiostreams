@@ -93,6 +93,7 @@ class StreamFilterer {
       try {
         requestedMetadata = await new TMDBMetadata({
           accessToken: this.userData.tmdbAccessToken,
+          apiKey: this.userData.tmdbApiKey,
         }).getMetadata(id, type as any);
         logger.info(`Fetched metadata for ${id}`, requestedMetadata);
       } catch (error) {

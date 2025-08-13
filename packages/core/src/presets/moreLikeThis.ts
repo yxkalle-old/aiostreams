@@ -37,16 +37,17 @@ export class MoreLikeThisPreset extends Preset {
         supportedResources,
         Env.DEFAULT_MORE_LIKE_THIS_TIMEOUT
       ),
-      {
-        id: 'tmdbApiKey',
-        name: 'TMDB API Key',
-        description:
-          'Get a free key from [TMDB](https://www.themoviedb.org/settings/api)',
-        type: 'password',
-        constraints: {
-          min: 10,
-        },
-      },
+      // @deprecated TMDB API Key is now handled in the services menu
+      // {
+      //   id: 'tmdbApiKey',
+      //   name: 'TMDB API Key',
+      //   description:
+      //     'Get a free key from [TMDB](https://www.themoviedb.org/settings/api)',
+      //   type: 'password',
+      //   constraints: {
+      //     min: 10,
+      //   },
+      // },
       {
         id: 'traktApiKey',
         name: 'Trakt API Key',
@@ -381,7 +382,7 @@ export class MoreLikeThisPreset extends Preset {
   ): Promise<Addon> {
     return {
       name: options.name || this.METADATA.NAME,
-      manifestUrl: this.generateManifestUrl(options),
+      manifestUrl: this.generateManifestUrl(userData, options),
       enabled: true,
       library: false,
       resources: options.resources || this.METADATA.SUPPORTED_RESOURCES,
@@ -399,11 +400,17 @@ export class MoreLikeThisPreset extends Preset {
     };
   }
 
-  private static generateManifestUrl(options: Record<string, any>): string {
+  private static generateManifestUrl(
+    userData: UserData,
+    options: Record<string, any>
+  ): string {
     let url = (options.url || this.METADATA.URL).replace(/\/$/, '');
     if (url.endsWith('/manifest.json')) {
       return url;
     }
+
+    const tmdbApiKey =
+      options.tmdbApiKey || userData.tmdbApiKey || Env.TMDB_API_KEY;
 
     const isKeyValid = (key: string) =>
       typeof key === 'string' && key.length > 0;
@@ -411,8 +418,8 @@ export class MoreLikeThisPreset extends Preset {
     let config = {
       apiKeys: {
         tmdb: {
-          key: options.tmdbApiKey,
-          valid: isKeyValid(options.tmdbApiKey),
+          key: tmdbApiKey,
+          valid: isKeyValid(tmdbApiKey),
         },
         trakt: {
           key: options.traktApiKey,
