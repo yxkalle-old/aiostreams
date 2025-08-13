@@ -71,7 +71,7 @@ export function makeRequest(url: string, options: RequestOptions) {
 
   // block recursive requests
   const key = `${url}-${options.forwardIp}`;
-  const currentCount = urlCount.get(key, false) ?? 0;
+  const currentCount = urlCount.get(key) ?? 0;
   if (
     currentCount > Env.RECURSION_THRESHOLD_LIMIT &&
     !options.ignoreRecursion

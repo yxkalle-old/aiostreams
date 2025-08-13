@@ -359,7 +359,7 @@ export class AIOStreams {
     if (modification?.shuffle && !(extras && extras.includes('search'))) {
       // shuffle the catalog array if it is not a search
       const cacheKey = `shuffle-${type}-${actualCatalogId}-${extras}-${this.userData.uuid}`;
-      const cachedShuffle = shuffleCache.get(cacheKey, false);
+      const cachedShuffle = shuffleCache.get(cacheKey);
       if (cachedShuffle) {
         catalog = cachedShuffle;
       } else {
