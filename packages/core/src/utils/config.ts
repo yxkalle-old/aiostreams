@@ -407,7 +407,9 @@ export function applyMigrations(config: UserData) {
   if (config.titleMatching?.matchYear) {
     config.yearMatching = {
       enabled: true,
-      tolerance: config.titleMatching.yearTolerance ? 2 : 0,
+      tolerance: config.titleMatching.yearTolerance
+        ? config.titleMatching.yearTolerance
+        : 1,
       requestTypes: config.titleMatching.requestTypes ?? [],
       addons: config.titleMatching.addons ?? [],
     };
