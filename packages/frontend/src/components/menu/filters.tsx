@@ -1694,7 +1694,7 @@ function Content() {
                           </p>
                           {status?.settings.allowedRegexPatterns
                             .description && (
-                            <div className="mt-2 break-all overflow-hidden">
+                            <div className="mt-2 break-words overflow-hidden">
                               <MarkdownLite>
                                 {status?.settings.allowedRegexPatterns
                                   .description || ''}
