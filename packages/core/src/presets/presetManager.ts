@@ -52,6 +52,7 @@ import { ContentDeepDivePreset } from './contentDeepDive';
 import { AICompanionPreset } from './aiCompanion';
 import { GoogleOAuth } from '../builtins/gdrive/api';
 import { TorBoxSearchPreset } from './torboxSearch';
+import { AStreamPreset } from './aStream';
 import { Env } from '../utils/env';
 
 let PRESET_LIST: string[] = [
@@ -76,6 +77,7 @@ let PRESET_LIST: string[] = [
   'dmm-cast',
   'nuvio-streams',
   'webstreamr',
+  'astream',
   'streamasia',
   Env.BUILTIN_GDRIVE_CLIENT_ID && Env.BUILTIN_GDRIVE_CLIENT_SECRET
     ? 'stremio-gdrive'
@@ -184,6 +186,8 @@ export class PresetManager {
         return NuvioStreamsPreset;
       case 'webstreamr':
         return WebStreamrPreset;
+      case 'astream':
+        return AStreamPreset;
       case 'streaming-catalogs':
         return StreamingCatalogsPreset;
       case 'anime-catalogs':

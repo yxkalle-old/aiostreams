@@ -1383,6 +1383,19 @@ export const Env = cleanEnv(process.env, {
     desc: 'Default AI Companion user agent',
   }),
 
+  ASTREAM_URL: url({
+    default: 'https://astream.stremiofr.com',
+    desc: 'AStream URL',
+  }),
+  DEFAULT_ASTREAM_TIMEOUT: num({
+    default: undefined,
+    desc: 'Default AStream timeout',
+  }),
+  DEFAULT_ASTREAM_USER_AGENT: userAgent({
+    default: undefined,
+    desc: 'Default AStream user agent',
+  }),
+
   BUILTIN_STREMTHRU_URL: url({
     default: 'https://stremthru.13377001.xyz',
     desc: 'Builtin StremThru URL',
