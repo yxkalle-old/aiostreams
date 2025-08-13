@@ -478,7 +478,7 @@ function Content() {
           open={passwordModal.isOpen}
           onOpenChange={passwordModal.toggle}
           title="Addon Password"
-          description="Enter the password for this instance"
+          description="This instance is protected with a password. You must enter the password for this instance (NOT your user password you set earlier) to create a configuration here."
         >
           <form
             onSubmit={(e) => {

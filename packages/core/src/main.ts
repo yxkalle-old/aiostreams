@@ -717,7 +717,7 @@ export class AIOStreams {
 
     if (this.addons.length > Env.MAX_ADDONS) {
       throw new Error(
-        `Your current configuration requires ${this.addons.length} addons, but the maximum allowed is ${Env.MAX_ADDONS}. Please reduce the number of addons, or increase it in the environment variables.`
+        `Your current configuration requires ${this.addons.length} addons, but the maximum allowed is ${Env.MAX_ADDONS}. Please reduce the number of addons installed or services enabled. If you own the instance or know the owner, increase the value of the MAX_ADDONS environment variable.`
       );
     }
   }
@@ -1082,7 +1082,7 @@ export class AIOStreams {
         `${this.userData.uuid} detected to be trying to cause infinite self scraping`
       );
       throw new Error(
-        `${getAddonName(addon)} appears to be trying to scrape the current user's AIOStreams instance.`
+        `${getAddonName(addon)} would cause infinite self scraping, ensure you wrap a different AIOStreams user.`
       );
     } else if (
       ((baseUrl && manifestUrl.host === baseUrl.host) ||
