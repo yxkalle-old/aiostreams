@@ -106,6 +106,18 @@ export class AStreamPreset extends Preset {
         type: 'boolean',
         default: true,
       },
+      {
+        id: 'socials',
+        name: '',
+        description: '',
+        type: 'socials',
+        socials: [
+          {
+            id: 'github',
+            url: 'https://github.com/Dydhzo/astream',
+          },
+        ],
+      },
     ];
 
     return {
