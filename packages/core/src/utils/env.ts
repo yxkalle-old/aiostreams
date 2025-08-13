@@ -11,6 +11,7 @@ import {
   num,
   EnvError,
   port,
+  EnvMissingError,
 } from 'envalid';
 import { ResourceManager } from './resources';
 import * as constants from './constants';
@@ -90,7 +91,7 @@ const namedRegexes = makeValidator((x) => {
 
 const url = makeValidator((x) => {
   if (x === '') {
-    return x;
+    throw new EnvMissingError(`URL cannot be empty`);
   }
   try {
     new URL(x);
@@ -271,6 +272,10 @@ export const Env = cleanEnv(process.env, {
   TMDB_ACCESS_TOKEN: str({
     default: undefined,
     desc: 'TMDB Read Access Token. Used for fetching metadata for the strict title matching option.',
+  }),
+  TMDB_API_KEY: str({
+    default: undefined,
+    desc: 'TMDB API Key. Used for fetching metadata for the strict title matching option.',
   }),
 
   // logging settings
