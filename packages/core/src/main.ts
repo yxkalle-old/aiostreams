@@ -332,6 +332,13 @@ export class AIOStreams {
         extrasString
       );
     } catch (error) {
+      if (extras && extras.includes('skip')) {
+        return {
+          success: true,
+          data: [],
+          errors: [],
+        };
+      }
       return {
         success: false,
         data: [],
