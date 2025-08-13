@@ -133,30 +133,17 @@ const tabsRootClass = cn(
 
 const tabsTriggerClass = cn(
   'font-bold text-base px-6 rounded-[--radius-md] w-fit lg:w-full border-none data-[state=active]:bg-[--subtle] data-[state=active]:text-white dark:hover:text-white',
-  'h-10 lg:justify-start px-3'
+  'h-9 lg:justify-start px-3 transition-all duration-200 hover:bg-[--subtle]/50 hover:transform'
 );
 
 const tabsListClass = cn(
   'w-full flex flex-wrap lg:flex-nowrap h-fit xl:h-10',
-  'lg:block'
+  'lg:block p-2 lg:p-0'
 );
 
 const tabsContentClass = cn(
   'space-y-4 animate-in fade-in-0 slide-in-from-right-2 duration-300'
 );
-
-interface SizeFilterOptions {
-  global?: {
-    series?: [number, number];
-    movies?: [number, number];
-  };
-  resolution?: {
-    [key: string]: {
-      movies?: [number, number];
-      series?: [number, number];
-    };
-  };
-}
 
 export function FiltersMenu() {
   return (
@@ -238,7 +225,7 @@ function Content() {
               <div></div>
             </div>
 
-            <div className="overflow-x-none lg:overflow-y-hidden overflow-y-scroll h-40 lg:h-auto rounded-[--radius-md] border lg:border-none">
+            <div className="overflow-x-none overflow-y-scroll lg:overflow-y-hidden h-40 lg:h-auto rounded-[--radius-md] border lg:border-none [--webkit-overflow-scrolling:touch]">
               <TabsTrigger value="cache">
                 <FaBolt className="text-lg mr-3" />
                 Cache
@@ -1700,29 +1687,30 @@ function Content() {
                     title="Allowed Regex Patterns"
                     description={
                       <div className="space-y-2">
-                        <p>
-                          This instance has allowed a specific set of regexes to
-                          be used by all users.
-                        </p>
-                        {status?.settings.allowedRegexPatterns.description ? (
-                          <div className="space-y-2 break-words">
-                            <p>
+                        <div className="max-w-full overflow-hidden">
+                          <p className="break-words">
+                            This instance has allowed a specific set of regexes
+                            to be used by all users.
+                          </p>
+                          {status?.settings.allowedRegexPatterns
+                            .description && (
+                            <div className="mt-2 break-all overflow-hidden">
                               <MarkdownLite>
                                 {status?.settings.allowedRegexPatterns
                                   .description || ''}
                               </MarkdownLite>
-                            </p>
-                          </div>
-                        ) : (
-                          <></>
-                        )}
-                        <Button
-                          intent="primary-outline"
-                          size="sm"
-                          onClick={allowedRegexModal.open}
-                        >
-                          View Allowed Patterns
-                        </Button>
+                            </div>
+                          )}
+                        </div>
+                        <div>
+                          <Button
+                            intent="primary-outline"
+                            size="sm"
+                            onClick={allowedRegexModal.open}
+                          >
+                            View Allowed Patterns
+                          </Button>
+                        </div>
                       </div>
                     }
                   />
