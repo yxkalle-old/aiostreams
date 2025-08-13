@@ -1370,6 +1370,19 @@ export const Env = cleanEnv(process.env, {
     desc: 'Default Content Deep Dive user agent',
   }),
 
+  AI_COMPANION_URL: url({
+    default: 'https://ai-companion.saladprecedestretch123.uk',
+    desc: 'AI Companion URL',
+  }),
+  DEFAULT_AI_COMPANION_TIMEOUT: num({
+    default: undefined,
+    desc: 'Default AI Companion timeout',
+  }),
+  DEFAULT_AI_COMPANION_USER_AGENT: userAgent({
+    default: undefined,
+    desc: 'Default AI Companion user agent',
+  }),
+
   BUILTIN_STREMTHRU_URL: url({
     default: 'https://stremthru.13377001.xyz',
     desc: 'Builtin StremThru URL',

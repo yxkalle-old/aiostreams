@@ -49,6 +49,7 @@ import { MoreLikeThisPreset } from './moreLikeThis';
 import { GDriveAPI } from '../builtins/gdrive';
 import { GDrivePreset } from './gdrive';
 import { ContentDeepDivePreset } from './contentDeepDive';
+import { AICompanionPreset } from './aiCompanion';
 import { GoogleOAuth } from '../builtins/gdrive/api';
 import { TorBoxSearchPreset } from './torboxSearch';
 import { Env } from '../utils/env';
@@ -83,7 +84,6 @@ let PRESET_LIST: string[] = [
   'argentina-tv',
   'debridio-tv',
   'debridio-watchtower',
-  'ai-search',
   'tmdb-addon',
   'debridio-tmdb',
   'debridio-tvdb',
@@ -103,6 +103,8 @@ let PRESET_LIST: string[] = [
   'subdl',
   'subhero',
   'aiosubtitle',
+  'ai-companion',
+  'ai-search',
   'more-like-this',
   'content-deep-dive',
   'aiostreams',
@@ -224,6 +226,8 @@ export class PresetManager {
         return MoreLikeThisPreset;
       case 'content-deep-dive':
         return ContentDeepDivePreset;
+      case 'ai-companion':
+        return AICompanionPreset;
       case 'stremio-gdrive':
         return GDrivePreset;
       case 'torbox-search':
