@@ -240,6 +240,7 @@ const OptionDefinition = z.object({
     .object({
       min: z.number().min(1).optional(), // for string inputs, consider this the minimum length.
       max: z.number().min(1).optional(), // and for number inputs, consider this the minimum and maximum value.
+      forceInUi: z.boolean().optional(), // if true, the UI components will enforce these constraints.
     })
     .optional(),
 });

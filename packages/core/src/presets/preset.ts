@@ -54,6 +54,7 @@ export const baseOptions = (
     constraints: {
       min: Env.MIN_TIMEOUT,
       max: Env.MAX_TIMEOUT,
+      forceInUi: false, // large ranges don't work well
     },
   },
   {

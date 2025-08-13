@@ -80,6 +80,12 @@ const TemplateOption: React.FC<TemplateOptionProps> = ({
             }
             required={required}
             disabled={isDisabled}
+            minLength={
+              constraints?.forceInUi !== false ? constraints?.min : undefined
+            }
+            maxLength={
+              constraints?.forceInUi !== false ? constraints?.max : undefined
+            }
           />
           {description && (
             <div className="text-xs text-[--muted] mt-1">
@@ -98,8 +104,12 @@ const TemplateOption: React.FC<TemplateOptionProps> = ({
               onChange(emptyIsUndefined ? value || undefined : value)
             }
             required={required}
-            minLength={constraints?.min}
-            maxLength={constraints?.max}
+            minLength={
+              constraints?.forceInUi !== false ? constraints?.min : undefined
+            }
+            maxLength={
+              constraints?.forceInUi !== false ? constraints?.max : undefined
+            }
             disabled={isDisabled}
           />
           {description && (
@@ -127,6 +137,12 @@ const TemplateOption: React.FC<TemplateOptionProps> = ({
                 : 1
             }
             disabled={isDisabled}
+            min={
+              constraints?.forceInUi !== false ? constraints?.min : undefined
+            }
+            max={
+              constraints?.forceInUi !== false ? constraints?.max : undefined
+            }
           />
           {description && (
             <div className="text-xs text-[--muted] mt-1">
@@ -194,6 +210,9 @@ const TemplateOption: React.FC<TemplateOptionProps> = ({
             emptyMessage="No options"
             disabled={isDisabled}
             required={required}
+            maxItems={
+              constraints?.forceInUi !== false ? constraints?.max : undefined
+            }
           />
           {description && (
             <div className="text-xs text-[--muted] mt-1">
@@ -214,6 +233,12 @@ const TemplateOption: React.FC<TemplateOptionProps> = ({
             required={required}
             type="url"
             disabled={isDisabled}
+            minLength={
+              constraints?.forceInUi !== false ? constraints?.min : undefined
+            }
+            maxLength={
+              constraints?.forceInUi !== false ? constraints?.max : undefined
+            }
           />
           {description && (
             <div className="text-xs text-[--muted] mt-1">
