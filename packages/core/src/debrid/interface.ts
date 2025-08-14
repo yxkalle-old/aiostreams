@@ -197,6 +197,7 @@ export class DebridInterface {
 
     const nzbFile = await this.torboxApi.usenet.createUsenetDownload('v1', {
       link: nzb,
+      name: filename,
     });
 
     logger.debug(`Created usenet download for ${nzb}: ${nzbFile.data?.detail}`);
