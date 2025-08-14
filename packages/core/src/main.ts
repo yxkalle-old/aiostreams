@@ -1189,26 +1189,25 @@ export class AIOStreams {
       await this.precomputer.precompute(processedStreams);
     }
 
-    let sortedStreams = await this.sorter.sort(
-      processedStreams,
-      id.startsWith('kitsu') ? 'anime' : type
-    );
-    sortedStreams = sortedStreams.map((stream) => {
-      if (stream.parsedFile?.visualTags?.includes('HDR+DV')) {
+    let finalStreams = this.applyModifications(
+      await this.proxifier.proxify(
+        await this.filterer.applyStreamExpressionFilters(
+          await this.limiter.limit(
+            await this.sorter.sort(
+              processedStreams,
+              id.startsWith('kitsu') ? 'anime' : type
+            )
+          )
+        )
+      )
+    ).map((stream) => {
+      if (stream.parsedFile) {
         stream.parsedFile.visualTags = stream.parsedFile.visualTags.filter(
-          (tag) => tag !== 'HDR+DV'
+          (tag) => !constants.FAKE_VISUAL_TAGS.includes(tag as any)
         );
       }
       return stream;
     });
-
-    let finalStreams = this.applyModifications(
-      await this.proxifier.proxify(
-        await this.filterer.applyStreamExpressionFilters(
-          await this.limiter.limit(sortedStreams)
-        )
-      )
-    );
 
     if (this.userData.externalDownloads) {
       const streamsWithExternalDownloads: ParsedStream[] = [];

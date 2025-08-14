@@ -411,6 +411,36 @@ class StreamFilterer {
         return true;
       }
 
+      // Temporarily add in our fake visual tags used for sorting/filtering
+      // HDR+DV
+      if (
+        file?.visualTags?.some((tag) => tag.startsWith('HDR')) &&
+        file?.visualTags?.some((tag) => tag.startsWith('DV'))
+      ) {
+        const hdrIndex = file?.visualTags?.findIndex((tag) =>
+          tag.startsWith('HDR')
+        );
+        const dvIndex = file?.visualTags?.findIndex((tag) =>
+          tag.startsWith('DV')
+        );
+        const insertIndex = Math.min(hdrIndex, dvIndex);
+        file?.visualTags?.splice(insertIndex, 0, 'HDR+DV');
+      }
+      // DV Only
+      if (
+        file?.visualTags?.some((tag) => tag.startsWith('DV')) &&
+        !file?.visualTags?.some((tag) => tag.startsWith('HDR'))
+      ) {
+        file?.visualTags?.push('DV Only');
+      }
+      // HDR Only
+      if (
+        file?.visualTags?.some((tag) => tag.startsWith('HDR')) &&
+        !file?.visualTags?.some((tag) => tag.startsWith('DV'))
+      ) {
+        file?.visualTags?.push('HDR Only');
+      }
+
       // carry out include checks first
       if (this.userData.includedStreamTypes?.includes(stream.type)) {
         includedReasons.streamType.total++;
@@ -700,22 +730,6 @@ class StreamFilterer {
         return false;
       }
 
-      // temporarily add HDR+DV to visual tags list if both HDR and DV are present
-      // to allow HDR+DV option in userData to work
-      if (
-        file?.visualTags?.some((tag) => tag.startsWith('HDR')) &&
-        file?.visualTags?.some((tag) => tag.startsWith('DV'))
-      ) {
-        const hdrIndex = file?.visualTags?.findIndex((tag) =>
-          tag.startsWith('HDR')
-        );
-        const dvIndex = file?.visualTags?.findIndex((tag) =>
-          tag.startsWith('DV')
-        );
-        const insertIndex = Math.min(hdrIndex, dvIndex);
-        file?.visualTags?.splice(insertIndex, 0, 'HDR+DV');
-      }
-
       if (
         this.userData.excludedVisualTags?.some((tag) =>
           (file?.visualTags.length ? file.visualTags : ['Unknown']).includes(
@@ -743,14 +757,13 @@ class StreamFilterer {
           )
         )
       ) {
-        const tag = this.userData.requiredVisualTags.find((tag) =>
-          (file?.visualTags.length ? file.visualTags : ['Unknown']).includes(
-            tag
-          )
-        );
         skipReasons.requiredVisualTag.total++;
-        skipReasons.requiredVisualTag.details[tag!] =
-          (skipReasons.requiredVisualTag.details[tag!] || 0) + 1;
+        skipReasons.requiredVisualTag.details[
+          `${this.userData.requiredVisualTags.join(', ')}`
+        ] =
+          (skipReasons.requiredVisualTag.details[
+            `${this.userData.requiredVisualTags.join(', ')}`
+          ] || 0) + 1;
         return false;
       }
 
