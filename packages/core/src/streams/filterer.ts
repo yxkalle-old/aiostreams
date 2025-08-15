@@ -199,9 +199,10 @@ class StreamFilterer {
       }
       return streamYear
         ? requestedMetadata.year === streamYear ||
-            (yearMatchingOptions.tolerance &&
-              Math.abs(Number(requestedMetadata.year) - Number(streamYear)) <=
-                yearMatchingOptions.tolerance)
+            (yearMatchingOptions.tolerance !== undefined
+              ? Math.abs(Number(requestedMetadata.year) - Number(streamYear)) <=
+                yearMatchingOptions.tolerance
+              : false)
         : true;
     };
 
