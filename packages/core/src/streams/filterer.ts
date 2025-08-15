@@ -93,7 +93,11 @@ class StreamFilterer {
     ]);
 
     let requestedMetadata: TMDBMetadataResponse | undefined;
-    if (this.userData.titleMatching?.enabled && TYPES.includes(type as any)) {
+    if (
+      (this.userData.titleMatching?.enabled ||
+        this.userData.yearMatching?.enabled) &&
+      TYPES.includes(type as any)
+    ) {
       try {
         requestedMetadata = await new TMDBMetadata({
           accessToken: this.userData.tmdbAccessToken,
@@ -170,6 +174,21 @@ class StreamFilterer {
       }
 
       if (!requestedMetadata || !requestedMetadata.year) {
+        return true;
+      }
+
+      if (
+        yearMatchingOptions.requestTypes?.length &&
+        (!yearMatchingOptions.requestTypes.includes(type) ||
+          (isAnime && !yearMatchingOptions.requestTypes.includes('anime')))
+      ) {
+        return true;
+      }
+
+      if (
+        yearMatchingOptions.addons?.length &&
+        !yearMatchingOptions.addons.includes(stream.addon.preset.id)
+      ) {
         return true;
       }
 
