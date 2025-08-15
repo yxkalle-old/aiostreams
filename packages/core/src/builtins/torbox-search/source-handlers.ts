@@ -161,6 +161,20 @@ export class TorrentSourceHandler extends SourceHandler {
 
     if (torrents.length === 0) return [];
 
+    if (userData.onlyShowUserSearchResults) {
+      const userSearchResults = torrents.filter(
+        (torrent) => torrent.userSearch
+      );
+      logger.info(
+        `Filtered out ${torrents.length - userSearchResults.length} torrents that were not user search results`
+      );
+      if (userSearchResults.length > 0) {
+        torrents = userSearchResults;
+      } else {
+        return [];
+      }
+    }
+
     const titleMetadata = this.metadataCache.get(`metadata:${type}:${id}`);
     const filesByHash = await this.getAvailableFilesFromDebrid(
       torrents,
@@ -373,6 +387,20 @@ export class UsenetSourceHandler extends SourceHandler {
       }
     } else {
       logger.info(`Found ${torrents.length} (cached) NZBs for ${id}`);
+    }
+
+    if (userData.onlyShowUserSearchResults) {
+      const userSearchResults = torrents.filter(
+        (torrent) => torrent.userSearch
+      );
+      logger.info(
+        `Filtered out ${torrents.length - userSearchResults.length} NZBs that were not user search results`
+      );
+      if (userSearchResults.length > 0) {
+        torrents = userSearchResults;
+      } else {
+        return [];
+      }
     }
 
     return torrents.map((torrent) => {
