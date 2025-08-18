@@ -115,17 +115,21 @@ export class TorBoxSearchAddon {
     if (
       ['mal_id', 'kitsu_id', 'anilist_id', 'anidb_id'].includes(parsedId.type)
     ) {
-      const kitsuMetadata = new KitsuMetadata();
-      const metadata = await kitsuMetadata.getMetadata(parsedId, type);
-      parsedId.season = metadata.seasons?.[0]?.season_number
-        ? metadata.seasons[0].season_number.toString()
-        : undefined;
-      logger.debug(
-        `Fetched season metadata for ${id} in ${getTimeTakenSincePoint(metadataStart)}:`,
-        {
-          season: parsedId.season,
-        }
-      );
+      try {
+        const kitsuMetadata = new KitsuMetadata();
+        const metadata = await kitsuMetadata.getMetadata(parsedId, type);
+        parsedId.season = metadata.seasons?.[0]?.season_number
+          ? metadata.seasons[0].season_number.toString()
+          : undefined;
+        logger.debug(
+          `Fetched season metadata for ${id} in ${getTimeTakenSincePoint(metadataStart)}:`,
+          {
+            season: parsedId.season,
+          }
+        );
+      } catch (error) {
+        logger.error(`Error fetching anime metadata for ${id}:`, error);
+      }
     }
 
     logger.info(`Getting streams for ${id}`, {
