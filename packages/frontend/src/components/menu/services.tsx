@@ -152,7 +152,7 @@ function Content() {
         services: [...filtered, ...toAdd],
       }));
     }
-  }, [status.settings.services]);
+  }, [status.settings.services, userData.services]);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
