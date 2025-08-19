@@ -306,7 +306,7 @@ class StreamParser {
     }
     const match = stream.description?.match(regex);
     if (match) {
-      return match[1];
+      return match[1].trim();
     }
 
     return undefined;

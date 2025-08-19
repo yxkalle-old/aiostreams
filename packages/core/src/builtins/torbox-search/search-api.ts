@@ -156,6 +156,11 @@ class TorboxSearchApi {
       );
     }
 
+    if (Array.isArray(result.data) && result.data.length === 0) {
+      logger.warn(`API returned empty array for ${endpoint}.`);
+      logger.debug(JSON.stringify(result, null, 2));
+    }
+
     return result.data as T;
   }
 

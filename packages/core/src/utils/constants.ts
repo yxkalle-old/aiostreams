@@ -435,10 +435,9 @@ const SERVICE_DETAILS: Record<
   [DEBRIDER_SERVICE]: {
     id: DEBRIDER_SERVICE,
     name: 'Debrider',
-    shortName: 'DBD',
-    knownNames: ['DBD', 'Debrider'],
-    signUpText:
-      "Don't have an account? [Sign up here](https://debrider.app/)",
+    shortName: 'DR',
+    knownNames: ['DBD', 'DR', 'Debrider'],
+    signUpText: "Don't have an account? [Sign up here](https://debrider.app/)",
     credentials: [
       {
         id: 'apiKey',
@@ -499,6 +498,24 @@ export const DEDUPLICATOR_KEYS = [
   'infoHash',
   'smartDetect',
 ] as const;
+
+export const AUTO_PLAY_ATTRIBUTES = [
+  'service',
+  'addon',
+  'proxied',
+  'resolution',
+  'quality',
+  'encode',
+  'audioTags',
+  'visualTags',
+  'languages',
+  'releaseGroup',
+  'infoHash',
+] as const;
+
+export const DEFAULT_AUTO_PLAY_ATTRIBUTES = AUTO_PLAY_ATTRIBUTES.filter(
+  (attribute) => attribute !== 'addon' && attribute !== 'infoHash'
+);
 
 const RESOLUTIONS = [
   '2160p',

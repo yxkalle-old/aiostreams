@@ -285,6 +285,10 @@ export class TorrentSourceHandler extends SourceHandler {
       );
     }
 
+    if (torrents.length === 0) {
+      return [];
+    }
+
     this.searchCache.set(
       cacheKey,
       torrents.filter(
@@ -359,6 +363,9 @@ export class UsenetSourceHandler extends SourceHandler {
           search_user_engines: this.searchUserEngines ? 'true' : 'false',
         });
         torrents = convertDataToTorrents(data.nzbs);
+        if (torrents.length === 0) {
+          return [];
+        }
         this.searchCache.set(
           cacheKey,
           torrents,

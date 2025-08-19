@@ -5,7 +5,11 @@ import { Switch } from '../ui/switch';
 import { useUserData } from '@/context/userData';
 import { SettingsCard } from '../shared/settings-card';
 import { Combobox } from '../ui/combobox';
-import { RESOURCES } from '../../../../core/src/utils/constants';
+import {
+  RESOURCES,
+  AUTO_PLAY_ATTRIBUTES,
+  DEFAULT_AUTO_PLAY_ATTRIBUTES,
+} from '../../../../core/src/utils/constants';
 import { Select } from '../ui/select';
 import { Alert } from '../ui/alert';
 
@@ -63,6 +67,69 @@ function Content() {
               }));
             }}
           />
+        </SettingsCard>
+        <SettingsCard
+          title="Auto Play"
+          description="Control how AIOStreams handles auto-play."
+        >
+          <Switch
+            label="Enable"
+            side="right"
+            value={userData.autoPlay?.enabled ?? true}
+            onValueChange={(value) => {
+              setUserData((prev) => ({
+                ...prev,
+                autoPlay: {
+                  ...prev.autoPlay,
+                  enabled: value,
+                },
+              }));
+            }}
+          />
+          <Select
+            label="Auto Play Method"
+            disabled={userData.autoPlay?.enabled === false}
+            options={[
+              { label: 'Matching File', value: 'matchingFile' },
+              { label: 'Matching Index', value: 'matchingIndex' },
+            ]}
+            value={userData.autoPlay?.method || 'matchingFile'}
+            onValueChange={(value) => {
+              setUserData((prev) => ({
+                ...prev,
+                autoPlay: {
+                  ...prev.autoPlay,
+                  method: value as 'matchingFile' | 'matchingIndex',
+                },
+              }));
+            }}
+            help={`${userData.autoPlay?.method === 'matchingIndex' ? 'Guaranteed auto-play of the stream in the same position in the result list (assuming it exists) i.e. if you play the first stream, the first stream for the next episode will be played.' : 'Auto-play the stream that matches the attributes of the previous episode.'}`}
+          />
+          {(userData.autoPlay?.method ?? 'matchingFile') === 'matchingFile' && (
+            <Combobox
+              label="Auto Play Attributes"
+              help="The attributes that will be used to match the stream for auto-play. The first stream for the next episode that has the same set of attributes selected above will be auto-played. Less attributes means more likely to auto-play but less accurate in terms of playing a similar type of stream."
+              options={AUTO_PLAY_ATTRIBUTES.map((attribute) => ({
+                label: attribute,
+                value: attribute,
+              }))}
+              multiple
+              disabled={userData.autoPlay?.enabled === false}
+              emptyMessage="No attributes found"
+              value={userData.autoPlay?.attributes}
+              defaultValue={DEFAULT_AUTO_PLAY_ATTRIBUTES as unknown as string[]}
+              onValueChange={(value) => {
+                setUserData((prev) => ({
+                  ...prev,
+                  autoPlay: {
+                    ...prev.autoPlay,
+                    attributes:
+                      value as (typeof AUTO_PLAY_ATTRIBUTES)[number][],
+                  },
+                }));
+              }}
+            />
+          )}
         </SettingsCard>
         <SettingsCard
           title="External Downloads"
