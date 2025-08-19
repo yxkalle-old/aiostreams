@@ -381,7 +381,12 @@ export class Wrapper {
 
       const validated = validator(data);
 
-      if (cacher) {
+      const shouldCache =
+        resource === 'stream' && Array.isArray(validated)
+          ? validated.length > 0
+          : true;
+
+      if (cacher && shouldCache) {
         cacher.set(cacheKey || url, validated, cacheTtl);
       }
       return validated;
