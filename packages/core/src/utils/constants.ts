@@ -517,6 +517,35 @@ export const DEFAULT_AUTO_PLAY_ATTRIBUTES = AUTO_PLAY_ATTRIBUTES.filter(
   (attribute) => attribute !== 'addon' && attribute !== 'infoHash'
 );
 
+export const AUTO_PLAY_METHODS = [
+  'matchingFile',
+  'matchingIndex',
+  'firstFile',
+] as const;
+export type AutoPlayMethod = (typeof AUTO_PLAY_METHODS)[number];
+export const AUTO_PLAY_METHOD_DETAILS: Record<
+  AutoPlayMethod,
+  {
+    name: string;
+    description: string;
+  }
+> = {
+  matchingFile: {
+    name: 'Matching File',
+    description:
+      'Auto-play the stream that matches the (customisable) attributes of the previous episode.',
+  },
+  matchingIndex: {
+    name: 'Matching Index',
+    description:
+      'Auto-play the stream in the same position in the result list (assuming it exists) i.e. if you play the second stream, the second stream for the next episode will also be played.',
+  },
+  firstFile: {
+    name: 'First File',
+    description: 'Always auto-play the first stream in the result list.',
+  },
+} as const;
+
 const RESOLUTIONS = [
   '2160p',
   '1440p',

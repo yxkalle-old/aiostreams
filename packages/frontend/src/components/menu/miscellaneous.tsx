@@ -9,6 +9,9 @@ import {
   RESOURCES,
   AUTO_PLAY_ATTRIBUTES,
   DEFAULT_AUTO_PLAY_ATTRIBUTES,
+  AutoPlayMethod,
+  AUTO_PLAY_METHODS,
+  AUTO_PLAY_METHOD_DETAILS,
 } from '../../../../core/src/utils/constants';
 import { Select } from '../ui/select';
 import { Alert } from '../ui/alert';
@@ -89,21 +92,25 @@ function Content() {
           <Select
             label="Auto Play Method"
             disabled={userData.autoPlay?.enabled === false}
-            options={[
-              { label: 'Matching File', value: 'matchingFile' },
-              { label: 'Matching Index', value: 'matchingIndex' },
-            ]}
+            options={AUTO_PLAY_METHODS.map((method) => ({
+              label: AUTO_PLAY_METHOD_DETAILS[method].name,
+              value: method,
+            }))}
             value={userData.autoPlay?.method || 'matchingFile'}
             onValueChange={(value) => {
               setUserData((prev) => ({
                 ...prev,
                 autoPlay: {
                   ...prev.autoPlay,
-                  method: value as 'matchingFile' | 'matchingIndex',
+                  method: value as AutoPlayMethod,
                 },
               }));
             }}
-            help={`${userData.autoPlay?.method === 'matchingIndex' ? 'Guaranteed auto-play of the stream in the same position in the result list (assuming it exists) i.e. if you play the first stream, the first stream for the next episode will be played.' : 'Auto-play the stream that matches the attributes of the previous episode.'}`}
+            help={
+              AUTO_PLAY_METHOD_DETAILS[
+                userData.autoPlay?.method || 'matchingFile'
+              ].description
+            }
           />
           {(userData.autoPlay?.method ?? 'matchingFile') === 'matchingFile' && (
             <Combobox

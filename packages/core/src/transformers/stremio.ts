@@ -65,9 +65,8 @@ export class StremioTransformer {
         constants.DEFAULT_AUTO_PLAY_ATTRIBUTES,
     };
 
-    const identifyingAttributes = [
-      Env.ADDON_ID,
-      ...autoPlaySettings.attributes.map((attribute) => {
+    const identifyingAttributes = autoPlaySettings.attributes
+      .map((attribute) => {
         switch (attribute) {
           case 'service':
             return stream.service?.id;
@@ -80,18 +79,27 @@ export class StremioTransformer {
           default:
             return stream.parsedFile?.[attribute];
         }
-      }),
-    ].filter((attribute) =>
-      attribute !== undefined && attribute !== null && Array.isArray(attribute)
-        ? attribute.length
-        : true
-    );
+      })
+      .filter((attribute) =>
+        attribute !== undefined &&
+        attribute !== null &&
+        Array.isArray(attribute)
+          ? attribute.length
+          : true
+      );
     let bingeGroup: string | undefined;
     if (autoPlaySettings.enabled)
-      bingeGroup =
-        autoPlaySettings.method === 'matchingIndex'
-          ? index.toString()
-          : `${identifyingAttributes.join('|')}`;
+      switch (autoPlaySettings.method) {
+        case 'matchingFile':
+          bingeGroup = `${identifyingAttributes.join('|')}`;
+          break;
+        case 'matchingIndex':
+          bingeGroup = index.toString();
+          break;
+        case 'firstFile':
+          bingeGroup = '';
+          break;
+      }
 
     return {
       name,
@@ -108,7 +116,7 @@ export class StremioTransformer {
       behaviorHints: {
         countryWhitelist: stream.countryWhitelist,
         notWebReady: stream.notWebReady,
-        bingeGroup: bingeGroup,
+        bingeGroup: `${Env.ADDON_ID}:${bingeGroup}`,
         proxyHeaders:
           stream.requestHeaders || stream.responseHeaders
             ? {

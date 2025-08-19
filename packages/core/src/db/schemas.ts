@@ -426,7 +426,7 @@ export const UserDataSchema = z.object({
   autoPlay: z
     .object({
       enabled: z.boolean().optional(),
-      method: z.enum(['matchingFile', 'matchingIndex']).optional(),
+      method: z.enum(constants.AUTO_PLAY_METHODS).optional(),
       attributes: z.array(z.enum(constants.AUTO_PLAY_ATTRIBUTES)).optional(),
     })
     .optional(),
