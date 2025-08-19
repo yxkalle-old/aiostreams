@@ -95,7 +95,11 @@ export class TorBoxSearchAddon {
     }
     if (this.userData.sources.includes('usenet')) {
       handlers.push(
-        new UsenetSourceHandler(this.searchApi, this.userData.searchUserEngines)
+        new UsenetSourceHandler(
+          this.searchApi,
+          this.torboxApi,
+          this.userData.searchUserEngines
+        )
       );
     }
     return handlers;

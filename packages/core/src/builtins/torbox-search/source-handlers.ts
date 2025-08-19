@@ -17,6 +17,7 @@ import TorboxSearchApi, {
 import { Torrent, convertDataToTorrents } from './torrent';
 import { TMDBMetadata } from '../../metadata/tmdb';
 import { calculateAbsoluteEpisode } from '../utils/general';
+import { TorboxApi } from '@torbox/torbox-api';
 
 const logger = createLogger('torbox-search');
 
@@ -34,6 +35,9 @@ abstract class SourceHandler {
   );
   protected metadataCache = Cache.getInstance<string, TitleMetadata>(
     'torbox-search-metadata'
+  );
+  protected instantAvailabilityCache = Cache.getInstance<string, boolean>(
+    'tb-search-usenet-instant'
   );
 
   protected errorStreams: Stream[] = [];
@@ -338,10 +342,16 @@ export class TorrentSourceHandler extends SourceHandler {
 
 export class UsenetSourceHandler extends SourceHandler {
   private readonly searchUserEngines: boolean;
+  private readonly torboxApi: TorboxApi;
   private readonly clientIp?: string;
 
-  constructor(searchApi: TorboxSearchApi, searchUserEngines: boolean) {
+  constructor(
+    searchApi: TorboxSearchApi,
+    torboxApi: TorboxApi,
+    searchUserEngines: boolean
+  ) {
     super(searchApi);
+    this.torboxApi = torboxApi;
     this.searchUserEngines = searchUserEngines;
   }
 
@@ -351,6 +361,8 @@ export class UsenetSourceHandler extends SourceHandler {
   ): Promise<Stream[]> {
     const { type, id, season, episode } = parsedId;
     const cacheKey = `usenet:${type}:${id}:${season}:${episode}`;
+    let usingCachedSearch = false;
+
     let torrents = this.searchCache.get(cacheKey);
 
     if (!torrents) {
@@ -393,6 +405,7 @@ export class UsenetSourceHandler extends SourceHandler {
         throw error;
       }
     } else {
+      usingCachedSearch = true;
       logger.info(`Found ${torrents.length} (cached) NZBs for ${id}`);
     }
 
@@ -410,13 +423,23 @@ export class UsenetSourceHandler extends SourceHandler {
       }
     }
 
+    let instantAvailability: Map<string, boolean> | undefined;
+    // when using a cached search, we need to check instant availability separately
+    if (usingCachedSearch) {
+      instantAvailability = await this.getInstantAvailability(torrents);
+    }
+
     return torrents.map((torrent) => {
       const file: DebridFile = {
         hash: torrent.hash,
         filename: torrent.title,
         size: torrent.size,
         index: -1,
-        service: { id: 'torbox', cached: torrent.cached ?? false },
+        service: {
+          id: 'torbox',
+          cached:
+            instantAvailability?.get(torrent.hash) ?? torrent.cached ?? false,
+        },
       };
       return this.createStream(
         parsedId,
@@ -427,5 +450,60 @@ export class UsenetSourceHandler extends SourceHandler {
         episode
       );
     });
+  }
+
+  private async getInstantAvailability(
+    torrents: Torrent[]
+  ): Promise<Map<string, boolean> | undefined> {
+    const start = Date.now();
+    const instantAvailability = new Map<string, boolean>();
+
+    const torrentsToCheck: Torrent[] = [];
+    for (const torrent of torrents) {
+      const cachedStatus = this.instantAvailabilityCache.get(torrent.hash);
+      if (cachedStatus !== undefined) {
+        instantAvailability.set(torrent.hash, cachedStatus);
+      } else {
+        torrentsToCheck.push(torrent);
+      }
+    }
+    if (torrentsToCheck.length > 0) {
+      logger.debug(
+        `Checking instant availability for ${torrentsToCheck.length} NZBs`
+      );
+      const data = await this.torboxApi.usenet.getUsenetCachedAvailability(
+        'v1',
+        {
+          hash: torrentsToCheck.map((torrent) => torrent.hash).join(','),
+          format: 'list',
+        }
+      );
+      if (!data.data?.success) {
+        throw new Error(
+          `Failed to check instant availability: ${data.data?.detail} - ${data.data?.error}`
+        );
+      }
+      if (!Array.isArray(data.data.data)) {
+        throw new Error('Invalid response from Torbox API');
+      }
+      for (const torrent of torrentsToCheck) {
+        const item = data.data.data.find((item) => item.hash === torrent.hash);
+        instantAvailability.set(torrent.hash, Boolean(item));
+        this.instantAvailabilityCache.set(
+          torrent.hash,
+          Boolean(item),
+          Env.BUILTIN_TORBOX_SEARCH_INSTANT_AVAILABILITY_CACHE_TTL
+        );
+      }
+    }
+    const cachedTorrents = torrents.filter(
+      (torrent) => instantAvailability.get(torrent.hash) ?? torrent.cached
+    );
+    logger.info(
+      `Checked instant availability for ${torrents.length} NZBs in ${getTimeTakenSincePoint(start)}: ${cachedTorrents.length} / ${torrents.length} cached (with ${
+        torrents.length - torrentsToCheck.length
+      } cached statuses)`
+    );
+    return instantAvailability;
   }
 }
