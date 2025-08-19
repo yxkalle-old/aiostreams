@@ -436,7 +436,7 @@ const SERVICE_DETAILS: Record<
     id: DEBRIDER_SERVICE,
     name: 'Debrider',
     shortName: 'DR',
-    knownNames: ['DBD', 'DR', 'Debrider'],
+    knownNames: ['DBD', 'DR', 'DER', 'Debrider'],
     signUpText: "Don't have an account? [Sign up here](https://debrider.app/)",
     credentials: [
       {
