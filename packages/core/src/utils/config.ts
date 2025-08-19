@@ -265,12 +265,16 @@ export async function validateConfig(
   skipErrorsFromAddonsOrProxies: boolean = false,
   decryptValues: boolean = false
 ): Promise<UserData> {
-  const { success, data: parsedData, error } = UserDataSchema.safeParse(data);
+  const {
+    success,
+    data: config,
+    error,
+  } = UserDataSchema.safeParse(
+    removeInvalidPresetReferences(applyMigrations(data))
+  );
   if (!success) {
     throw new Error(formatZodError(error));
   }
-
-  const config = removeInvalidPresetReferences(applyMigrations(parsedData));
 
   if (
     Env.ADDON_PASSWORD.length > 0 &&
@@ -451,6 +455,22 @@ function removeInvalidPresetReferences(config: UserData) {
 }
 
 export function applyMigrations(config: UserData): UserData {
+  if (
+    config.deduplicator &&
+    typeof config.deduplicator.multiGroupBehaviour === 'string'
+  ) {
+    switch (config.deduplicator.multiGroupBehaviour as string) {
+      case 'remove_uncached':
+        config.deduplicator.multiGroupBehaviour = 'aggressive';
+        break;
+      case 'remove_uncached_same_service':
+        config.deduplicator.multiGroupBehaviour = 'conservative';
+        break;
+      case 'remove_nothing':
+        config.deduplicator.multiGroupBehaviour = 'keep_all';
+        break;
+    }
+  }
   if (config.titleMatching?.matchYear) {
     config.yearMatching = {
       enabled: true,

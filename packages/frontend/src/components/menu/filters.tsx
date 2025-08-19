@@ -156,15 +156,14 @@ export function FiltersMenu() {
 }
 
 const deduplicatorMultiGroupBehaviourHelp = {
-  remove_nothing:
-    'Remove Nothing - Do nothing, i.e. continue processing each group individually',
-  remove_uncached:
-    'Remove Uncached - Remove the uncached streams when both cached and uncached streams exist in a given duplicate set',
-  remove_uncached_same_service:
-    'Remove Uncached (Same Service) - Remove uncached streams that already have a cached duplicate of the same service. e.g. When a file is duplicated and there is a uncached and cached version from the same service, remove the uncached version but if they are 2 different services, keep both',
+  conservative:
+    'Removes duplicates conservatively - removes uncached versions which have cached versions from the same service, and removes P2P versions when cached versions exist',
+  aggressive:
+    'Aggressively removes all uncached and p2p streams when cached versions exist, and removes uncached streams when p2p versions exist',
+  keep_all: 'Keeps all streams and processes each group independently',
 };
 
-const defaultDeduplicatorMultiGroupBehaviour = 'remove_uncached_same_service';
+const defaultDeduplicatorMultiGroupBehaviour = 'aggressive';
 
 function Content() {
   const [tab, setTab] = useState('cache');
@@ -2250,20 +2249,17 @@ function Content() {
                         deduplicator: {
                           ...prev.deduplicator,
                           multiGroupBehaviour: value as
-                            | 'remove_nothing'
-                            | 'remove_uncached'
-                            | 'remove_uncached_same_service',
+                            | 'conservative'
+                            | 'aggressive'
+                            | 'keep_all',
                         },
                       }));
                     }}
                     disabled={!userData.deduplicator?.enabled}
                     options={[
-                      { label: 'Remove Nothing', value: 'remove_nothing' },
-                      { label: 'Remove Uncached', value: 'remove_uncached' },
-                      {
-                        label: 'Remove Uncached (Same Service)',
-                        value: 'remove_uncached_same_service',
-                      },
+                      { label: 'Conservative', value: 'conservative' },
+                      { label: 'Aggressive', value: 'aggressive' },
+                      { label: 'Keep All', value: 'keep_all' },
                     ]}
                   />
                 </SettingsCard>

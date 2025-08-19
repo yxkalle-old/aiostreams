@@ -161,7 +161,7 @@ const DeduplicatorMode = z.enum([
 const DeduplicatorOptions = z.object({
   enabled: z.boolean().optional(),
   multiGroupBehaviour: z
-    .enum(['remove_uncached', 'remove_nothing', 'remove_uncached_same_service'])
+    .enum(['keep_all', 'aggressive', 'conservative'])
     .optional(),
   keys: z.array(DeduplicatorKey).optional(),
   cached: DeduplicatorMode.optional(),
