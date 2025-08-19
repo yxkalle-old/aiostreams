@@ -212,7 +212,7 @@ export class DebridInterface {
       !nzbFile.data.detail.includes('Using cached download.')
     ) {
       logger.debug(
-        `Usenet download failed detected to not be cached, returning undefined`
+        `Usenet download detected to not be cached, returning undefined`
       );
       return undefined;
     }
