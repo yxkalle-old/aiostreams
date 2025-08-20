@@ -160,6 +160,34 @@ const readonly = makeValidator((x) => {
   return x;
 });
 
+const urlMappings = makeValidator<Record<string, string>>((x) => {
+  // json object with string properties
+  const parsed = JSON.parse(x);
+  if (typeof parsed !== 'object' || parsed === null) {
+    throw new EnvError('URL mappings must be an object');
+  }
+  const mappings: Record<string, string> = {};
+  for (const [key, value] of Object.entries(parsed)) {
+    if (typeof key !== 'string' || typeof value !== 'string') {
+      throw new EnvError(
+        'URL mappings must be an object with string properties only'
+      );
+    }
+    try {
+      const keyUrl = new URL(key.endsWith('/') ? key.slice(0, -1) : key);
+      const valueUrl = new URL(
+        value.endsWith('/') ? value.slice(0, -1) : value
+      );
+      mappings[keyUrl.origin] = valueUrl.origin;
+    } catch (e) {
+      throw new EnvError(
+        `Each key and value in the URL mappings must be a valid URL`
+      );
+    }
+  }
+  return mappings;
+});
+
 export const Env = cleanEnv(process.env, {
   VERSION: readonly({
     default: metadata?.version || 'unknown',
@@ -264,6 +292,10 @@ export const Env = cleanEnv(process.env, {
   ADDON_PROXY_CONFIG: str({
     default: undefined,
     desc: 'Proxy config for the addon in format of comma separated hostname:boolean',
+  }),
+  URL_MAPPINGS: urlMappings({
+    default: undefined,
+    desc: 'Mapping of URLs to another, converts requests to the original URL to the mapped URL',
   }),
   ALIASED_CONFIGURATIONS: aliasedUUIDs({
     default: {},

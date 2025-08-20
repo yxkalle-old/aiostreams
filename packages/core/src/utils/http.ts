@@ -72,6 +72,18 @@ export async function makeRequest(url: string, options: RequestOptions) {
     urlObj.port = internalUrl.port;
   }
 
+  if (Env.URL_MAPPINGS) {
+    for (const [key, value] of Object.entries(Env.URL_MAPPINGS)) {
+      if (urlObj.origin === key) {
+        const mappedUrl = new URL(value);
+        urlObj.protocol = mappedUrl.protocol;
+        urlObj.host = mappedUrl.host;
+        urlObj.port = mappedUrl.port;
+        break;
+      }
+    }
+  }
+
   if (urlObj.toString().startsWith(Env.INTERNAL_URL)) {
     headers.set(INTERNAL_SECRET_HEADER, Env.INTERNAL_SECRET);
   }

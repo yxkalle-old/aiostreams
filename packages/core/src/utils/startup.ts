@@ -92,6 +92,12 @@ const logStartupInfo = () => {
     if (Env.CUSTOM_HTML) {
       logKeyValue('Custom HTML:', '✅ Configured');
     }
+    if (Env.URL_MAPPINGS && Object.keys(Env.URL_MAPPINGS).length > 0) {
+      logKeyValue('URL Mappings:', '✅ Configured');
+      for (const [key, value] of Object.entries(Env.URL_MAPPINGS)) {
+        logKeyValue(`${key} → ${value}`, '', '       ');
+      }
+    }
   });
 
   // Database & Storage
