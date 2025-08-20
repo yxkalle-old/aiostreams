@@ -76,7 +76,7 @@ export class DebridService {
       const cacheKey = getSimpleTextHash(
         `${this.serviceConfig.id}:${torrent.hash}`
       );
-      const cached = this.debridCache.get(cacheKey);
+      const cached = await this.debridCache.get(cacheKey);
 
       if (cached && cached.length > 0) {
         cachedResults.push(...cached);

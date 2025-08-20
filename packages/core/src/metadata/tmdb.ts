@@ -92,7 +92,7 @@ export class TMDBMetadata {
 
     // Check cache first
     const cacheKey = `${id.type}:${id.value}:${type}`;
-    const cachedId = TMDBMetadata.idCache.get(cacheKey);
+    const cachedId = await TMDBMetadata.idCache.get(cacheKey);
     if (cachedId) {
       return cachedId;
     }
@@ -147,7 +147,7 @@ export class TMDBMetadata {
 
     // Check cache first
     const cacheKey = `${tmdbId}:${type}`;
-    const cachedMetadata = TMDBMetadata.metadataCache.get(cacheKey);
+    const cachedMetadata = await TMDBMetadata.metadataCache.get(cacheKey);
     if (cachedMetadata) {
       return cachedMetadata;
     }
@@ -231,7 +231,7 @@ export class TMDBMetadata {
     if (!cacheKey) {
       throw new Error('TMDB Access Token or API Key is not set');
     }
-    const cachedResult = TMDBMetadata.validationCache.get(cacheKey);
+    const cachedResult = await TMDBMetadata.validationCache.get(cacheKey);
     if (cachedResult) {
       return cachedResult;
     }

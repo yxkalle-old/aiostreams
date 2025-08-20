@@ -6,6 +6,7 @@ import {
   DB,
   UserRepository,
   logStartupInfo,
+  Cache,
 } from '@aiostreams/core';
 
 const logger = createLogger('server');
@@ -13,7 +14,6 @@ const logger = createLogger('server');
 async function initialiseDatabase() {
   try {
     await DB.getInstance().initialise(Env.DATABASE_URI, []);
-    logger.info('Database initialised');
   } catch (error) {
     logger.error('Failed to initialise database:', error);
     throw error;
@@ -30,9 +30,16 @@ async function startAutoPrune() {
   setTimeout(startAutoPrune, Env.PRUNE_INTERVAL * 1000);
 }
 
+async function initialiseRedis() {
+  if (Env.REDIS_URI) {
+    await Cache.testRedisConnection();
+  }
+}
+
 async function start() {
   try {
     await initialiseDatabase();
+    await initialiseRedis();
     if (Env.PRUNE_MAX_DAYS >= 0) {
       startAutoPrune();
     }

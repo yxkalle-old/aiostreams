@@ -179,7 +179,9 @@ export class TorrentSourceHandler extends SourceHandler {
       }
     }
 
-    const titleMetadata = this.metadataCache.get(`metadata:${type}:${id}`);
+    const titleMetadata = await this.metadataCache.get(
+      `metadata:${type}:${id}`
+    );
     const filesByHash = await this.getAvailableFilesFromDebrid(
       torrents,
       parsedId,
@@ -229,7 +231,7 @@ export class TorrentSourceHandler extends SourceHandler {
     ) {
       cacheKey += `:${this.searchApi.apiKey}`;
     }
-    const cachedTorrents = this.searchCache.get(cacheKey);
+    const cachedTorrents = await this.searchCache.get(cacheKey);
 
     if (
       cachedTorrents &&
@@ -294,7 +296,7 @@ export class TorrentSourceHandler extends SourceHandler {
       return [];
     }
 
-    this.searchCache.set(
+    await this.searchCache.set(
       cacheKey,
       torrents.filter(
         (torrent) =>
@@ -364,7 +366,7 @@ export class UsenetSourceHandler extends SourceHandler {
     const cacheKey = `usenet:${type}:${id}:${season}:${episode}`;
     let usingCachedSearch = false;
 
-    let torrents = this.searchCache.get(cacheKey);
+    let torrents = await this.searchCache.get(cacheKey);
 
     if (!torrents) {
       const start = Date.now();
@@ -380,7 +382,7 @@ export class UsenetSourceHandler extends SourceHandler {
         if (torrents.length === 0) {
           return [];
         }
-        this.searchCache.set(
+        await this.searchCache.set(
           cacheKey,
           torrents,
           Env.BUILTIN_TORBOX_SEARCH_SEARCH_API_CACHE_TTL
@@ -463,7 +465,9 @@ export class UsenetSourceHandler extends SourceHandler {
 
     const torrentsToCheck: Torrent[] = [];
     for (const torrent of torrents) {
-      const cachedStatus = this.instantAvailabilityCache.get(torrent.hash);
+      const cachedStatus = await this.instantAvailabilityCache.get(
+        torrent.hash
+      );
       if (cachedStatus !== undefined) {
         instantAvailability.set(torrent.hash, cachedStatus);
       } else {

@@ -367,7 +367,7 @@ export class Wrapper {
     } = options;
 
     if (cacher) {
-      const cached = cacher.get(cacheKey);
+      const cached = await cacher.get(cacheKey);
       if (cached) {
         logger.info(
           `Returning cached ${resourceName} for ${this.getAddonName(this.addon)}`
@@ -380,7 +380,7 @@ export class Wrapper {
       const result = await requestFn();
       const doCache = shouldCache ? shouldCache(result) : true;
       if (cacher && doCache) {
-        cacher.set(cacheKey, result, cacheTtl);
+        await cacher.set(cacheKey, result, cacheTtl);
       }
       return result;
     };

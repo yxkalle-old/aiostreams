@@ -443,7 +443,7 @@ export class MoreLikeThisPreset extends Preset {
       forCopy: 'true',
     };
 
-    const cachedManifest = moreLikeThisManifests.get(
+    const cachedManifest = await moreLikeThisManifests.get(
       getSimpleTextHash(`${url}?${JSON.stringify(config)}`)
     );
     if (cachedManifest) {

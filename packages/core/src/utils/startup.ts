@@ -95,8 +95,9 @@ const logStartupInfo = () => {
   });
 
   // Database & Storage
-  logSection('DATABASE & STORAGE', '💾', () => {
+  logSection('STORAGE & CACHE', '💾', () => {
     const dbType = Env.DATABASE_URI.split('://')[0].toUpperCase();
+    const cacheType = Env.REDIS_URI ? 'Redis' : 'Memory';
     logKeyValue('Database Type:', dbType);
     if (Env.DATABASE_URI.includes('sqlite')) {
       const dbPath =
@@ -107,6 +108,10 @@ const logStartupInfo = () => {
         'Database URI:',
         Env.DATABASE_URI.replace(/:\/\/.*@/, '://***@')
       ); // Hide credentials
+    }
+    logKeyValue('Cache Type:', cacheType);
+    if (Env.REDIS_URI) {
+      logKeyValue('Redis URI:', Env.REDIS_URI);
     }
   });
 

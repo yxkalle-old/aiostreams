@@ -13,7 +13,11 @@ import {
 import { socksDispatcher } from 'fetch-socks';
 
 const logger = createLogger('http');
-const urlCount = Cache.getInstance<string, number>('url-count');
+const urlCount = Cache.getInstance<string, number>(
+  'url-count',
+  undefined,
+  true
+);
 
 export class PossibleRecursiveRequestError extends Error {
   constructor(message: string) {
@@ -47,7 +51,7 @@ export interface RequestOptions {
   rawOptions?: RequestInit;
 }
 
-export function makeRequest(url: string, options: RequestOptions) {
+export async function makeRequest(url: string, options: RequestOptions) {
   const urlObj = new URL(url);
   const useProxy = shouldProxy(urlObj);
   const headers = new Headers(options.headers);
@@ -79,7 +83,7 @@ export function makeRequest(url: string, options: RequestOptions) {
 
   // block recursive requests
   const key = `${urlObj.toString()}-${options.forwardIp}`;
-  const currentCount = urlCount.get(key) ?? 0;
+  const currentCount = (await urlCount.get(key)) ?? 0;
   if (
     currentCount > Env.RECURSION_THRESHOLD_LIMIT &&
     !options.ignoreRecursion
@@ -92,9 +96,9 @@ export function makeRequest(url: string, options: RequestOptions) {
     );
   }
   if (currentCount > 0) {
-    urlCount.update(key, currentCount + 1);
+    await urlCount.update(key, currentCount + 1);
   } else {
-    urlCount.set(key, 1, Env.RECURSION_THRESHOLD_WINDOW);
+    await urlCount.set(key, 1, Env.RECURSION_THRESHOLD_WINDOW);
   }
   logger.debug(
     `Making a ${useProxy ? 'proxied' : 'direct'} request to ${makeUrlLogSafe(

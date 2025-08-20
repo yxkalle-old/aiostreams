@@ -253,6 +253,10 @@ export const Env = cleanEnv(process.env, {
     default: 'sqlite://./data/db.sqlite',
     desc: 'Database URI for the addon',
   }),
+  REDIS_URI: str({
+    default: undefined,
+    desc: 'Redis URI for the addon',
+  }),
   ADDON_PROXY: url({
     default: undefined,
     desc: 'Proxy URL for the addon',
