@@ -464,6 +464,11 @@ export const Env = cleanEnv(process.env, {
     desc: 'Timeout for manifest requests',
   }),
 
+  BACKGROUND_RESOURCE_REQUEST_TIMEOUT: num({
+    default: undefined,
+    desc: 'Timeout for background resource requests, uses your maximum timeout if not set',
+  }),
+
   FORCE_PUBLIC_PROXY_HOST: host({
     default: undefined,
     desc: 'Force public proxy host',
