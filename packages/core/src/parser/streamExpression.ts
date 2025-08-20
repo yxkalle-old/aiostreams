@@ -339,20 +339,10 @@ export abstract class StreamExpressionEngine {
       const maxSizeInBytes =
         typeof maxSize === 'string' ? bytes.parse(maxSize) : maxSize;
       return streams.filter((stream) => {
-        if (
-          minSize &&
-          stream.size &&
-          minSizeInBytes &&
-          stream.size < minSizeInBytes
-        ) {
+        if (minSize && minSizeInBytes && (stream.size ?? 0) < minSizeInBytes) {
           return false;
         }
-        if (
-          maxSize &&
-          stream.size &&
-          maxSizeInBytes &&
-          stream.size > maxSizeInBytes
-        ) {
+        if (maxSize && maxSizeInBytes && (stream.size ?? 0) > maxSizeInBytes) {
           return false;
         }
         return true;
