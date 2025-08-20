@@ -185,22 +185,22 @@ export class Cache<K, V> {
       let itemCount = 0;
       let instanceSize = 0;
 
-      // Get stats differently depending on the backend type
+      // push cache stats for memory cache only
       if (cache.backend instanceof MemoryCacheBackend) {
         itemCount = cache.backend.getSize();
         instanceSize = cache.backend.getMemoryUsageEstimate();
+
+        const nameStr = name.padEnd(20);
+        const itemsStr = String(itemCount).padEnd(8);
+        const maxSizeStr = String(cache.maxSize ?? '-').padEnd(15);
+        const estSizeStr = formatBytes(instanceSize).padEnd(15);
+        grandTotalItems += itemCount;
+        grandTotalSize += instanceSize;
+
+        bodyLines.push(
+          `║ ${nameStr} │ ${itemsStr} │ ${maxSizeStr} │ ${estSizeStr} ║`
+        );
       }
-      grandTotalItems += itemCount;
-      grandTotalSize += instanceSize;
-
-      const nameStr = name.padEnd(20);
-      const itemsStr = String(itemCount).padEnd(8);
-      const maxSizeStr = String(cache.maxSize ?? '-').padEnd(15);
-      const estSizeStr = formatBytes(instanceSize).padEnd(15);
-
-      bodyLines.push(
-        `║ ${nameStr} │ ${itemsStr} │ ${maxSizeStr} │ ${estSizeStr} ║`
-      );
     }
 
     const footer = [
@@ -209,7 +209,9 @@ export class Cache<K, V> {
     ];
 
     const lines = [...header, ...bodyLines, ...footer];
-    logger.verbose(lines.join('\n'));
+    if (bodyLines.length > 0) {
+      logger.verbose(lines.join('\n'));
+    }
   }
 
   /**
