@@ -28,6 +28,7 @@ export interface DebridFile {
   service: {
     id: ServiceId;
     cached: boolean;
+    owned: boolean;
   };
 }
 
@@ -136,6 +137,10 @@ export class DebridService {
               service: {
                 id: this.serviceConfig.id,
                 cached: item?.status === 'cached',
+                owned:
+                  this.serviceConfig.id === 'torbox'
+                    ? (torrent.owned ?? false)
+                    : false,
               },
             };
             newResults.push(result);
@@ -151,9 +156,6 @@ export class DebridService {
             );
           }
         }
-        // logger.info(
-        //   `[${this.serviceConfig.id}] Checked ${torrentsToCheck.length} uncached magnets  in ${getTimeTakenSincePoint(start)}`
-        // );
       } catch (error) {
         if (error instanceof StremThruError) {
           logger.error(

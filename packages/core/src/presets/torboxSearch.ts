@@ -32,6 +32,13 @@ export class TorboxSearchParser extends StreamParser {
     return super.parseServiceData(string.replace('TorBox', ''));
   }
 
+  protected getInLibrary(
+    stream: Stream,
+    currentParsedStream: ParsedStream
+  ): boolean {
+    return stream.name?.includes('☁️') ?? false;
+  }
+
   protected get ageRegex(): RegExp | undefined {
     return this.getRegexForTextAfterEmojis(['🕒']);
   }

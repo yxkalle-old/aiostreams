@@ -87,7 +87,7 @@ abstract class SourceHandler {
           };
 
     const svcMeta = SERVICE_DETAILS[file.service.id];
-    const name = `[${svcMeta.shortName} ${file.service.cached ? '⚡' : '⏳'}] TorBox Search`;
+    const name = `[${svcMeta.shortName} ${file.service.cached ? '⚡' : '⏳'}${file.service.owned ? ' ☁️' : ''}] TorBox Search`;
     const description = `${torrent.title}\n${file.filename}\n${torrent.indexer ? `🔍 ${torrent.indexer}` : ''} ${torrent.seeders ? `👤 ${torrent.seeders}` : ''} ${torrent.age && torrent.age !== '0d' ? `🕒 ${torrent.age}` : ''}`;
 
     return {
@@ -246,6 +246,7 @@ export class TorrentSourceHandler extends SourceHandler {
       season,
       episode,
       metadata: 'true',
+      check_owned: 'true',
     });
 
     const torrents = convertDataToTorrents(data.torrents);
@@ -372,6 +373,7 @@ export class UsenetSourceHandler extends SourceHandler {
           season,
           episode,
           check_cache: 'true',
+          check_owned: 'true',
           search_user_engines: this.searchUserEngines ? 'true' : 'false',
         });
         torrents = convertDataToTorrents(data.nzbs);
@@ -439,6 +441,7 @@ export class UsenetSourceHandler extends SourceHandler {
           id: 'torbox',
           cached:
             instantAvailability?.get(torrent.hash) ?? torrent.cached ?? false,
+          owned: torrent.owned ?? false,
         },
       };
       return this.createStream(
