@@ -138,7 +138,7 @@ export class RedisCacheBackend<K, V> implements CacheBackend<K, V> {
   }
 
   private getKey(key: K): string {
-    return `${this.prefix}${String(key)}`;
+    return `aiostreams:${this.prefix}${String(key)}`;
   }
 
   /**
