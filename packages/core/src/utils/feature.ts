@@ -46,7 +46,11 @@ async function fetchPatternsFromUrl(url: string): Promise<string[]> {
     const parsedData = schema.parse(data);
     const patterns = parsedData.map((item) => item.pattern);
     if (remotePatternCache) {
-      await remotePatternCache.set(url, patterns, 60 * 60 * 24);
+      await remotePatternCache.set(
+        url,
+        patterns,
+        Math.floor(Env.ALLOWED_REGEX_PATTERNS_URLS_REFRESH_INTERVAL / 1000)
+      );
     }
     return patterns;
   } catch (error) {
@@ -56,33 +60,80 @@ async function fetchPatternsFromUrl(url: string): Promise<string[]> {
 }
 
 export class FeatureControl {
-  private static readonly _allowedRegexPatterns: Promise<{
+  private static _patternState: {
     patterns: string[];
     description?: string;
-  }> = (async () => {
-    const patterns: string[] = Env.ALLOWED_REGEX_PATTERNS;
-    let patternsFromUrls: string[] = [];
-    if (Env.ALLOWED_REGEX_PATTERNS_URLS?.length) {
-      const fetchPromises = await Promise.allSettled(
-        Env.ALLOWED_REGEX_PATTERNS_URLS.map(fetchPatternsFromUrl)
-      );
-      patternsFromUrls = fetchPromises
-        .filter(
-          (result): result is PromiseFulfilledResult<string[]> =>
-            result.status === 'fulfilled'
-        )
-        .flatMap((result) => result.value);
-      logger.debug(
-        `Fetched ${patternsFromUrls.length} regex patterns from URLs`
-      );
-    }
-    const allPatterns = [...new Set([...patterns, ...patternsFromUrls])];
+  } = {
+    patterns: Env.ALLOWED_REGEX_PATTERNS || [],
+    description: Env.ALLOWED_REGEX_PATTERNS_DESCRIPTION,
+  };
+  private static _initialisationPromise: Promise<void> | null = null;
+  private static _refreshInterval: NodeJS.Timeout | null = null;
 
-    return {
-      patterns: allPatterns,
-      description: Env.ALLOWED_REGEX_PATTERNS_DESCRIPTION,
-    };
-  })();
+  /**
+   * Initialises the FeatureControl service, performing the initial pattern fetch
+   * and setting up periodic refreshes.
+   */
+  public static initialise() {
+    if (!this._initialisationPromise) {
+      this._initialisationPromise = this._refreshPatterns().then(() => {
+        logger.info(
+          `Initialised with ${this._patternState.patterns.length} regex patterns.`
+        );
+        this._refreshInterval = setInterval(
+          () => this._refreshPatterns(),
+          Env.ALLOWED_REGEX_PATTERNS_URLS_REFRESH_INTERVAL
+        );
+      });
+    }
+    return this._initialisationPromise;
+  }
+
+  /**
+   * Cleans up resources for graceful shutdown.
+   */
+  public static cleanup() {
+    if (this._refreshInterval) {
+      clearInterval(this._refreshInterval);
+      this._refreshInterval = null;
+    }
+  }
+
+  /**
+   * Fetches patterns from all configured URLs and accumulates them.
+   */
+  private static async _refreshPatterns(): Promise<void> {
+    const urls = Env.ALLOWED_REGEX_PATTERNS_URLS;
+    if (!urls || urls.length === 0) {
+      return;
+    }
+
+    logger.debug(`Refreshing regex patterns from ${urls.length} URLs...`);
+    const fetchPromises = await Promise.allSettled(
+      urls.map(fetchPatternsFromUrl)
+    );
+
+    const patternsFromUrls = fetchPromises
+      .filter(
+        (result): result is PromiseFulfilledResult<string[]> =>
+          result.status === 'fulfilled'
+      )
+      .flatMap((result) => result.value);
+
+    if (patternsFromUrls.length > 0) {
+      const initialCount = this._patternState.patterns.length;
+      const allPatterns = [
+        ...new Set([...this._patternState.patterns, ...patternsFromUrls]),
+      ];
+      this._patternState.patterns = allPatterns;
+      const newCount = allPatterns.length - initialCount;
+      if (newCount > 0) {
+        logger.info(
+          `Accumulated ${newCount} new regex patterns from URLs. Total: ${allPatterns.length}`
+        );
+      }
+    }
+  }
 
   private static readonly _disabledHosts: Map<string, string> = (() => {
     const map = new Map<string, string>();
@@ -132,12 +183,13 @@ export class FeatureControl {
     return this._disabledServices;
   }
 
-  public static get allowedRegexPatterns() {
-    return this._allowedRegexPatterns;
+  public static async allowedRegexPatterns() {
+    await this.initialise();
+    return this._patternState;
   }
 
   public static async isRegexAllowed(userData: UserData, regexes?: string[]) {
-    const { patterns } = await this.allowedRegexPatterns;
+    const { patterns } = await this.allowedRegexPatterns();
     if (regexes && regexes.length > 0) {
       const areAllRegexesAllowed = regexes.every((regex) =>
         patterns.includes(regex)

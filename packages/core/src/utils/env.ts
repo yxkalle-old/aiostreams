@@ -477,6 +477,10 @@ export const Env = cleanEnv(process.env, {
     default: undefined,
     desc: 'Comma separated list of allowed regex patterns URLs',
   }),
+  ALLOWED_REGEX_PATTERNS_URLS_REFRESH_INTERVAL: num({
+    default: 86400000,
+    desc: 'Interval for refreshing regex patterns from URLs in milliseconds',
+  }),
   ALLOWED_REGEX_PATTERNS_DESCRIPTION: str({
     default: undefined,
     desc: 'Description of the allowed regex patterns',

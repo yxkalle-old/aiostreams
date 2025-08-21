@@ -500,9 +500,10 @@ async function validateRegexes(config: UserData) {
   ];
 
   if (!regexAllowed && regexes.length > 0) {
-    const allowedPatterns = await FeatureControl.allowedRegexPatterns;
+    const allowedPatterns = (await FeatureControl.allowedRegexPatterns())
+      .patterns;
     const allowedRegexes = regexes.filter((regex) =>
-      allowedPatterns.patterns.includes(regex)
+      allowedPatterns.includes(regex)
     );
     if (allowedRegexes.length === 0) {
       throw new Error(

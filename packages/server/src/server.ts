@@ -7,6 +7,7 @@ import {
   UserRepository,
   logStartupInfo,
   Cache,
+  FeatureControl,
 } from '@aiostreams/core';
 
 const logger = createLogger('server');
@@ -40,6 +41,7 @@ async function start() {
   try {
     await initialiseDatabase();
     await initialiseRedis();
+    FeatureControl.initialise();
     if (Env.PRUNE_MAX_DAYS >= 0) {
       startAutoPrune();
     }
@@ -53,15 +55,21 @@ async function start() {
   }
 }
 
+async function shutdown() {
+  await Cache.close();
+  FeatureControl.cleanup();
+  await DB.getInstance().close();
+}
+
 process.on('SIGTERM', async () => {
   logger.info('SIGTERM received. Shutting down gracefully...');
-  await DB.getInstance().close();
+  await shutdown();
   process.exit(0);
 });
 
 process.on('SIGINT', async () => {
   logger.info('SIGINT received. Shutting down gracefully...');
-  await DB.getInstance().close();
+  await shutdown();
   process.exit(0);
 });
 

@@ -161,6 +161,12 @@ export class Cache<K, V> {
     return this.instances.get(name) as Cache<K, V>;
   }
 
+  public static async close() {
+    if (this.redisClient) {
+      await this.redisClient.disconnect();
+    }
+  }
+
   /**
    * Gets the statistics of the cache in use by the program. returns a formatted string containing a list of all cache instances
    * and their currently held items, max items
