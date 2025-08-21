@@ -4,7 +4,7 @@ import { RedisClientType, RedisClientOptions, AbortError } from 'redis';
 
 const logger = createLogger('cache');
 
-const REDIS_TIMEOUT = 500;
+const REDIS_TIMEOUT = Env.REDIS_TIMEOUT;
 
 // Interface that both memory and Redis cache will implement
 export interface CacheBackend<K, V> {
@@ -13,6 +13,7 @@ export interface CacheBackend<K, V> {
   update(key: K, value: V): Promise<void>;
   clear(): Promise<void>;
   getTTL(key: K): Promise<number>;
+  waitUntilReady(): Promise<void>;
 }
 
 // Memory cache implementation
@@ -110,6 +111,10 @@ export class MemoryCacheBackend<K, V> implements CacheBackend<K, V> {
       }
     }
     return totalSize;
+  }
+
+  async waitUntilReady(): Promise<void> {
+    return Promise.resolve();
   }
 }
 
@@ -254,6 +259,12 @@ export class RedisCacheBackend<K, V> implements CacheBackend<K, V> {
       0,
       `Error getting TTL for key ${String(key)} from Redis`
     );
+  }
+
+  async waitUntilReady(): Promise<void> {
+    while (!this.client.isOpen) {
+      await new Promise((resolve) => setTimeout(resolve, 100));
+    }
   }
 }
 

@@ -86,7 +86,7 @@ class StreamFilterer {
     };
 
     const start = Date.now();
-    const isRegexAllowed = FeatureControl.isRegexAllowed(this.userData, [
+    const isRegexAllowed = await FeatureControl.isRegexAllowed(this.userData, [
       ...(this.userData.excludedRegexPatterns ?? []),
       ...(this.userData.requiredRegexPatterns ?? []),
       ...(this.userData.includedRegexPatterns ?? []),

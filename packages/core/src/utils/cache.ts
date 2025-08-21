@@ -266,4 +266,8 @@ export class Cache<K, V> {
   async getTTL(key: K): Promise<number> {
     return this.backend.getTTL(key);
   }
+
+  async waitUntilReady(): Promise<void> {
+    return this.backend.waitUntilReady();
+  }
 }

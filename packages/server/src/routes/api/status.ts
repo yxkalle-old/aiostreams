@@ -32,10 +32,11 @@ router.get('/', async (req: Request, res: Response) => {
       tmdbApiAvailable: !!Env.TMDB_ACCESS_TOKEN,
       regexFilterAccess: Env.REGEX_FILTER_ACCESS,
       allowedRegexPatterns:
-        Env.ALLOWED_REGEX_PATTERNS.length > 0
+        (await FeatureControl.allowedRegexPatterns).patterns.length > 0
           ? {
-              patterns: Env.ALLOWED_REGEX_PATTERNS,
-              description: Env.ALLOWED_REGEX_PATTERNS_DESCRIPTION,
+              patterns: (await FeatureControl.allowedRegexPatterns).patterns,
+              description: (await FeatureControl.allowedRegexPatterns)
+                .description,
             }
           : undefined,
       loggingSensitiveInfo: Env.LOG_SENSITIVE_INFO,

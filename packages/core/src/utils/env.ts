@@ -285,6 +285,10 @@ export const Env = cleanEnv(process.env, {
     default: undefined,
     desc: 'Redis URI for the addon',
   }),
+  REDIS_TIMEOUT: num({
+    default: 500,
+    desc: 'Redis timeout for the addon',
+  }),
   ADDON_PROXY: url({
     default: undefined,
     desc: 'Proxy URL for the addon',
@@ -465,9 +469,13 @@ export const Env = cleanEnv(process.env, {
     desc: 'Max number of groups',
   }),
 
-  ALLOWED_REGEX_PATTERNS: json({
+  ALLOWED_REGEX_PATTERNS: json<string[]>({
     default: [],
     desc: 'Allowed regex patterns',
+  }),
+  ALLOWED_REGEX_PATTERNS_URLS: json<string[]>({
+    default: undefined,
+    desc: 'Comma separated list of allowed regex patterns URLs',
   }),
   ALLOWED_REGEX_PATTERNS_DESCRIPTION: str({
     default: undefined,
