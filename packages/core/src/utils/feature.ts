@@ -36,15 +36,23 @@ async function fetchPatternsFromUrl(url: string): Promise<string[]> {
       );
       return [];
     }
-    const schema = z.array(
+
+    const schema = z.union([
+      z.array(
+        z.object({
+          name: z.string(),
+          pattern: z.string(),
+        })
+      ),
       z.object({
-        name: z.string(),
-        pattern: z.string(),
-      })
-    );
+        values: z.array(z.string()),
+      }),
+    ]);
     const data = await response.json();
     const parsedData = schema.parse(data);
-    const patterns = parsedData.map((item) => item.pattern);
+    const patterns = Array.isArray(parsedData)
+      ? parsedData.map((item) => item.pattern)
+      : parsedData.values;
     if (remotePatternCache) {
       await remotePatternCache.set(
         url,
