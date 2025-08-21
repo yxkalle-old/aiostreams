@@ -152,9 +152,9 @@ class StreamParser {
           streamUrl.protocol = mappedUrl.protocol;
           streamUrl.host = mappedUrl.host;
           streamUrl.port = mappedUrl.port;
-          break;
         }
       }
+      return streamUrl.toString();
     }
     return url;
   }
