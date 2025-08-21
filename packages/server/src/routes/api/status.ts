@@ -37,6 +37,7 @@ router.get('/', async (req: Request, res: Response) => {
               patterns: (await FeatureControl.allowedRegexPatterns()).patterns,
               description: (await FeatureControl.allowedRegexPatterns())
                 .description,
+              urls: Env.ALLOWED_REGEX_PATTERNS_URLS || [],
             }
           : undefined,
       loggingSensitiveInfo: Env.LOG_SENSITIVE_INFO,

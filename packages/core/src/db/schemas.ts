@@ -889,6 +889,7 @@ const StatusResponseSchema = z.object({
       .object({
         patterns: z.array(z.string()),
         description: z.string().optional(),
+        urls: z.array(z.string()).optional(),
       })
       .optional(),
     loggingSensitiveInfo: z.boolean(),
