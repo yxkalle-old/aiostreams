@@ -38,7 +38,7 @@ class CometStreamParser extends StreamParser {
       }
       return urlObj.toString();
     }
-    return url;
+    return super.applyUrlModifications(url);
   }
 }
 

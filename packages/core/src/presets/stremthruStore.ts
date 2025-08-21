@@ -31,7 +31,7 @@ class StremthruStoreStreamParser extends StremThruStreamParser {
       }
       return urlObj.toString();
     }
-    return url;
+    return super.applyUrlModifications(url);
   }
 }
 

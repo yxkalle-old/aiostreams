@@ -92,9 +92,21 @@ const logStartupInfo = () => {
     if (Env.CUSTOM_HTML) {
       logKeyValue('Custom HTML:', '✅ Configured');
     }
-    if (Env.URL_MAPPINGS && Object.keys(Env.URL_MAPPINGS).length > 0) {
-      logKeyValue('URL Mappings:', '✅ Configured');
-      for (const [key, value] of Object.entries(Env.URL_MAPPINGS)) {
+    if (
+      Env.REQUEST_URL_MAPPINGS &&
+      Object.keys(Env.REQUEST_URL_MAPPINGS).length > 0
+    ) {
+      logKeyValue('Request URL Mappings:', '✅ Configured');
+      for (const [key, value] of Object.entries(Env.REQUEST_URL_MAPPINGS)) {
+        logKeyValue(`${key} → ${value}`, '', '       ');
+      }
+    }
+    if (
+      Env.STREAM_URL_MAPPINGS &&
+      Object.keys(Env.STREAM_URL_MAPPINGS).length > 0
+    ) {
+      logKeyValue('Stream URL Mappings:', '✅ Configured');
+      for (const [key, value] of Object.entries(Env.STREAM_URL_MAPPINGS)) {
         logKeyValue(`${key} → ${value}`, '', '       ');
       }
     }

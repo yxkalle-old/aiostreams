@@ -293,7 +293,7 @@ export const Env = cleanEnv(process.env, {
     default: undefined,
     desc: 'Proxy config for the addon in format of comma separated hostname:boolean',
   }),
-  URL_MAPPINGS: urlMappings({
+  REQUEST_URL_MAPPINGS: urlMappings({
     default: undefined,
     desc: 'Mapping of URLs to another, converts requests to the original URL to the mapped URL',
   }),
@@ -730,6 +730,11 @@ export const Env = cleanEnv(process.env, {
   FORCED_SEEDR_ENCODED_TOKEN: str({
     default: undefined,
     desc: 'Forced Seedr encoded token',
+  }),
+
+  STREAM_URL_MAPPINGS: urlMappings({
+    default: undefined,
+    desc: 'Mapping of URLs to another, converts stream URLs from the original URL to the mapped URL',
   }),
 
   COMET_URL: url({

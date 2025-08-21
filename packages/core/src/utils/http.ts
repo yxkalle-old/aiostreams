@@ -72,8 +72,8 @@ export async function makeRequest(url: string, options: RequestOptions) {
     urlObj.port = internalUrl.port;
   }
 
-  if (Env.URL_MAPPINGS) {
-    for (const [key, value] of Object.entries(Env.URL_MAPPINGS)) {
+  if (Env.REQUEST_URL_MAPPINGS) {
+    for (const [key, value] of Object.entries(Env.REQUEST_URL_MAPPINGS)) {
       if (urlObj.origin === key) {
         const mappedUrl = new URL(value);
         urlObj.protocol = mappedUrl.protocol;
