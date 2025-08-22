@@ -160,7 +160,7 @@ function Content() {
       options: Object.fromEntries(
         (preset.OPTIONS || []).map((opt: any) => [
           opt.id,
-          opt.default ?? undefined,
+          opt.forced ?? opt.default ?? undefined,
         ])
       ),
     });

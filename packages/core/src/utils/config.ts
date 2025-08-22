@@ -648,6 +648,13 @@ function validateOption(
   value: any,
   decryptValues: boolean = false
 ): any {
+  const forcedValue =
+    option.forced !== undefined && option.forced !== null
+      ? option.forced
+      : undefined;
+  if (forcedValue !== undefined) {
+    value = forcedValue;
+  }
   if (value === undefined) {
     if (option.required) {
       throw new Error(`Option ${option.id} is required, got ${value}`);
@@ -710,7 +717,7 @@ function validateOption(
   if (option.type === 'string' || option.type === 'password') {
     if (typeof value !== 'string') {
       throw new Error(
-        `Option ${option.id} must be a string, got ${typeof value}`
+        `Option ${option.id} must be a string, got ${typeof value}: ${value}`
       );
     }
     if (option.constraints?.min && value.length < option.constraints.min) {
@@ -726,10 +733,6 @@ function validateOption(
   }
 
   if (option.type === 'password') {
-    if (option.forced) {
-      // option.forced is already encrypted
-      value = option.forced;
-    }
     if (isEncrypted(value) && decryptValues) {
       const { success, data, error } = decryptString(value);
       if (!success) {
@@ -742,6 +745,9 @@ function validateOption(
   }
 
   if (option.type === 'url') {
+    if (forcedValue !== undefined) {
+      value = forcedValue;
+    }
     if (typeof value !== 'string') {
       throw new Error(
         `Option ${option.id} must be a string, got ${typeof value}`
