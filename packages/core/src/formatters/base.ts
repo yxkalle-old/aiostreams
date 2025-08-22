@@ -2,7 +2,12 @@ import { ParsedStream } from '../db';
 // import { constants, Env, createLogger } from '../utils';
 import * as constants from '../utils/constants';
 import { createLogger } from '../utils/logger';
-import { formatBytes, formatDuration, languageToEmoji } from './utils';
+import {
+  formatBytes,
+  formatDuration,
+  languageToCode,
+  languageToEmoji,
+} from './utils';
 import { Env } from '../utils/env';
 
 const logger = createLogger('formatter');
@@ -55,6 +60,7 @@ export interface ParseValue {
     resolution: string | null;
     languages: string[] | null;
     languageEmojis: string[] | null;
+    languageCodes: string[] | null;
     wedontknowwhatakilometeris: string[] | null;
     visualTags: string[] | null;
     audioTags: string[] | null;
@@ -128,6 +134,11 @@ export abstract class BaseFormatter {
         languageEmojis: stream.parsedFile?.languages
           ? stream.parsedFile.languages
               .map((lang) => languageToEmoji(lang) || lang)
+              .filter((value, index, self) => self.indexOf(value) === index)
+          : null,
+        languageCodes: stream.parsedFile?.languages
+          ? stream.parsedFile.languages
+              .map((lang) => languageToCode(lang) || lang)
               .filter((value, index, self) => self.indexOf(value) === index)
           : null,
         wedontknowwhatakilometeris: stream.parsedFile?.languages

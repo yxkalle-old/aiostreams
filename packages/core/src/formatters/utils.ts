@@ -1,3 +1,5 @@
+import { FULL_LANGUAGE_MAPPING } from '../utils';
+
 export function formatBytes(bytes: number, k: 1024 | 1000): string {
   if (bytes === 0) return '0 B';
   const sizes =
@@ -29,14 +31,29 @@ export function languageToEmoji(language: string): string | undefined {
   return languageEmojiMap[language.toLowerCase()];
 }
 
+export function languageToCode(language: string): string | undefined {
+  const extractLanguage = (lang: string) => lang.split('(')[0].trim();
+  const possibleLangs = FULL_LANGUAGE_MAPPING.filter(
+    (lang) =>
+      extractLanguage(lang.english_name).toLowerCase() ===
+        language.toLowerCase() ||
+      lang.name.toLowerCase() === language.toLowerCase()
+  );
+  if (possibleLangs.length === 0) {
+    return undefined;
+  }
+  const selectedLang =
+    possibleLangs.find((lang) => lang.flag_priority) ?? possibleLangs[0];
+  if (selectedLang && selectedLang.iso_639_1) {
+    return selectedLang.iso_639_1.toUpperCase();
+  }
+  return undefined;
+}
+
 export function emojiToLanguage(emoji: string): string | undefined {
   return Object.entries(languageEmojiMap).find(
     ([_, value]) => value === emoji
   )?.[0];
-}
-
-export function codeToLanguage(code: string): string | undefined {
-  return codeLanguageMap[code];
 }
 /**
  * A mapping of language names to their corresponding emoji flags.
