@@ -5,9 +5,12 @@ export enum ErrorCode {
   USER_ALREADY_EXISTS = 'USER_ALREADY_EXISTS',
   USER_INVALID_DETAILS = 'USER_INVALID_DETAILS',
   USER_INVALID_CONFIG = 'USER_INVALID_CONFIG',
-  USER_ERROR = 'USER_ERROR',
   USER_NEW_PASSWORD_TOO_SHORT = 'USER_NEW_PASSWORD_TOO_SHORT',
   USER_NEW_PASSWORD_TOO_SIMPLE = 'USER_NEW_PASSWORD_TOO_SIMPLE',
+  // Database
+  DATABASE_ERROR = 'DATABASE_ERROR',
+  // Encryption
+  ENCRYPTION_ERROR = 'ENCRYPTION_ERROR',
   // Format API
   FORMAT_INVALID_FORMATTER = 'FORMAT_INVALID_FORMATTER',
   FORMAT_INVALID_STREAM = 'FORMAT_INVALID_STREAM',
@@ -42,10 +45,6 @@ export const ErrorMap: Record<ErrorCode, ErrorDetails> = {
     statusCode: 400,
     message: 'The config for this user is invalid',
   },
-  [ErrorCode.USER_ERROR]: {
-    statusCode: 500,
-    message: 'A generic error while processing the user request',
-  },
   [ErrorCode.USER_NEW_PASSWORD_TOO_SHORT]: {
     statusCode: 400,
     message: 'New password is too short',
@@ -53,6 +52,14 @@ export const ErrorMap: Record<ErrorCode, ErrorDetails> = {
   [ErrorCode.USER_NEW_PASSWORD_TOO_SIMPLE]: {
     statusCode: 400,
     message: 'New password is too simple',
+  },
+  [ErrorCode.DATABASE_ERROR]: {
+    statusCode: 500,
+    message: 'A database error occurred',
+  },
+  [ErrorCode.ENCRYPTION_ERROR]: {
+    statusCode: 500,
+    message: 'An error occurred in the encryption service',
   },
   [ErrorCode.INTERNAL_SERVER_ERROR]: {
     statusCode: 500,
