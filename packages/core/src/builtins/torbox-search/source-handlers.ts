@@ -157,9 +157,13 @@ export class TorrentSourceHandler extends SourceHandler {
               }),
             ];
           default:
+            logger.error(`Error fetching torrents for ${type}:${id}: ${error}`);
             throw error;
         }
       }
+      logger.error(
+        `Unexpected error fetching torrents for ${type}:${id}: ${error}`
+      );
       throw error;
     }
 

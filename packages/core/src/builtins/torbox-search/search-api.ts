@@ -1,4 +1,4 @@
-import { fetch, RequestInit } from 'undici';
+import { fetch, RequestInit, Response } from 'undici';
 import { z } from 'zod';
 import { TorBoxApiResponseSchema, TorBoxSearchApiDataSchema } from './schemas';
 import {
@@ -126,13 +126,21 @@ class TorboxSearchApi {
       'User-Agent': USER_AGENT,
     });
 
-    const response = await fetch(url.toString(), {
-      ...options,
-      method,
-      headers,
-      signal: AbortSignal.timeout(TorboxSearchApi.timeout),
-      body: body ? JSON.stringify(body) : undefined,
-    });
+    let response: Response;
+    try {
+      response = await fetch(url.toString(), {
+        ...options,
+        method,
+        headers,
+        signal: AbortSignal.timeout(TorboxSearchApi.timeout),
+        body: body ? JSON.stringify(body) : undefined,
+      });
+    } catch (error) {
+      if (error instanceof Error && error.name === 'TimeoutError') {
+        throw new TorboxApiError('Request timed out', 408, 'TIMEOUT');
+      }
+      throw error;
+    }
 
     const data = await response.json();
 
