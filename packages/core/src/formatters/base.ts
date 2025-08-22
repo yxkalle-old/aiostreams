@@ -7,6 +7,7 @@ import {
   formatDuration,
   languageToCode,
   languageToEmoji,
+  makeSmall,
 } from './utils';
 import { Env } from '../utils/env';
 
@@ -61,6 +62,7 @@ export interface ParseValue {
     languages: string[] | null;
     languageEmojis: string[] | null;
     languageCodes: string[] | null;
+    smallLanguageCodes: string[] | null;
     wedontknowwhatakilometeris: string[] | null;
     visualTags: string[] | null;
     audioTags: string[] | null;
@@ -140,6 +142,12 @@ export abstract class BaseFormatter {
           ? stream.parsedFile.languages
               .map((lang) => languageToCode(lang) || lang)
               .filter((value, index, self) => self.indexOf(value) === index)
+          : null,
+        smallLanguageCodes: stream.parsedFile?.languages
+          ? stream.parsedFile.languages
+              .map((lang) => languageToCode(lang) || lang)
+              .filter((value, index, self) => self.indexOf(value) === index)
+              .map((code) => makeSmall(code))
           : null,
         wedontknowwhatakilometeris: stream.parsedFile?.languages
           ? stream.parsedFile.languages
