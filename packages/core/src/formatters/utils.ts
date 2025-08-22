@@ -30,7 +30,7 @@ export function formatDuration(durationInMs: number): string {
 export function makeSmall(code: string): string {
   return code
     .split('')
-    .map((char) => SMALL_CAPS_MAP[char] || char)
+    .map((char) => SMALL_CAPS_MAP[char.toUpperCase()] || char)
     .join('');
 }
 
