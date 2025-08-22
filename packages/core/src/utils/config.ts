@@ -391,8 +391,9 @@ export async function validateConfig(
     try {
       const tmdb = new TMDBMetadata({
         accessToken: config.tmdbAccessToken,
+        apiKey: config.tmdbApiKey,
       });
-      await tmdb.validateAccessToken();
+      await tmdb.validateAuthorisation();
     } catch (error) {
       if (!skipErrorsFromAddonsOrProxies) {
         throw new Error(`Invalid TMDB access token: ${error}`);
