@@ -68,12 +68,7 @@ import {
   AccordionContent,
   AccordionItem,
 } from '../ui/accordion';
-import {
-  FaArrowRightLong,
-  FaRankingStar,
-  FaShuffle,
-  FaArrowsUpDown,
-} from 'react-icons/fa6';
+import { FaArrowLeftLong, FaArrowRightLong, FaShuffle } from 'react-icons/fa6';
 import { PiStarFill, PiStarBold } from 'react-icons/pi';
 import { IoExtensionPuzzle } from 'react-icons/io5';
 import { NumberInput } from '../ui/number-input';
@@ -1614,6 +1609,38 @@ function SortableCatalogItem({
     });
   };
 
+  const currentState = catalog.shuffle
+    ? 'shuffle'
+    : catalog.reverse
+      ? 'reverse'
+      : 'default';
+  const catalogOrderStates = ['default', 'shuffle', 'reverse'];
+  const cycleCatalogOrderState = () => {
+    setUserData((prev) => {
+      const currentModification = prev.catalogModifications?.find(
+        (c) => c.id === catalog.id && c.type === catalog.type
+      );
+      if (!currentModification) return prev;
+      const newState =
+        catalogOrderStates[
+          (catalogOrderStates.indexOf(currentState) + 1) %
+            catalogOrderStates.length
+        ];
+      return {
+        ...prev,
+        catalogModifications: prev.catalogModifications?.map((c) =>
+          c.id === catalog.id && c.type === catalog.type
+            ? {
+                ...c,
+                shuffle: newState === 'shuffle',
+                reverse: newState === 'reverse',
+              }
+            : c
+        ),
+      };
+    });
+  };
+
   const [modalOpen, setModalOpen] = useState(false);
   const [newName, setNewName] = useState(catalog.name || '');
   const [newType, setNewType] = useState(
@@ -1731,8 +1758,8 @@ function SortableCatalogItem({
           <Accordion type="single" collapsible>
             <AccordionItem value="settings">
               <AccordionTrigger>
-                <div className="flex items-center justify-between w-full">
-                  <h4 className="text-xs font-medium text-[var(--muted-foreground)] uppercase tracking-wide">
+                <div className="flex items-center justify-center md:justify-between w-full">
+                  <h4 className="text-xs font-medium text-[var(--muted-foreground)] uppercase tracking-wide hidden md:block">
                     Settings
                   </h4>
 
@@ -1741,10 +1768,12 @@ function SortableCatalogItem({
                     <Tooltip
                       trigger={
                         <IconButton
-                          className={dynamicIconSize}
+                          className="text-2xl h-10 w-10"
                           icon={
                             catalog.shuffle ? (
                               <FaShuffle />
+                            ) : catalog.reverse ? (
+                              <FaArrowLeftLong />
                             ) : (
                               <FaArrowRightLong />
                             )
@@ -1753,55 +1782,18 @@ function SortableCatalogItem({
                           rounded
                           onClick={(e) => {
                             e.stopPropagation();
-                            setUserData((prev) => ({
-                              ...prev,
-                              catalogModifications:
-                                prev.catalogModifications?.map((c) =>
-                                  c.id === catalog.id && c.type === catalog.type
-                                    ? { ...c, shuffle: !c.shuffle }
-                                    : c
-                                ),
-                            }));
+                            cycleCatalogOrderState();
                           }}
                         />
                       }
                     >
-                      Shuffle
+                      {currentState.charAt(0).toUpperCase() +
+                        currentState.slice(1)}
                     </Tooltip>
                     <Tooltip
                       trigger={
                         <IconButton
-                          className={dynamicIconSize}
-                          icon={
-                            catalog.reverse ? (
-                              <FaArrowsUpDown />
-                            ) : (
-                              <FaArrowRightLong />
-                            )
-                          }
-                          intent="primary-subtle"
-                          rounded
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setUserData((prev) => ({
-                              ...prev,
-                              catalogModifications:
-                                prev.catalogModifications?.map((c) =>
-                                  c.id === catalog.id && c.type === catalog.type
-                                    ? { ...c, reverse: !c.reverse }
-                                    : c
-                                ),
-                            }));
-                          }}
-                        />
-                      }
-                    >
-                      Reverse Order
-                    </Tooltip>
-                    <Tooltip
-                      trigger={
-                        <IconButton
-                          className={dynamicIconSize}
+                          className="text-2xl h-10 w-10"
                           icon={catalog.rpdb ? <PiStarFill /> : <PiStarBold />}
                           intent="primary-subtle"
                           rounded
@@ -1827,7 +1819,7 @@ function SortableCatalogItem({
                       <Tooltip
                         trigger={
                           <IconButton
-                            className={dynamicIconSize}
+                            className="text-2xl h-10 w-10"
                             icon={
                               catalog.onlyOnDiscover ? (
                                 <TbSmartHomeOff />
@@ -1864,7 +1856,7 @@ function SortableCatalogItem({
                       <Tooltip
                         trigger={
                           <IconButton
-                            className={dynamicIconSize}
+                            className="text-2xl h-10 w-10"
                             icon={
                               catalog.disableSearch ? (
                                 <TbSearchOff />
@@ -1914,7 +1906,11 @@ function SortableCatalogItem({
                           catalogModifications: prev.catalogModifications?.map(
                             (c) =>
                               c.id === catalog.id && c.type === catalog.type
-                                ? { ...c, shuffle }
+                                ? {
+                                    ...c,
+                                    shuffle,
+                                    reverse: shuffle ? false : c.reverse,
+                                  }
                                 : c
                           ),
                         }));
@@ -1923,7 +1919,7 @@ function SortableCatalogItem({
 
                     <Switch
                       label="Reverse Order"
-                      help="Reverse the order of catalog items (newest first instead of oldest first)"
+                      help="Reverse the order of catalog items"
                       side="right"
                       value={catalog.reverse ?? false}
                       onValueChange={(reverse) => {
@@ -1932,7 +1928,11 @@ function SortableCatalogItem({
                           catalogModifications: prev.catalogModifications?.map(
                             (c) =>
                               c.id === catalog.id && c.type === catalog.type
-                                ? { ...c, reverse }
+                                ? {
+                                    ...c,
+                                    reverse,
+                                    shuffle: reverse ? false : c.shuffle,
+                                  }
                                 : c
                           ),
                         }));
