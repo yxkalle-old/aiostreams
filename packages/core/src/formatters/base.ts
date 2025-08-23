@@ -140,7 +140,7 @@ export abstract class BaseFormatter {
           : null,
         languageCodes: stream.parsedFile?.languages
           ? stream.parsedFile.languages
-              .map((lang) => languageToCode(lang) || lang)
+              .map((lang) => languageToCode(lang) || lang.toUpperCase())
               .filter((value, index, self) => self.indexOf(value) === index)
           : null,
         smallLanguageCodes: stream.parsedFile?.languages
