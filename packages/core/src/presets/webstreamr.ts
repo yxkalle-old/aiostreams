@@ -34,7 +34,13 @@ class WebStreamrStreamParser extends StreamParser {
     stream: Stream,
     currentParsedStream: ParsedStream
   ): string | undefined {
-    const messageRegex = this.getRegexForTextAfterEmojis(['🐢', '🚦', '⚠️', '⏳', '❌']);
+    const messageRegex = this.getRegexForTextAfterEmojis([
+      '🐢',
+      '🚦',
+      '⚠️',
+      '⏳',
+      '❌',
+    ]);
 
     let messages = [stream.description?.match(messageRegex)?.[1]];
     if (stream.name?.includes('external')) {
@@ -157,7 +163,6 @@ export class WebStreamrPreset extends Preset {
       name: options.name || this.METADATA.NAME,
       manifestUrl: this.generateManifestUrl(userData, options),
       enabled: true,
-      streamPassthrough: false,
       resources: options.resources || this.METADATA.SUPPORTED_RESOURCES,
       timeout: options.timeout || this.METADATA.TIMEOUT,
       preset: {

@@ -50,7 +50,7 @@ export class StremioTransformer {
     },
     index: number
   ): Promise<AIOStream> {
-    const { name, description } = stream.addon.streamPassthrough
+    const { name, description } = stream.addon.formatPassthrough
       ? {
           name: stream.originalName || stream.addon.name,
           description: stream.originalDescription,

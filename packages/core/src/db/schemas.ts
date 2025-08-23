@@ -120,7 +120,7 @@ const AddonSchema = z.object({
   displayIdentifier: z.string().optional(), // identifier for display purposes
   timeout: z.number().min(1),
   library: z.boolean().optional(),
-  streamPassthrough: z.boolean().optional(),
+  formatPassthrough: z.boolean().optional(),
   resultPassthrough: z.boolean().optional(),
   forceToTop: z.boolean().optional(),
   headers: z.record(z.string().min(1), z.string().min(1)).optional(),

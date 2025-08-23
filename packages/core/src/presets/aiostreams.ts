@@ -100,6 +100,7 @@ export class AIOStreamsPreset extends Preset {
         constraints: {
           min: Env.MIN_TIMEOUT,
           max: Env.MAX_TIMEOUT,
+          forceInUi: false,
         },
       },
       {
