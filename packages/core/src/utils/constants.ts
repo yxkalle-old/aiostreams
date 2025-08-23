@@ -518,6 +518,7 @@ export const AUTO_PLAY_ATTRIBUTES = [
   'languages',
   'releaseGroup',
   'infoHash',
+  'size',
 ] as const;
 
 export const DEFAULT_AUTO_PLAY_ATTRIBUTES = AUTO_PLAY_ATTRIBUTES.filter(
