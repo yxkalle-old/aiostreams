@@ -491,7 +491,7 @@ export const ManifestSchema = z
   .object({
     id: z.string().min(1),
     name: z.string(),
-    description: z.string(),
+    description: z.string().optional(),
     version: z.string(),
     types: z.array(z.string()),
     idPrefixes: z.array(z.string()).or(z.null()).optional(),
