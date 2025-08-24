@@ -443,7 +443,7 @@ const SERVICE_DETAILS: Record<
     id: DEBRIDER_SERVICE,
     name: 'Debrider',
     shortName: 'DR',
-    knownNames: ['DBD', 'DR', 'DER', 'Debrider'],
+    knownNames: ['DBD', 'DR', 'DER', 'DB', 'Debrider'],
     signUpText: "Don't have an account? [Sign up here](https://debrider.app/)",
     credentials: [
       {
