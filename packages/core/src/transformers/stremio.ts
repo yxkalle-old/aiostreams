@@ -204,24 +204,7 @@ export class StremioTransformer {
 
     let transformedStreams: AIOStream[] = [];
 
-    let formatter;
-    if (this.userData.formatter.id === constants.CUSTOM_FORMATTER) {
-      const template = this.userData.formatter.definition;
-      if (!template) {
-        throw new Error('No template defined for custom formatter');
-      }
-      formatter = createFormatter(
-        this.userData.formatter.id,
-        template,
-        this.userData.addonName
-      );
-    } else {
-      formatter = createFormatter(
-        this.userData.formatter.id,
-        undefined,
-        this.userData.addonName
-      );
-    }
+    const formatter = createFormatter(this.userData);
 
     logger.info(
       `Transforming ${streams.length} streams, using formatter ${this.userData.formatter.id}`
@@ -334,23 +317,7 @@ export class StremioTransformer {
     if (
       meta.videos?.some((video) => video.streams && video.streams.length > 0)
     ) {
-      if (this.userData.formatter.id === constants.CUSTOM_FORMATTER) {
-        const template = this.userData.formatter.definition;
-        if (!template) {
-          throw new Error('No template defined for custom formatter');
-        }
-        formatter = createFormatter(
-          this.userData.formatter.id,
-          template,
-          this.userData.addonName
-        );
-      } else {
-        formatter = createFormatter(
-          this.userData.formatter.id,
-          undefined,
-          this.userData.addonName
-        );
-      }
+      formatter = createFormatter(this.userData);
     }
 
     // Transform streams in videos if present
