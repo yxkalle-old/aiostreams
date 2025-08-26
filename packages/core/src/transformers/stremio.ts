@@ -128,18 +128,18 @@ export class StremioTransformer {
           : true
       );
     let bingeGroup: string | undefined;
-    if (autoPlaySettings.enabled)
+    if (autoPlaySettings.enabled) {
+      bingeGroup = Env.ADDON_ID;
+
       switch (autoPlaySettings.method) {
         case 'matchingFile':
-          bingeGroup = `${identifyingAttributes.join('|')}`;
+          bingeGroup += `|${identifyingAttributes.join('|')}`;
           break;
         case 'matchingIndex':
-          bingeGroup = index.toString();
-          break;
-        case 'firstFile':
-          bingeGroup = '';
+          bingeGroup += `|${index.toString()}`;
           break;
       }
+    }
 
     return {
       name,
@@ -156,7 +156,7 @@ export class StremioTransformer {
       behaviorHints: {
         countryWhitelist: stream.countryWhitelist,
         notWebReady: stream.notWebReady,
-        bingeGroup: `${Env.ADDON_ID}:${bingeGroup}`,
+        bingeGroup,
         proxyHeaders:
           stream.requestHeaders || stream.responseHeaders
             ? {
