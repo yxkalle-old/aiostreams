@@ -49,6 +49,7 @@ class AIOStreamsStreamParser extends StreamParser {
       videoHash: aioStream.behaviorHints?.videoHash ?? undefined,
       filename: aioStream.streamData?.filename,
       folderName: aioStream.streamData?.folderName,
+      proxied: aioStream.streamData?.proxied ?? false,
       size: aioStream.streamData?.size,
       folderSize: aioStream.streamData?.folderSize,
       indexer: aioStream.streamData?.indexer,
