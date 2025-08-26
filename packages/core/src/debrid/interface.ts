@@ -347,7 +347,7 @@ export class DebridInterface {
       usenetDownloadId: usenetDownload.id ?? res.data.data.usenetdownloadId,
       authId: usenetDownload.authId ?? res.data.data.authId,
       hash: usenetDownload.hash ?? res.data.data.hash,
-      name: usenetDownload.name,
+      name: usenetDownload.name ?? undefined,
       status: state,
       files,
     };
