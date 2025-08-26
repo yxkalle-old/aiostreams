@@ -88,18 +88,22 @@ class WebStreamrStreamParser extends StreamParser {
     const parsedFile = super.getParsedFile(stream, parsedStream);
     if (!parsedFile) return;
 
+    const getClosestResolution = (resolution: string) => {
+      return `${constants.RESOLUTIONS.map((r) => Number(r.replace('p', '')))
+        .filter((n) => !isNaN(n))
+        .reduce((prev, curr) => {
+          return Math.abs(curr - Number(resolution)) <
+            Math.abs(prev - Number(resolution))
+            ? curr
+            : prev;
+        })}p`;
+    };
+
     const resolution = stream.name?.match(/(\d+)p/i)?.[1];
-    if (!resolution) return parsedFile;
-    const resolutions = constants.RESOLUTIONS.map((r) =>
-      Number(r.replace('p', ''))
-    ).filter((n) => !isNaN(n));
-    const closestResolution = resolutions.reduce((prev, curr) => {
-      return Math.abs(curr - Number(resolution)) <
-        Math.abs(prev - Number(resolution))
-        ? curr
-        : prev;
-    }, Infinity);
-    parsedFile.resolution = `${closestResolution}p`;
+    parsedFile.resolution = resolution
+      ? getClosestResolution(resolution)
+      : undefined;
+
     return parsedFile;
   }
 }
