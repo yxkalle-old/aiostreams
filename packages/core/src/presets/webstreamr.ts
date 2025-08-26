@@ -89,7 +89,7 @@ class WebStreamrStreamParser extends StreamParser {
     if (!parsedFile) return;
 
     const resolution = stream.name?.match(/(\d+)p/i)?.[1];
-    if (!resolution) return;
+    if (!resolution) return parsedFile;
     const resolutions = constants.RESOLUTIONS.map((r) =>
       Number(r.replace('p', ''))
     ).filter((n) => !isNaN(n));
