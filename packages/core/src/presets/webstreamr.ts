@@ -7,6 +7,7 @@ import {
   ParsedStream,
   PresetMinimalMetadata,
   PresetMetadata,
+  ParsedFile,
 } from '../db';
 import { Preset, baseOptions } from './preset';
 import { Env, SERVICE_DETAILS } from '../utils';
@@ -30,23 +31,40 @@ class WebStreamrStreamParser extends StreamParser {
     return type;
   }
 
+  protected override getError(
+    stream: Stream,
+    currentParsedStream: ParsedStream
+  ): ParsedStream['error'] | undefined {
+    const indexer = this.getIndexer(stream, currentParsedStream);
+    const errorRegex = this.getRegexForTextAfterEmojis([
+      '❌',
+      '⏳',
+      '🐢',
+      '🚦',
+      '⚠️',
+    ]);
+    const error = stream.description?.match(errorRegex)?.[1]?.trim();
+    if (error === 'external') {
+      return undefined;
+    }
+    if (error) {
+      return {
+        title: `WebStreamr | ${indexer ?? 'Error'}`,
+        description: error,
+      };
+    }
+    return undefined;
+  }
+
   protected override getMessage(
     stream: Stream,
     currentParsedStream: ParsedStream
   ): string | undefined {
-    const messageRegex = this.getRegexForTextAfterEmojis([
-      '🐢',
-      '🚦',
-      '⚠️',
-      '⏳',
-      '❌',
-    ]);
-
-    let messages = [stream.description?.match(messageRegex)?.[1]];
-    if (stream.name?.includes('external')) {
-      messages.push('External');
-    }
-    return messages.join(' | ');
+    const messageRegex = this.getRegexForTextAfterEmojis(['⚠️']);
+    return (
+      stream.name?.match(messageRegex)?.[1] ||
+      stream.description?.match(messageRegex)?.[1]
+    );
   }
 
   protected override getFilename(
@@ -61,6 +79,28 @@ class WebStreamrStreamParser extends StreamParser {
 
     const str = `${filename ? filename + ' ' : ''}${resolution ? resolution : ''}`;
     return str ? str : undefined;
+  }
+
+  protected getParsedFile(
+    stream: Stream,
+    parsedStream: ParsedStream
+  ): ParsedFile | undefined {
+    const parsedFile = super.getParsedFile(stream, parsedStream);
+    if (!parsedFile) return;
+
+    const resolution = stream.name?.match(/(\d+)p/i)?.[1];
+    if (!resolution) return;
+    const resolutions = constants.RESOLUTIONS.map((r) =>
+      Number(r.replace('p', ''))
+    ).filter((n) => !isNaN(n));
+    const closestResolution = resolutions.reduce((prev, curr) => {
+      return Math.abs(curr - Number(resolution)) <
+        Math.abs(prev - Number(resolution))
+        ? curr
+        : prev;
+    }, Infinity);
+    parsedFile.resolution = `${closestResolution}p`;
+    return parsedFile;
   }
 }
 
@@ -78,7 +118,7 @@ export class WebStreamrPreset extends Preset {
         value: 'multi',
       },
       {
-        label: '🇺🇸 English (Soaper, VidSrc)',
+        label: '🇺🇸 English (PrimeWire, VidSrc, VixSrc, XPrime)',
         value: 'en',
       },
       {
@@ -86,7 +126,8 @@ export class WebStreamrPreset extends Preset {
         value: 'de',
       },
       {
-        label: '🇪🇸 Castilian Spanish (CineHDPlus, Cuevana, VerHdLink)',
+        label:
+          '🇪🇸 Castilian Spanish (CineHDPlus, Cuevana, HomeCine, VerHdLink)',
         value: 'es',
       },
       {
@@ -94,11 +135,12 @@ export class WebStreamrPreset extends Preset {
         value: 'fr',
       },
       {
-        label: '🇮🇹 Italian (VixSrc, Eurostreaming, MostraGuarda)',
+        label: '🇮🇹 Italian (Eurostreaming, MostraGuarda, VixSrc)',
         value: 'it',
       },
       {
-        label: '🇲🇽 Latin American Spanish (CineHDPlus, Cuevana, VerHdLink)',
+        label:
+          '🇲🇽 Latin American Spanish (CineHDPlus, Cuevana, HomeCine, VerHdLink)',
         value: 'mx',
       },
     ];
@@ -120,6 +162,13 @@ export class WebStreamrPreset extends Preset {
         id: 'includeExternalUrls',
         name: 'Include External URLs',
         description: 'Include external URLs in results',
+        type: 'boolean',
+        default: false,
+      },
+      {
+        id: 'showErrors',
+        name: 'Show Errors',
+        description: 'Show errors from WebStreamr',
         type: 'boolean',
         default: false,
       },
@@ -189,7 +238,8 @@ export class WebStreamrPreset extends Preset {
 
     const checkedOptions = [
       ...(options.providers || []),
-      options.includeExternalUrls ?? undefined, // ensure its removed if false
+      options.includeExternalUrls ? 'includeExternalUrls' : undefined,
+      options.showErrors ? 'showErrors' : undefined,
     ].filter(Boolean);
 
     let config = {
