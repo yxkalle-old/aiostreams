@@ -30,6 +30,7 @@ import {
   corsMiddleware,
   staticRateLimiter,
   internalMiddleware,
+  stremioStreamRateLimiter,
 } from './middlewares';
 
 import { constants, createLogger, Env } from '@aiostreams/core';
@@ -150,22 +151,26 @@ app.get('/', (req, res) => {
 });
 
 // legacy route handlers
-app.get('/:config?/stream/:type/:id.json', (req, res) => {
-  const baseUrl =
-    Env.BASE_URL ||
-    `${req.protocol}://${req.hostname}${
-      req.hostname === 'localhost' ? `:${Env.PORT}` : ''
-    }`;
-  res.json({
-    streams: [
-      StremioTransformer.createErrorStream({
-        errorDescription:
-          'AIOStreams v2 requires you to reconfigure. Please click this stream to reconfigure.',
-        errorUrl: `${baseUrl}/stremio/configure`,
-      }),
-    ],
-  });
-});
+app.get(
+  '/:config?/stream/:type/:id.json',
+  stremioStreamRateLimiter,
+  (req, res) => {
+    const baseUrl =
+      Env.BASE_URL ||
+      `${req.protocol}://${req.hostname}${
+        req.hostname === 'localhost' ? `:${Env.PORT}` : ''
+      }`;
+    res.json({
+      streams: [
+        StremioTransformer.createErrorStream({
+          errorDescription:
+            'AIOStreams v2 requires you to reconfigure. Please click this stream to reconfigure.',
+          errorUrl: `${baseUrl}/stremio/configure`,
+        }),
+      ],
+    });
+  }
+);
 app.get('/:config?/configure', (req, res) => {
   res.redirect('/stremio/configure');
 });
