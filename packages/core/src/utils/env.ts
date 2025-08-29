@@ -368,10 +368,6 @@ export const Env = cleanEnv(process.env, {
     default: true,
     desc: 'Enable the search API. If true, the search API will be enabled.',
   }),
-  ALLOW_UNAUTHENTICATED_SEARCH_API: bool({
-    default: true,
-    desc: 'Allow unauthenticated search API requests. i.e. x-aiostreams-user-data header instead of basic auth',
-  }),
   // logging settings
   LOG_SENSITIVE_INFO: bool({
     default: false,

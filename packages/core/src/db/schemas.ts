@@ -892,7 +892,6 @@ const StatusResponseSchema = z.object({
     customHtml: z.string().optional(),
     protected: z.boolean(),
     regexFilterAccess: z.enum(['none', 'trusted', 'all']),
-    allowUnauthenticatedSearchApi: z.boolean(),
     allowedRegexPatterns: z
       .object({
         patterns: z.array(z.string()),

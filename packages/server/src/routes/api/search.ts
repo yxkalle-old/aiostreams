@@ -54,7 +54,7 @@ router.get(
 
       let userData: UserData | null = null;
 
-      if (encodedUserData && Env.ALLOW_UNAUTHENTICATED_SEARCH_API) {
+      if (encodedUserData) {
         try {
           userData = JSON.parse(
             Buffer.from(encodedUserData, 'base64').toString('utf-8')
