@@ -1,7 +1,14 @@
-import rateLimit from 'express-rate-limit';
+import rateLimit, { MemoryStore } from 'express-rate-limit';
 import { Request, Response, NextFunction } from 'express';
-
-import { Env, createLogger, constants, APIError } from '@aiostreams/core';
+import { RedisStore } from 'rate-limit-redis';
+import {
+  Env,
+  createLogger,
+  constants,
+  APIError,
+  Cache,
+  REDIS_PREFIX,
+} from '@aiostreams/core';
 
 const logger = createLogger('server');
 
@@ -13,13 +20,22 @@ const createRateLimiter = (
   if (Env.DISABLE_RATE_LIMITS) {
     return (req: Request, res: Response, next: NextFunction) => next();
   }
+  const redisClient = Env.REDIS_URI ? Cache.getRedisClient() : undefined;
+  const store = redisClient
+    ? new RedisStore({
+        prefix: `${REDIS_PREFIX}rate-limit:`,
+        sendCommand: (...args: string[]) => redisClient.sendCommand(args),
+      })
+    : new MemoryStore();
   return rateLimit({
     windowMs,
     max: maxRequests,
     standardHeaders: true,
     legacyHeaders: false,
+    store,
     // Use a unique store key for each rate limiter
-    keyGenerator: (req: Request) => `${prefix}:${req.userIp || req.ip || ''}`,
+    keyGenerator: (req: Request) =>
+      `${prefix}:${req.requestIp || req.userIp || req.ip || ''}`,
     handler: (
       req: Request,
       res: Response,
@@ -30,7 +46,7 @@ const createRateLimiter = (
         ? req.rateLimit.resetTime.getTime() - new Date().getTime()
         : 0;
       logger.warn(
-        `${prefix} rate limit exceeded for IP: ${req.userIp || req.ip} - ${
+        `${prefix} rate limit exceeded for IP: ${req.requestIp || req.userIp || req.ip} - ${
           options.message
         } - Time remaining: ${timeRemaining}ms`
       );

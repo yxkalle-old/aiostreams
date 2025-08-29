@@ -9,6 +9,7 @@ import {
   rpdbApi,
   gdriveApi,
   debridApi,
+  searchApi,
 } from './routes/api';
 import {
   configure,
@@ -73,6 +74,9 @@ apiRouter.use('/catalogs', catalogApi);
 apiRouter.use('/rpdb', rpdbApi);
 apiRouter.use('/oauth/exchange/gdrive', gdriveApi);
 apiRouter.use('/debrid', debridApi);
+if (Env.ENABLE_SEARCH_API) {
+  apiRouter.use('/search', searchApi);
+}
 app.use(`/api/v${constants.API_VERSION}`, apiRouter);
 
 // Stremio Routes

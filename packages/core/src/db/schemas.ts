@@ -177,6 +177,7 @@ const OptionDefinition = z.object({
   id: z.string().min(1),
   name: z.string().min(1),
   description: z.string().min(1),
+  showInNoobMode: z.boolean().optional(),
   emptyIsUndefined: z.boolean().optional(),
   type: z.enum([
     'string',
@@ -184,6 +185,7 @@ const OptionDefinition = z.object({
     'number',
     'boolean',
     'select',
+    'select-with-custom',
     'multi-select',
     'url',
     'alert',
@@ -733,7 +735,9 @@ export const MetaSchema = MetaPreviewSchema.extend({
   behaviorHints: z
     .object({
       defaultVideoId: z.string().or(z.null()).optional(),
+      hasScheduledVideo: z.boolean().nullable().optional(),
     })
+    .passthrough()
     .optional(),
 }).passthrough();
 
@@ -779,51 +783,53 @@ export const ExtrasSchema = z
 export type Extras = z.infer<typeof ExtrasSchema>;
 
 export const AIOStream = StreamSchema.extend({
-  streamData: z.object({
-    error: z
-      .object({
-        title: z.string().min(1),
-        description: z.string().min(1),
-      })
-      .optional(),
-    proxied: z.boolean().optional(),
-    addon: z.string().optional(),
-    filename: z.string().optional(),
-    folderName: z.string().optional(),
-    service: z
-      .object({
-        id: z.enum(constants.SERVICES),
-        cached: z.boolean(),
-      })
-      .optional(),
-    parsedFile: ParsedFileSchema.optional(),
-    message: z.string().max(1000).optional(),
-    regexMatched: z
-      .object({
-        name: z.string().optional(),
-        pattern: z.string().min(1).optional(),
-        index: z.number(),
-      })
-      .optional(),
-    keywordMatched: z.boolean().optional(),
-    streamExpressionMatched: z.number().optional(),
-    size: z.number().optional(),
-    folderSize: z.number().optional(),
-    type: StreamTypes.optional(),
-    indexer: z.string().optional(),
-    age: z.string().optional(),
-    torrent: z
-      .object({
-        infoHash: z.string().min(1).optional(),
-        fileIdx: z.number().optional(),
-        seeders: z.number().optional(),
-        sources: z.array(z.string().min(1)).optional(), // array of tracker urls and DHT nodes
-      })
-      .optional(),
-    duration: z.number().optional(),
-    library: z.boolean().optional(),
-    id: z.string().min(1).optional(),
-  }),
+  streamData: z
+    .object({
+      error: z
+        .object({
+          title: z.string().min(1),
+          description: z.string().min(1),
+        })
+        .optional(),
+      proxied: z.boolean().optional(),
+      addon: z.string().optional(),
+      filename: z.string().optional(),
+      folderName: z.string().optional(),
+      service: z
+        .object({
+          id: z.enum(constants.SERVICES),
+          cached: z.boolean(),
+        })
+        .optional(),
+      parsedFile: ParsedFileSchema.optional(),
+      message: z.string().max(1000).optional(),
+      regexMatched: z
+        .object({
+          name: z.string().optional(),
+          pattern: z.string().min(1).optional(),
+          index: z.number(),
+        })
+        .optional(),
+      keywordMatched: z.boolean().optional(),
+      streamExpressionMatched: z.number().optional(),
+      size: z.number().optional(),
+      folderSize: z.number().optional(),
+      type: StreamTypes.optional(),
+      indexer: z.string().optional(),
+      age: z.string().optional(),
+      torrent: z
+        .object({
+          infoHash: z.string().min(1).optional(),
+          fileIdx: z.number().optional(),
+          seeders: z.number().optional(),
+          sources: z.array(z.string().min(1)).optional(), // array of tracker urls and DHT nodes
+        })
+        .optional(),
+      duration: z.number().optional(),
+      library: z.boolean().optional(),
+      id: z.string().min(1).optional(),
+    })
+    .optional(),
 });
 
 export type AIOStream = z.infer<typeof AIOStream>;
@@ -886,6 +892,7 @@ const StatusResponseSchema = z.object({
     customHtml: z.string().optional(),
     protected: z.boolean(),
     regexFilterAccess: z.enum(['none', 'trusted', 'all']),
+    allowUnauthenticatedSearchApi: z.boolean(),
     allowedRegexPatterns: z
       .object({
         patterns: z.array(z.string()),

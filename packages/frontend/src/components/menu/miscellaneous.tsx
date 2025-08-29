@@ -15,6 +15,7 @@ import {
 } from '../../../../core/src/utils/constants';
 import { Select } from '../ui/select';
 import { Alert } from '../ui/alert';
+import { useMode } from '@/context/mode';
 
 export function MiscellaneousMenu() {
   return (
@@ -28,6 +29,7 @@ export function MiscellaneousMenu() {
 
 function Content() {
   const { userData, setUserData } = useUserData();
+  const { mode } = useMode();
   return (
     <>
       <div className="flex items-center w-full">
@@ -71,99 +73,104 @@ function Content() {
             }}
           />
         </SettingsCard>
-        <SettingsCard
-          title="Auto Play"
-          description={
-            <div className="space-y-2">
-              <p>
-                Configure how AIOStreams suggests the next stream for Stremio's
-                auto-play feature.
-              </p>
-              <Alert intent="info-basic">
-                <p className="text-sm">
-                  AIOStreams does not (and cannot) directly control auto-play.
-                  It uses the{' '}
-                  <code>
-                    <a
-                      rel="noopener noreferrer"
-                      href="https://github.com/Stremio/stremio-addon-sdk/blob/master/docs/api/responses/stream.md#additional-properties-to-provide-information--behaviour-flags"
-                      target="_blank"
-                      className="text-[--brand] hover:text-[--brand]/80 hover:underline"
-                    >
-                      bingeGroup
-                    </a>
-                  </code>{' '}
-                  attribute to suggest the next stream to Stremio. For this to
-                  work, you must have auto-play enabled in your Stremio
-                  settings.
+        {mode === 'pro' && (
+          <SettingsCard
+            title="Auto Play"
+            description={
+              <div className="space-y-2">
+                <p>
+                  Configure how AIOStreams suggests the next stream for
+                  Stremio's auto-play feature.
                 </p>
-              </Alert>
-            </div>
-          }
-        >
-          <Switch
-            label="Enable"
-            side="right"
-            value={userData.autoPlay?.enabled ?? true}
-            onValueChange={(value) => {
-              setUserData((prev) => ({
-                ...prev,
-                autoPlay: {
-                  ...prev.autoPlay,
-                  enabled: value,
-                },
-              }));
-            }}
-          />
-          <Select
-            label="Auto Play Method"
-            disabled={userData.autoPlay?.enabled === false}
-            options={AUTO_PLAY_METHODS.map((method) => ({
-              label: AUTO_PLAY_METHOD_DETAILS[method].name,
-              value: method,
-            }))}
-            value={userData.autoPlay?.method || 'matchingFile'}
-            onValueChange={(value) => {
-              setUserData((prev) => ({
-                ...prev,
-                autoPlay: {
-                  ...prev.autoPlay,
-                  method: value as AutoPlayMethod,
-                },
-              }));
-            }}
-            help={
-              AUTO_PLAY_METHOD_DETAILS[
-                userData.autoPlay?.method || 'matchingFile'
-              ].description
+                <Alert intent="info-basic">
+                  <p className="text-sm">
+                    AIOStreams does not (and cannot) directly control auto-play.
+                    It uses the{' '}
+                    <code>
+                      <a
+                        rel="noopener noreferrer"
+                        href="https://github.com/Stremio/stremio-addon-sdk/blob/master/docs/api/responses/stream.md#additional-properties-to-provide-information--behaviour-flags"
+                        target="_blank"
+                        className="text-[--brand] hover:text-[--brand]/80 hover:underline"
+                      >
+                        bingeGroup
+                      </a>
+                    </code>{' '}
+                    attribute to suggest the next stream to Stremio. For this to
+                    work, you must have auto-play enabled in your Stremio
+                    settings.
+                  </p>
+                </Alert>
+              </div>
             }
-          />
-          {(userData.autoPlay?.method ?? 'matchingFile') === 'matchingFile' && (
-            <Combobox
-              label="Auto Play Attributes"
-              help="The attributes that will be used to match the stream for auto-play. The first stream for the next episode that has the same set of attributes selected above will be auto-played. Less attributes means more likely to auto-play but less accurate in terms of playing a similar type of stream."
-              options={AUTO_PLAY_ATTRIBUTES.map((attribute) => ({
-                label: attribute,
-                value: attribute,
-              }))}
-              multiple
-              disabled={userData.autoPlay?.enabled === false}
-              emptyMessage="No attributes found"
-              value={userData.autoPlay?.attributes}
-              defaultValue={DEFAULT_AUTO_PLAY_ATTRIBUTES as unknown as string[]}
+          >
+            <Switch
+              label="Enable"
+              side="right"
+              value={userData.autoPlay?.enabled ?? true}
               onValueChange={(value) => {
                 setUserData((prev) => ({
                   ...prev,
                   autoPlay: {
                     ...prev.autoPlay,
-                    attributes:
-                      value as (typeof AUTO_PLAY_ATTRIBUTES)[number][],
+                    enabled: value,
                   },
                 }));
               }}
             />
-          )}
-        </SettingsCard>
+            <Select
+              label="Auto Play Method"
+              disabled={userData.autoPlay?.enabled === false}
+              options={AUTO_PLAY_METHODS.map((method) => ({
+                label: AUTO_PLAY_METHOD_DETAILS[method].name,
+                value: method,
+              }))}
+              value={userData.autoPlay?.method || 'matchingFile'}
+              onValueChange={(value) => {
+                setUserData((prev) => ({
+                  ...prev,
+                  autoPlay: {
+                    ...prev.autoPlay,
+                    method: value as AutoPlayMethod,
+                  },
+                }));
+              }}
+              help={
+                AUTO_PLAY_METHOD_DETAILS[
+                  userData.autoPlay?.method || 'matchingFile'
+                ].description
+              }
+            />
+            {(userData.autoPlay?.method ?? 'matchingFile') ===
+              'matchingFile' && (
+              <Combobox
+                label="Auto Play Attributes"
+                help="The attributes that will be used to match the stream for auto-play. The first stream for the next episode that has the same set of attributes selected above will be auto-played. Less attributes means more likely to auto-play but less accurate in terms of playing a similar type of stream."
+                options={AUTO_PLAY_ATTRIBUTES.map((attribute) => ({
+                  label: attribute,
+                  value: attribute,
+                }))}
+                multiple
+                disabled={userData.autoPlay?.enabled === false}
+                emptyMessage="No attributes found"
+                value={userData.autoPlay?.attributes}
+                defaultValue={
+                  DEFAULT_AUTO_PLAY_ATTRIBUTES as unknown as string[]
+                }
+                onValueChange={(value) => {
+                  setUserData((prev) => ({
+                    ...prev,
+                    autoPlay: {
+                      ...prev.autoPlay,
+                      attributes:
+                        value as (typeof AUTO_PLAY_ATTRIBUTES)[number][],
+                    },
+                  }));
+                }}
+              />
+            )}
+          </SettingsCard>
+        )}
         <SettingsCard
           title="External Downloads"
           description="Adds a stream that automatically opens the stream in your browser below every stream for easier downloading"

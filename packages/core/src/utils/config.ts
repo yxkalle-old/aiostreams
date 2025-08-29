@@ -245,7 +245,9 @@ export function getEnvironmentServiceDetails(): typeof constants.SERVICE_DETAILS
             name: cred.name,
             description: cred.description,
             type: cred.type,
-            required: cred.required,
+            // remove required attribute from field to allow users to remove credentials.
+            // server will still validate.
+            required: false,
             default: getServiceCredentialDefault(service.id, cred.id)
               ? encryptString(getServiceCredentialDefault(service.id, cred.id)!)
                   .data
@@ -412,10 +414,9 @@ export async function validateConfig(
 
   await validateRegexes(config);
 
-  await new AIOStreams(
-    ensureDecrypted(config),
-    skipErrorsFromAddonsOrProxies
-  ).initialise();
+  await new AIOStreams(ensureDecrypted(config), {
+    skipFailedAddons: skipErrorsFromAddonsOrProxies,
+  }).initialise();
 
   return config;
 }
