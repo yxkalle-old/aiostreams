@@ -92,7 +92,7 @@ const SizeFilterOptions = z.object({
 const ServiceSchema = z.object({
   id: ServiceIds,
   enabled: z.boolean().optional(),
-  credentials: z.record(z.string().min(1), z.string().min(1)),
+  credentials: z.record(z.string().min(1), z.string()),
 });
 
 export type Service = z.infer<typeof ServiceSchema>;
