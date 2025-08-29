@@ -6,7 +6,7 @@ import { cn } from '@/components/ui/core/styling';
 import { VerticalMenu, VerticalMenuItem } from '@/components/ui/vertical-menu';
 import { Button } from '@/components/ui/button';
 import { useStatus } from '@/context/status';
-import { useMenu, MenuId, VALID_MENUS } from '@/context/menu';
+import { useMenu, MenuId } from '@/context/menu';
 import { useUserData } from '@/context/userData';
 import { ConfigModal } from '@/components/config-modal';
 import {
