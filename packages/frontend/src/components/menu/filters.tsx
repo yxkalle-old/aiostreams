@@ -270,10 +270,12 @@ function Content() {
                 <BsSpeakerFill className="text-lg mr-3" />
                 Audio Tag
               </TabsTrigger>
-              <TabsTrigger value="audio-channel">
-                <MdSurroundSound className="text-lg mr-3" />
-                Audio Channel
-              </TabsTrigger>
+              {mode === 'pro' && (
+                <TabsTrigger value="audio-channel">
+                  <MdSurroundSound className="text-lg mr-3" />
+                  Audio Channel
+                </TabsTrigger>
+              )}
               <TabsTrigger value="language">
                 <FaLanguage className="text-lg mr-3" />
                 Language
@@ -290,17 +292,20 @@ function Content() {
                 <MdTextFields className="text-lg mr-3" />
                 Keyword
               </TabsTrigger>
-              <TabsTrigger value="stream-expression">
-                <TbFilterCode className="text-lg mr-3" />
-                Stream Expression
-              </TabsTrigger>
-              {(status?.settings.regexFilterAccess !== 'none' ||
-                status?.settings.allowedRegexPatterns) && (
-                <TabsTrigger value="regex">
-                  <BsRegex className="text-lg mr-3" />
-                  Regex
+              {mode === 'pro' && (
+                <TabsTrigger value="stream-expression">
+                  <TbFilterCode className="text-lg mr-3" />
+                  Stream Expression
                 </TabsTrigger>
               )}
+              {(status?.settings.regexFilterAccess !== 'none' ||
+                status?.settings.allowedRegexPatterns) &&
+                mode === 'pro' && (
+                  <TabsTrigger value="regex">
+                    <BsRegex className="text-lg mr-3" />
+                    Regex
+                  </TabsTrigger>
+                )}
               <TabsTrigger value="size">
                 <GoFileBinary className="text-lg mr-3" />
                 Size
@@ -956,153 +961,178 @@ function Content() {
                       </div>
                     </div>
 
-                    <div className="flex flex-col md:flex-row gap-4">
-                      <div className="flex-1 min-w-0">
-                        <Slider
-                          min={MIN_SEEDERS}
-                          max={MAX_SEEDERS}
-                          defaultValue={[MIN_SEEDERS, MAX_SEEDERS]}
-                          value={
-                            userData.excludeSeederRange || [
-                              MIN_SEEDERS,
-                              MAX_SEEDERS,
-                            ]
-                          }
-                          onValueChange={(newValue) =>
-                            newValue !== undefined &&
-                            newValue?.[0] !== undefined &&
-                            newValue?.[1] !== undefined &&
-                            setUserData((prev) => ({
-                              ...prev,
-                              excludeSeederRange: [newValue[0], newValue[1]],
-                            }))
-                          }
-                          minStepsBetweenThumbs={1}
-                          label="Excluded Seeder Range"
-                          help="Streams with seeders in this range will be excluded"
-                        />
-                        <div className="flex justify-between mt-1 text-xs text-[--muted]">
-                          <span>
-                            {userData.excludeSeederRange?.[0] || MIN_SEEDERS}
-                          </span>
-                          <span>
-                            {userData.excludeSeederRange?.[1] || MAX_SEEDERS}
-                          </span>
+                    {mode === 'pro' && (
+                      <>
+                        <div className="flex flex-col md:flex-row gap-4">
+                          <div className="flex-1 min-w-0">
+                            <Slider
+                              min={MIN_SEEDERS}
+                              max={MAX_SEEDERS}
+                              defaultValue={[MIN_SEEDERS, MAX_SEEDERS]}
+                              value={
+                                userData.excludeSeederRange || [
+                                  MIN_SEEDERS,
+                                  MAX_SEEDERS,
+                                ]
+                              }
+                              onValueChange={(newValue) =>
+                                newValue !== undefined &&
+                                newValue?.[0] !== undefined &&
+                                newValue?.[1] !== undefined &&
+                                setUserData((prev) => ({
+                                  ...prev,
+                                  excludeSeederRange: [
+                                    newValue[0],
+                                    newValue[1],
+                                  ],
+                                }))
+                              }
+                              minStepsBetweenThumbs={1}
+                              label="Excluded Seeder Range"
+                              help="Streams with seeders in this range will be excluded"
+                            />
+                            <div className="flex justify-between mt-1 text-xs text-[--muted]">
+                              <span>
+                                {userData.excludeSeederRange?.[0] ||
+                                  MIN_SEEDERS}
+                              </span>
+                              <span>
+                                {userData.excludeSeederRange?.[1] ||
+                                  MAX_SEEDERS}
+                              </span>
+                            </div>
+                          </div>
+                          <div className="flex gap-2 md:w-[240px] shrink-0">
+                            <NumberInput
+                              label="Min"
+                              value={
+                                userData.excludeSeederRange?.[0] || MIN_SEEDERS
+                              }
+                              min={MIN_SEEDERS}
+                              max={
+                                userData.excludeSeederRange?.[1] || MAX_SEEDERS
+                              }
+                              onValueChange={(newValue) =>
+                                newValue !== undefined &&
+                                setUserData((prev) => ({
+                                  ...prev,
+                                  excludeSeederRange: [
+                                    newValue,
+                                    prev.excludeSeederRange?.[1] || MAX_SEEDERS,
+                                  ],
+                                }))
+                              }
+                            />
+                            <NumberInput
+                              label="Max"
+                              value={
+                                userData.excludeSeederRange?.[1] || MAX_SEEDERS
+                              }
+                              min={
+                                userData.excludeSeederRange?.[0] || MIN_SEEDERS
+                              }
+                              max={MAX_SEEDERS}
+                              onValueChange={(newValue) =>
+                                newValue !== undefined &&
+                                setUserData((prev) => ({
+                                  ...prev,
+                                  excludeSeederRange: [
+                                    prev.excludeSeederRange?.[0] || MIN_SEEDERS,
+                                    newValue,
+                                  ],
+                                }))
+                              }
+                            />
+                          </div>
                         </div>
-                      </div>
-                      <div className="flex gap-2 md:w-[240px] shrink-0">
-                        <NumberInput
-                          label="Min"
-                          value={
-                            userData.excludeSeederRange?.[0] || MIN_SEEDERS
-                          }
-                          min={MIN_SEEDERS}
-                          max={userData.excludeSeederRange?.[1] || MAX_SEEDERS}
-                          onValueChange={(newValue) =>
-                            newValue !== undefined &&
-                            setUserData((prev) => ({
-                              ...prev,
-                              excludeSeederRange: [
-                                newValue,
-                                prev.excludeSeederRange?.[1] || MAX_SEEDERS,
-                              ],
-                            }))
-                          }
-                        />
-                        <NumberInput
-                          label="Max"
-                          value={
-                            userData.excludeSeederRange?.[1] || MAX_SEEDERS
-                          }
-                          min={userData.excludeSeederRange?.[0] || MIN_SEEDERS}
-                          max={MAX_SEEDERS}
-                          onValueChange={(newValue) =>
-                            newValue !== undefined &&
-                            setUserData((prev) => ({
-                              ...prev,
-                              excludeSeederRange: [
-                                prev.excludeSeederRange?.[0] || MIN_SEEDERS,
-                                newValue,
-                              ],
-                            }))
-                          }
-                        />
-                      </div>
-                    </div>
-
-                    <div className="flex flex-col md:flex-row gap-4">
-                      <div className="flex-1 min-w-0">
-                        <Slider
-                          min={MIN_SEEDERS}
-                          max={MAX_SEEDERS}
-                          defaultValue={[MIN_SEEDERS, MAX_SEEDERS]}
-                          value={
-                            userData.includeSeederRange || [
-                              MIN_SEEDERS,
-                              MAX_SEEDERS,
-                            ]
-                          }
-                          onValueChange={(newValue) =>
-                            newValue !== undefined &&
-                            newValue?.[0] !== undefined &&
-                            newValue?.[1] !== undefined &&
-                            setUserData((prev) => ({
-                              ...prev,
-                              includeSeederRange: [newValue[0], newValue[1]],
-                            }))
-                          }
-                          minStepsBetweenThumbs={1}
-                          label="Included Seeder Range"
-                          help="Streams with seeders in this range will be included, ignoring ANY other exclude/required filters, not just for this filter"
-                        />
-                        <div className="flex justify-between mt-1 text-xs text-[--muted]">
-                          <span>
-                            {userData.includeSeederRange?.[0] || MIN_SEEDERS}
-                          </span>
-                          <span>
-                            {userData.includeSeederRange?.[1] || MAX_SEEDERS}
-                          </span>
+                      </>
+                    )}
+                    {mode === 'pro' && (
+                      <>
+                        <div className="flex flex-col md:flex-row gap-4">
+                          <div className="flex-1 min-w-0">
+                            <Slider
+                              min={MIN_SEEDERS}
+                              max={MAX_SEEDERS}
+                              defaultValue={[MIN_SEEDERS, MAX_SEEDERS]}
+                              value={
+                                userData.includeSeederRange || [
+                                  MIN_SEEDERS,
+                                  MAX_SEEDERS,
+                                ]
+                              }
+                              onValueChange={(newValue) =>
+                                newValue !== undefined &&
+                                newValue?.[0] !== undefined &&
+                                newValue?.[1] !== undefined &&
+                                setUserData((prev) => ({
+                                  ...prev,
+                                  includeSeederRange: [
+                                    newValue[0],
+                                    newValue[1],
+                                  ],
+                                }))
+                              }
+                              minStepsBetweenThumbs={1}
+                              label="Included Seeder Range"
+                              help="Streams with seeders in this range will be included, ignoring ANY other exclude/required filters, not just for this filter"
+                            />
+                            <div className="flex justify-between mt-1 text-xs text-[--muted]">
+                              <span>
+                                {userData.includeSeederRange?.[0] ||
+                                  MIN_SEEDERS}
+                              </span>
+                              <span>
+                                {userData.includeSeederRange?.[1] ||
+                                  MAX_SEEDERS}
+                              </span>
+                            </div>
+                          </div>
+                          <div className="flex gap-2 md:w-[240px] shrink-0">
+                            <NumberInput
+                              label="Min"
+                              value={
+                                userData.includeSeederRange?.[0] || MIN_SEEDERS
+                              }
+                              min={MIN_SEEDERS}
+                              max={
+                                userData.includeSeederRange?.[1] || MAX_SEEDERS
+                              }
+                              onValueChange={(newValue) =>
+                                newValue !== undefined &&
+                                setUserData((prev) => ({
+                                  ...prev,
+                                  includeSeederRange: [
+                                    newValue,
+                                    prev.includeSeederRange?.[1] || MAX_SEEDERS,
+                                  ],
+                                }))
+                              }
+                            />
+                            <NumberInput
+                              label="Max"
+                              value={
+                                userData.includeSeederRange?.[1] || MAX_SEEDERS
+                              }
+                              min={
+                                userData.includeSeederRange?.[0] || MIN_SEEDERS
+                              }
+                              max={MAX_SEEDERS}
+                              onValueChange={(newValue) =>
+                                newValue !== undefined &&
+                                setUserData((prev) => ({
+                                  ...prev,
+                                  includeSeederRange: [
+                                    prev.includeSeederRange?.[0] || MIN_SEEDERS,
+                                    newValue,
+                                  ],
+                                }))
+                              }
+                            />
+                          </div>
                         </div>
-                      </div>
-                      <div className="flex gap-2 md:w-[240px] shrink-0">
-                        <NumberInput
-                          label="Min"
-                          value={
-                            userData.includeSeederRange?.[0] || MIN_SEEDERS
-                          }
-                          min={MIN_SEEDERS}
-                          max={userData.includeSeederRange?.[1] || MAX_SEEDERS}
-                          onValueChange={(newValue) =>
-                            newValue !== undefined &&
-                            setUserData((prev) => ({
-                              ...prev,
-                              includeSeederRange: [
-                                newValue,
-                                prev.includeSeederRange?.[1] || MAX_SEEDERS,
-                              ],
-                            }))
-                          }
-                        />
-                        <NumberInput
-                          label="Max"
-                          value={
-                            userData.includeSeederRange?.[1] || MAX_SEEDERS
-                          }
-                          min={userData.includeSeederRange?.[0] || MIN_SEEDERS}
-                          max={MAX_SEEDERS}
-                          onValueChange={(newValue) =>
-                            newValue !== undefined &&
-                            setUserData((prev) => ({
-                              ...prev,
-                              includeSeederRange: [
-                                prev.includeSeederRange?.[0] || MIN_SEEDERS,
-                                newValue,
-                              ],
-                            }))
-                          }
-                        />
-                      </div>
-                    </div>
+                      </>
+                    )}
                   </div>
 
                   <div className="space-y-4">
@@ -1588,28 +1618,32 @@ function Content() {
                 </p>
               </div>
               <div className="space-y-4">
-                <TextInputs
-                  label="Required Keywords"
-                  help="Streams that do not contain any of these keywords will be excluded"
-                  itemName="Keyword"
-                  values={userData.requiredKeywords || []}
-                  onValuesChange={(values) => {
-                    setUserData((prev) => ({
-                      ...prev,
-                      requiredKeywords: values,
-                    }));
-                  }}
-                  onValueChange={(value, index) => {
-                    setUserData((prev) => ({
-                      ...prev,
-                      requiredKeywords: [
-                        ...(prev.requiredKeywords || []).slice(0, index),
-                        value,
-                        ...(prev.requiredKeywords || []).slice(index + 1),
-                      ],
-                    }));
-                  }}
-                />
+                {mode === 'pro' && (
+                  <>
+                    <TextInputs
+                      label="Required Keywords"
+                      help="Streams that do not contain any of these keywords will be excluded"
+                      itemName="Keyword"
+                      values={userData.requiredKeywords || []}
+                      onValuesChange={(values) => {
+                        setUserData((prev) => ({
+                          ...prev,
+                          requiredKeywords: values,
+                        }));
+                      }}
+                      onValueChange={(value, index) => {
+                        setUserData((prev) => ({
+                          ...prev,
+                          requiredKeywords: [
+                            ...(prev.requiredKeywords || []).slice(0, index),
+                            value,
+                            ...(prev.requiredKeywords || []).slice(index + 1),
+                          ],
+                        }));
+                      }}
+                    />
+                  </>
+                )}
                 <TextInputs
                   label="Excluded Keywords"
                   help="Streams that contain any of these keywords will be excluded"
@@ -1632,28 +1666,32 @@ function Content() {
                     }));
                   }}
                 />
-                <TextInputs
-                  label="Included Keywords"
-                  help="Streams that contain any of these keywords will be included, ignoring ANY other exclude/required filters, not just for this filter"
-                  itemName="Keyword"
-                  values={userData.includedKeywords || []}
-                  onValuesChange={(values) => {
-                    setUserData((prev) => ({
-                      ...prev,
-                      includedKeywords: values,
-                    }));
-                  }}
-                  onValueChange={(value, index) => {
-                    setUserData((prev) => ({
-                      ...prev,
-                      includedKeywords: [
-                        ...(prev.includedKeywords || []).slice(0, index),
-                        value,
-                        ...(prev.includedKeywords || []).slice(index + 1),
-                      ],
-                    }));
-                  }}
-                />
+                {mode === 'pro' && (
+                  <>
+                    <TextInputs
+                      label="Included Keywords"
+                      help="Streams that contain any of these keywords will be included, ignoring ANY other exclude/required filters, not just for this filter"
+                      itemName="Keyword"
+                      values={userData.includedKeywords || []}
+                      onValuesChange={(values) => {
+                        setUserData((prev) => ({
+                          ...prev,
+                          includedKeywords: values,
+                        }));
+                      }}
+                      onValueChange={(value, index) => {
+                        setUserData((prev) => ({
+                          ...prev,
+                          includedKeywords: [
+                            ...(prev.includedKeywords || []).slice(0, index),
+                            value,
+                            ...(prev.includedKeywords || []).slice(index + 1),
+                          ],
+                        }));
+                      }}
+                    />
+                  </>
+                )}
                 <TextInputs
                   label="Preferred Keywords"
                   help="Streams that contain any of these keywords will be preferred"
@@ -1754,28 +1792,37 @@ function Content() {
                 )}
               </div>
               <div className="space-y-4">
-                <TextInputs
-                  label="Required Regex"
-                  help="Streams that do not match any of these regular expressions will be excluded"
-                  itemName="Regex"
-                  values={userData.requiredRegexPatterns || []}
-                  onValuesChange={(values) => {
-                    setUserData((prev) => ({
-                      ...prev,
-                      requiredRegexPatterns: values,
-                    }));
-                  }}
-                  onValueChange={(value, index) => {
-                    setUserData((prev) => ({
-                      ...prev,
-                      requiredRegexPatterns: [
-                        ...(prev.requiredRegexPatterns || []).slice(0, index),
-                        value,
-                        ...(prev.requiredRegexPatterns || []).slice(index + 1),
-                      ],
-                    }));
-                  }}
-                />
+                {mode === 'pro' && (
+                  <>
+                    <TextInputs
+                      label="Required Regex"
+                      help="Streams that do not match any of these regular expressions will be excluded"
+                      itemName="Regex"
+                      values={userData.requiredRegexPatterns || []}
+                      onValuesChange={(values) => {
+                        setUserData((prev) => ({
+                          ...prev,
+                          requiredRegexPatterns: values,
+                        }));
+                      }}
+                      onValueChange={(value, index) => {
+                        setUserData((prev) => ({
+                          ...prev,
+                          requiredRegexPatterns: [
+                            ...(prev.requiredRegexPatterns || []).slice(
+                              0,
+                              index
+                            ),
+                            value,
+                            ...(prev.requiredRegexPatterns || []).slice(
+                              index + 1
+                            ),
+                          ],
+                        }));
+                      }}
+                    />
+                  </>
+                )}
                 <TextInputs
                   label="Excluded Regex"
                   help="Streams that match any of these regular expressions will be excluded"
@@ -1798,28 +1845,37 @@ function Content() {
                     }));
                   }}
                 />
-                <TextInputs
-                  label="Included Regex"
-                  help="Streams that match any of these regular expressions will be included, ignoring other exclude/required filters"
-                  itemName="Regex"
-                  values={userData.includedRegexPatterns || []}
-                  onValuesChange={(values) => {
-                    setUserData((prev) => ({
-                      ...prev,
-                      includedRegexPatterns: values,
-                    }));
-                  }}
-                  onValueChange={(value, index) => {
-                    setUserData((prev) => ({
-                      ...prev,
-                      includedRegexPatterns: [
-                        ...(prev.includedRegexPatterns || []).slice(0, index),
-                        value,
-                        ...(prev.includedRegexPatterns || []).slice(index + 1),
-                      ],
-                    }));
-                  }}
-                />
+                {mode === 'pro' && (
+                  <>
+                    <TextInputs
+                      label="Included Regex"
+                      help="Streams that match any of these regular expressions will be included, ignoring other exclude/required filters"
+                      itemName="Regex"
+                      values={userData.includedRegexPatterns || []}
+                      onValuesChange={(values) => {
+                        setUserData((prev) => ({
+                          ...prev,
+                          includedRegexPatterns: values,
+                        }));
+                      }}
+                      onValueChange={(value, index) => {
+                        setUserData((prev) => ({
+                          ...prev,
+                          includedRegexPatterns: [
+                            ...(prev.includedRegexPatterns || []).slice(
+                              0,
+                              index
+                            ),
+                            value,
+                            ...(prev.includedRegexPatterns || []).slice(
+                              index + 1
+                            ),
+                          ],
+                        }));
+                      }}
+                    />
+                  </>
+                )}
                 <TwoTextInputs
                   title="Preferred Regex Patterns"
                   description="Define regex patterns with names for easy reference"
