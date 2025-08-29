@@ -80,12 +80,27 @@ router.get(
               `Invalid auth: ${auth}. Must start with 'Basic '`
             );
           }
-          [uuid, password] = Buffer.from(
-            auth.replace(/^Basic\s+/, ''),
-            'base64'
-          )
-            .toString('utf-8')
-            .split(':');
+          const base64Credentials = auth.slice('Basic '.length).trim();
+          const credentials = Buffer.from(base64Credentials, 'base64').toString(
+            'utf-8'
+          );
+          const sepIndex = credentials.indexOf(':');
+          if (sepIndex === -1) {
+            throw new APIError(
+              constants.ErrorCode.BAD_REQUEST,
+              undefined,
+              `Invalid basic auth format`
+            );
+          }
+          uuid = credentials.slice(0, sepIndex);
+          password = credentials.slice(sepIndex + 1);
+          if (!uuid || !password) {
+            throw new APIError(
+              constants.ErrorCode.BAD_REQUEST,
+              undefined,
+              `Missing username or password in basic auth`
+            );
+          }
           logger.debug(`Using basic auth for Search API request: ${uuid}`);
         } catch (error: any) {
           throw new APIError(
