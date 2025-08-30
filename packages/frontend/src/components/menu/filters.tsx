@@ -244,32 +244,48 @@ function Content() {
                 <FaBolt className="text-lg mr-3" />
                 Cache
               </TabsTrigger>
-              <TabsTrigger value="resolution">
-                <BiSolidCameraMovie className="text-lg mr-3" />
-                Resolution
-              </TabsTrigger>
-              <TabsTrigger value="quality">
-                <MdMovieFilter className="text-lg mr-3" />
-                Quality
-              </TabsTrigger>
-              <TabsTrigger value="encode">
-                <FaFilm className="text-lg mr-3" />
-                Encode
-              </TabsTrigger>
+
+              <>
+                <TabsTrigger value="resolution">
+                  <BiSolidCameraMovie className="text-lg mr-3" />
+                  Resolution
+                </TabsTrigger>
+              </>
+
+              {mode == 'pro' && (
+                <>
+                  <TabsTrigger value="quality">
+                    <MdMovieFilter className="text-lg mr-3" />
+                    Quality
+                  </TabsTrigger>
+                </>
+              )}
+              {mode === 'pro' && (
+                <>
+                  <TabsTrigger value="encode">
+                    <FaFilm className="text-lg mr-3" />
+                    Encode
+                  </TabsTrigger>
+                </>
+              )}
               {mode === 'pro' && (
                 <TabsTrigger value="stream-type">
                   <MdVideoLibrary className="text-lg mr-3" />
                   Stream Type
                 </TabsTrigger>
               )}
-              <TabsTrigger value="visual-tag">
-                <MdHdrOn className="text-lg mr-3" />
-                Visual Tag
-              </TabsTrigger>
-              <TabsTrigger value="audio-tag">
-                <BsSpeakerFill className="text-lg mr-3" />
-                Audio Tag
-              </TabsTrigger>
+              {mode === 'pro' && (
+                <TabsTrigger value="visual-tag">
+                  <MdHdrOn className="text-lg mr-3" />
+                  Visual Tag
+                </TabsTrigger>
+              )}
+              {mode === 'pro' && (
+                <TabsTrigger value="audio-tag">
+                  <BsSpeakerFill className="text-lg mr-3" />
+                  Audio Tag
+                </TabsTrigger>
+              )}
               {mode === 'pro' && (
                 <TabsTrigger value="audio-channel">
                   <MdSurroundSound className="text-lg mr-3" />
@@ -284,14 +300,20 @@ function Content() {
                 <MdPerson className="text-lg mr-3" />
                 Seeders
               </TabsTrigger>
-              <TabsTrigger value="title-matching">
-                <FaEquals className="text-lg mr-3" />
-                Matching
-              </TabsTrigger>
-              <TabsTrigger value="keyword">
-                <MdTextFields className="text-lg mr-3" />
-                Keyword
-              </TabsTrigger>
+              {mode === 'pro' && (
+                <>
+                  <TabsTrigger value="title-matching">
+                    <FaEquals className="text-lg mr-3" />
+                    Matching
+                  </TabsTrigger>
+                </>
+              )}
+              {mode === 'pro' && (
+                <TabsTrigger value="keyword">
+                  <MdTextFields className="text-lg mr-3" />
+                  Keyword
+                </TabsTrigger>
+              )}
               {mode === 'pro' && (
                 <TabsTrigger value="stream-expression">
                   <TbFilterCode className="text-lg mr-3" />
@@ -2059,38 +2081,43 @@ function Content() {
                       }));
                     }}
                   />
-                  <NumberInput
-                    help="Limit for results by service"
-                    label="Service Limit"
-                    value={userData.resultLimits?.service || undefined}
-                    min={0}
-                    defaultValue={undefined}
-                    onValueChange={(value) => {
-                      setUserData((prev) => ({
-                        ...prev,
-                        resultLimits: {
-                          ...prev.resultLimits,
-                          service: value || undefined,
-                        },
-                      }));
-                    }}
-                  />
-                  <NumberInput
-                    help="Limit for results by addon"
-                    label="Addon Limit"
-                    value={userData.resultLimits?.addon || undefined}
-                    min={0}
-                    defaultValue={undefined}
-                    onValueChange={(value) => {
-                      setUserData((prev) => ({
-                        ...prev,
-                        resultLimits: {
-                          ...prev.resultLimits,
-                          addon: value || undefined,
-                        },
-                      }));
-                    }}
-                  />
+                  {mode === 'pro' && (
+                    <NumberInput
+                      help="Limit for results by service"
+                      label="Service Limit"
+                      value={userData.resultLimits?.service || undefined}
+                      min={0}
+                      defaultValue={undefined}
+                      onValueChange={(value) => {
+                        setUserData((prev) => ({
+                          ...prev,
+                          resultLimits: {
+                            ...prev.resultLimits,
+                            service: value || undefined,
+                          },
+                        }));
+                      }}
+                    />
+                  )}
+                  {mode === 'pro' && (
+                    <NumberInput
+                      help="Limit for results by addon"
+                      label="Addon Limit"
+                      value={userData.resultLimits?.addon || undefined}
+                      min={0}
+                      defaultValue={undefined}
+                      onValueChange={(value) => {
+                        setUserData((prev) => ({
+                          ...prev,
+                          resultLimits: {
+                            ...prev.resultLimits,
+                            addon: value || undefined,
+                          },
+                        }));
+                      }}
+                    />
+                  )}
+
                   <NumberInput
                     help="Limit for results by resolution"
                     label="Resolution Limit"
@@ -2107,54 +2134,61 @@ function Content() {
                       }));
                     }}
                   />
-                  <NumberInput
-                    help="Limit for results by quality"
-                    label="Quality Limit"
-                    value={userData.resultLimits?.quality || undefined}
-                    min={0}
-                    defaultValue={undefined}
-                    onValueChange={(value) => {
-                      setUserData((prev) => ({
-                        ...prev,
-                        resultLimits: {
-                          ...prev.resultLimits,
-                          quality: value || undefined,
-                        },
-                      }));
-                    }}
-                  />
-                  <NumberInput
-                    help="Limit for results by indexer"
-                    label="Indexer Limit"
-                    value={userData.resultLimits?.indexer || undefined}
-                    min={0}
-                    defaultValue={undefined}
-                    onValueChange={(value) => {
-                      setUserData((prev) => ({
-                        ...prev,
-                        resultLimits: {
-                          ...prev.resultLimits,
-                          indexer: value || undefined,
-                        },
-                      }));
-                    }}
-                  />
-                  <NumberInput
-                    help="Limit for results by release group"
-                    label="Release Group Limit"
-                    value={userData.resultLimits?.releaseGroup || undefined}
-                    min={0}
-                    defaultValue={undefined}
-                    onValueChange={(value) => {
-                      setUserData((prev) => ({
-                        ...prev,
-                        resultLimits: {
-                          ...prev.resultLimits,
-                          releaseGroup: value || undefined,
-                        },
-                      }));
-                    }}
-                  />
+
+                  {mode === 'pro' && (
+                    <NumberInput
+                      help="Limit for results by quality"
+                      label="Quality Limit"
+                      value={userData.resultLimits?.quality || undefined}
+                      min={0}
+                      defaultValue={undefined}
+                      onValueChange={(value) => {
+                        setUserData((prev) => ({
+                          ...prev,
+                          resultLimits: {
+                            ...prev.resultLimits,
+                            quality: value || undefined,
+                          },
+                        }));
+                      }}
+                    />
+                  )}
+                  {mode === 'pro' && (
+                    <NumberInput
+                      help="Limit for results by indexer"
+                      label="Indexer Limit"
+                      value={userData.resultLimits?.indexer || undefined}
+                      min={0}
+                      defaultValue={undefined}
+                      onValueChange={(value) => {
+                        setUserData((prev) => ({
+                          ...prev,
+                          resultLimits: {
+                            ...prev.resultLimits,
+                            indexer: value || undefined,
+                          },
+                        }));
+                      }}
+                    />
+                  )}
+                  {mode === 'pro' && (
+                    <NumberInput
+                      help="Limit for results by release group"
+                      label="Release Group Limit"
+                      value={userData.resultLimits?.releaseGroup || undefined}
+                      min={0}
+                      defaultValue={undefined}
+                      onValueChange={(value) => {
+                        setUserData((prev) => ({
+                          ...prev,
+                          resultLimits: {
+                            ...prev.resultLimits,
+                            releaseGroup: value || undefined,
+                          },
+                        }));
+                      }}
+                    />
+                  )}
                 </div>
               </SettingsCard>
             </>
