@@ -89,6 +89,9 @@ const namedRegexes = makeValidator((x) => {
   return parsed;
 });
 
+const removeTrailingSlash = (x: string) =>
+  x.endsWith('/') ? x.slice(0, -1) : x;
+
 const presetUrls = makeExactValidator<string[]>((x) => {
   if (typeof x !== 'string') {
     throw new EnvError('Preset URLs must be a string or an array of strings');
@@ -108,10 +111,10 @@ const presetUrls = makeExactValidator<string[]>((x) => {
         'Preset URLs must be an array of URLs or a single URL'
       );
     }
-    return urls;
+    return urls.map(removeTrailingSlash);
   } catch (e) {
     if (typeof x === 'string' && validateUrl(x)) {
-      return [x];
+      return [removeTrailingSlash(x)];
     }
     throw new EnvError('Preset URLs must be an array of URLs or a single URL');
   }
@@ -127,7 +130,7 @@ const url = makeValidator((x) => {
     throw new EnvError(`Invalid URL: ${x}`);
   }
   // remove trailing slash
-  return x.endsWith('/') ? x.slice(0, -1) : x;
+  return removeTrailingSlash(x);
 });
 
 export const forcedPort = makeValidator<string>((input: string) => {
@@ -213,10 +216,8 @@ const urlMappings = makeValidator<Record<string, string>>((x) => {
       );
     }
     try {
-      const keyUrl = new URL(key.endsWith('/') ? key.slice(0, -1) : key);
-      const valueUrl = new URL(
-        value.endsWith('/') ? value.slice(0, -1) : value
-      );
+      const keyUrl = new URL(removeTrailingSlash(key));
+      const valueUrl = new URL(removeTrailingSlash(value));
       mappings[keyUrl.origin] = valueUrl.origin;
     } catch (e) {
       throw new EnvError(
