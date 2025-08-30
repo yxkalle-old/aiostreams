@@ -527,8 +527,10 @@ export const AUTO_PLAY_ATTRIBUTES = [
   'size',
 ] as const;
 
+const NON_DEFAULT_AUTO_PLAY_ATTRIBUTES = ['infoHash', 'size', 'type', 'addon'];
+
 export const DEFAULT_AUTO_PLAY_ATTRIBUTES = AUTO_PLAY_ATTRIBUTES.filter(
-  (attribute) => attribute !== 'addon' && attribute !== 'infoHash'
+  (attribute) => !NON_DEFAULT_AUTO_PLAY_ATTRIBUTES.includes(attribute)
 );
 
 export const AUTO_PLAY_METHODS = [
