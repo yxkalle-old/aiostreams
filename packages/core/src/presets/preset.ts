@@ -44,17 +44,22 @@ export const baseOptions = (
       'Optionally override either the manifest generated, or override the base url used when generating the manifests',
     type: 'url',
     required: false,
-    emptyIsUndefined: true,
     showInNoobMode: false,
     default: undefined,
   };
   if (baseUrls && baseUrls.length > 1) {
-    urlOption.default = baseUrls[0];
+    urlOption.default = 'undefined';
     urlOption.type = 'select-with-custom';
-    urlOption.options = baseUrls.map((url) => ({
-      label: url,
-      value: url,
-    }));
+    urlOption.options = [
+      {
+        label: baseUrls[0],
+        value: 'undefined',
+      },
+      ...baseUrls.splice(1).map((url) => ({
+        label: url,
+        value: url,
+      })),
+    ];
     urlOption.showInNoobMode = true;
   }
   return [

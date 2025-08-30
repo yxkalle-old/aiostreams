@@ -195,6 +195,14 @@ const TemplateOption: React.FC<TemplateOptionProps> = ({
         return options?.some((opt) => opt.value === val);
       };
 
+      const onValueChange = (val: string) => {
+        if (val === 'undefined') {
+          onChange(undefined);
+        } else {
+          onChange(val);
+        }
+      };
+
       const effectiveValue = forcedValue ?? value ?? defaultValue;
       const isCustom = !isExistingOption(effectiveValue);
 
@@ -202,15 +210,15 @@ const TemplateOption: React.FC<TemplateOptionProps> = ({
       const handleSelectChange = (val: string) => {
         if (val === 'Custom') {
           // When "Custom" is selected, we clear the value to allow for new input.
-          onChange('');
+          onValueChange('');
         } else {
-          onChange(val);
+          onValueChange(val);
         }
       };
 
       // When a user types in the custom input
       const handleCustomInputChange = (val: string) => {
-        onChange(val);
+        onValueChange(val);
       };
 
       const optionsWithCustom = [
