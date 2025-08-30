@@ -734,6 +734,34 @@ export class AIOStreams {
         return resource;
       });
 
+      if (manifest.catalogs) {
+        const existing = addonResources.find((r) => r.name === 'catalog');
+        if (existing) {
+          existing.types = [
+            ...new Set([
+              ...manifest.catalogs.map((c) => {
+                const type = c.type;
+                const modification = this.userData.catalogModifications?.find(
+                  (m) => m.id === `${instanceId}.${c.id}` && m.type === type
+                );
+                return modification?.overrideType ?? type;
+              }),
+            ]),
+          ];
+        } else {
+          addonResources.push({
+            name: 'catalog',
+            types: manifest.catalogs.map((c) => {
+              const type = c.type;
+              const modification = this.userData.catalogModifications?.find(
+                (m) => m.id === `${instanceId}.${c.id}` && m.type === type
+              );
+              return modification?.overrideType ?? type;
+            }),
+          });
+        }
+      }
+
       const addon = this.getAddon(instanceId);
 
       if (!addon) {
