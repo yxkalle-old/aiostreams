@@ -85,7 +85,7 @@ const SizeFilter = z.object({
 });
 
 const SizeFilterOptions = z.object({
-  global: SizeFilter,
+  global: SizeFilter.optional(),
   resolution: z.partialRecord(Resolutions, SizeFilter).optional(),
 });
 
