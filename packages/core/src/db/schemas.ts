@@ -86,7 +86,7 @@ const SizeFilter = z.object({
 
 const SizeFilterOptions = z.object({
   global: SizeFilter,
-  resolution: z.record(Resolutions, SizeFilter).optional(),
+  resolution: z.partialRecord(Resolutions, SizeFilter).optional(),
 });
 
 const ServiceSchema = z.object({
@@ -926,7 +926,7 @@ const StatusResponseSchema = z.object({
       timeout: z.number().or(z.null()),
     }),
     presets: z.array(PresetMinimalMetadataSchema),
-    services: z.record(
+    services: z.partialRecord(
       z.enum(constants.SERVICES),
       z.object({
         id: z.enum(constants.SERVICES),
