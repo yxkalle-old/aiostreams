@@ -1,4 +1,4 @@
-import rateLimit, { MemoryStore } from 'express-rate-limit';
+import rateLimit, { MemoryStore, ipKeyGenerator } from 'express-rate-limit';
 import { Request, Response, NextFunction } from 'express';
 import { RedisStore } from 'rate-limit-redis';
 import {
@@ -33,9 +33,11 @@ const createRateLimiter = (
     standardHeaders: true,
     legacyHeaders: false,
     store,
-    // Use a unique store key for each rate limiter
-    keyGenerator: (req: Request) =>
-      `${prefix}:${req.requestIp || req.userIp || req.ip || ''}`,
+    keyGenerator: (req: Request) => {
+      const ip = req.requestIp || req.userIp || req.ip;
+      const ipKey = ip ? ipKeyGenerator(ip) : '';
+      return prefix + ':' + ipKey;
+    },
     handler: (
       req: Request,
       res: Response,

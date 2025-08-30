@@ -118,7 +118,7 @@ builtinsRouter.use('/torbox-search', torboxSearch);
 app.use('/builtins', builtinsRouter);
 
 app.get(
-  ['/_next/*', '/assets/*', '/favicon.ico', '/logo.png'],
+  ['/_next/*any', '/assets/*any', '/favicon.ico', '/logo.png'],
   staticRateLimiter,
   (req, res, next) => {
     const filePath = path.resolve(frontendRoot, req.path.replace(/^\//, ''));
@@ -130,7 +130,7 @@ app.get(
   }
 );
 
-app.get('/static/*', (req, res, next) => {
+app.get('/static/*any', (req, res, next) => {
   const filePath = path.resolve(
     staticRoot,
     req.path.replace(/^\/static\//, '')
@@ -152,7 +152,7 @@ app.get('/', (req, res) => {
 
 // legacy route handlers
 app.get(
-  '/:config?/stream/:type/:id.json',
+  '{/:config}/stream/:type/:id.json',
   stremioStreamRateLimiter,
   (req, res) => {
     const baseUrl =
@@ -171,7 +171,7 @@ app.get(
     });
   }
 );
-app.get('/:config?/configure', (req, res) => {
+app.get('{/:config}/configure', (req, res) => {
   res.redirect('/stremio/configure');
 });
 
