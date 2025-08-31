@@ -653,6 +653,9 @@ function validateOption(
   value: any,
   decryptValues: boolean = false
 ): any {
+  if (typeof value === 'string' && value === 'undefined') {
+    value = undefined;
+  }
   const forcedValue =
     option.forced !== undefined && option.forced !== null
       ? option.forced
