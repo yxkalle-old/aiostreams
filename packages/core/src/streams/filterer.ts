@@ -215,10 +215,6 @@ class StreamFilterer {
       streamYearRange[0] = streamYearRange[0] - tolerance;
       streamYearRange[1] = streamYearRange[1] + tolerance;
 
-      logger.debug(
-        `Stream year range: ${streamYearRange}, requested year: ${requestedYear}`
-      );
-
       // requested year should be within the stream year range
       return (
         requestedYear >= streamYearRange[0] &&
