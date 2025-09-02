@@ -495,7 +495,7 @@ async function validateRegexes(config: UserData) {
   const includedRegexes = config.includedRegexPatterns;
   const requiredRegexes = config.requiredRegexPatterns;
   const preferredRegexes = config.preferredRegexPatterns;
-  const regexAllowed = FeatureControl.isRegexAllowed(config);
+  const regexAllowed = await FeatureControl.isRegexAllowed(config);
 
   const regexes = [
     ...(excludedRegexes ?? []),
