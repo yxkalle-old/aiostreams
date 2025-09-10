@@ -104,10 +104,11 @@ export interface ParseValue {
   debug?: {
     json: string | null;
     jsonf: string | null;
+    modifier: string | null;
   };
 }
 
-export const hardcodedParseValueKeysForRegexMatching: ParseValue = {
+const hardcodedParseValueKeysForRegexMatching: ParseValue = {
   stream: {
     filename: null,
     folderName: null,
@@ -164,10 +165,11 @@ export const hardcodedParseValueKeysForRegexMatching: ParseValue = {
   debug: {
     json: null,
     jsonf: null,
+    modifier: null,
   },
 }
 
-export const stringModifiers = {
+const stringModifiers = {
   'upper': (value: string) => value.toUpperCase(),
   'lower': (value: string) => value.toLowerCase(),
   'title': (value: string) => value
@@ -182,7 +184,7 @@ export const stringModifiers = {
 }
 
 const arrayModifierGetOrDefault = (value: string[], i: number) => value.length > 0 ? String(value[i]) : '';
-export const arrayModifiers = {
+const arrayModifiers = {
   'join': (value: string[]) => value.join(", "),
   'length': (value: string[]) => value.length.toString(),
   'first': (value: string[]) => arrayModifierGetOrDefault(value, 0),
@@ -191,8 +193,8 @@ export const arrayModifiers = {
   'sort': (value: string[]) => [...value].sort(),
   'reverse': (value: string[]) => [...value].reverse(),
 }
-          
-export const numberModifiers = {
+
+const numberModifiers = {
   'comma': (value: number) => value.toLocaleString(),
   'hex': (value: number) => value.toString(16),
   'octal': (value: number) => value.toString(8),
@@ -244,13 +246,61 @@ const hardcodedModifiersForRegexMatching = {
 }
 
 const modifiers = {
+  ...hardcodedModifiersForRegexMatching,
   ...stringModifiers,
   ...numberModifiers,
   ...arrayModifiers,
   ...conditionalModifiers.exact,
   ...conditionalModifiers.prefix,
-  ...hardcodedModifiersForRegexMatching,
 }
+
+const debugModifierToolReplacement = `
+String: {config.addonName}
+  ::upper {config.addonName::upper}
+  ::lower {config.addonName::lower}
+  ::title {config.addonName::title}
+  ::length {config.addonName::length}
+  ::reverse {config.addonName::reverse}
+{tools.newLine}
+
+Number: {stream.size}
+  ::bytes {stream.size::bytes}
+  ::time {stream.size::time}
+  ::hex {stream.size::hex}
+  ::octal {stream.size::octal}
+  ::binary {stream.size::binary}
+{tools.newLine}
+
+Array: {stream.languages}
+  ::join('-separator-') {stream.languages::join("-separator-")}
+  ::length {stream.languages::length}
+  ::first {stream.languages::first}
+  ::last {stream.languages::last}
+{tools.newLine}
+
+Boolean: {stream.proxied}
+  ::istrue {stream.proxied::istrue["true"||"false"]}
+  ::isfalse {stream.proxied::isfalse["true"||"false"]}
+{tools.newLine}
+
+Conditional:
+  filename::exists    {stream.filename::exists["true"||"false"]}
+  filename::$Movie    {stream.filename::$Movie["true"||"false"]}
+  filename::^Title    {stream.filename::^Title["true"||"false"]}
+  filename::~test     {stream.filename::~test["true"||"false"]}
+  filename::=test     {stream.filename::=test["true"||"false"]}
+  filesize::>=100     {stream.size::>=100["true"||"false"]}
+  filesize::>50       {stream.size::>50["true"||"false"]}
+  filesize::<=200     {stream.size::<=200["true"||"false"]}
+  filesize::<150      {stream.size::<150["true"||"false"]}
+{tools.newLine}
+
+[Advanced] Multiple modifiers
+  <string>::reverse::title::reverse   {config.addonName} -> {config.addonName::reverse::title::reverse}
+  <number>::string::reverse           {stream.size} -> {stream.size::string::reverse}
+  <array>::string::reverse            {stream.languages} -> {stream.languages::join("::")::reverse}
+  <boolean>::length::>=2              {stream.languages} -> {stream.languages::length::>=2["true"||"false"]}
+`;
 
 export abstract class BaseFormatter {
   protected config: FormatterConfig;
@@ -402,6 +452,13 @@ export abstract class BaseFormatter {
     };
   }
 
+  // Build the modifier regex pattern from modifier keys
+  protected buildModifierRegexPattern(): string {
+    const validModifiers = Object.keys(modifiers)
+      .map(key => key.replace(/[\(\)\'\"\$\^\~\=\>\<]/g, '\\$&'));
+    return `::(${validModifiers.join('|')})`;
+  }
+
   protected buildRegexExpression(): RegExp {
     // Dynamically build the `variable` regex pattern from ParseValue keys
     // Futureproof: if we add new keys to ParseValue interface, we must add them here too
@@ -416,11 +473,7 @@ export abstract class BaseFormatter {
     });
     const variable = `(?<variableName>${validVariables.join('|')})\\.(?<propertyName>${validProperties.join('|')})`;
 
-    // Dynamically build the `modifier` regex pattern from modifier keys
-    const validModifiers = Object.keys(modifiers)
-      .map(key => key.replace(/[\(\)\'\"\$\^\~\=\>\<]/g, '\\$&'));
-    
-    const modifier = `::(?<mod>${validModifiers.join('|')})`;
+    const singleValidModifier = this.buildModifierRegexPattern();
     
     // Build the conditional check pattern separately
     // Use [^"]* to capture anything except quotes, making it non-greedy
@@ -431,7 +484,7 @@ export abstract class BaseFormatter {
     // TZ Locale pattern (e.g. 'UTC', 'GMT', 'EST', 'PST', 'en-US', 'en-GB', 'Europe/London', 'America/New_York')
     const modTZLocale = `::(?<mod_tzlocale>[A-Za-z]{2,3}(?:-[A-Z]{2})?|[A-Za-z]+?/[A-Za-z_]+?)`;
 
-    const regexPattern = `\\{${variable}(${modifier})?(${modTZLocale})?(${checkTF})?\\}`;
+    const regexPattern = `\\{${variable}(?<modifiers>(${singleValidModifier})+)?(${modTZLocale})?(${checkTF})?\\}`;
     
     return new RegExp(regexPattern, 'gi')
   }
@@ -446,13 +499,13 @@ export abstract class BaseFormatter {
     value.debug = {
       json: JSON.stringify({ ...value, debug: undefined }, replacer),
       jsonf: JSON.stringify({ ...value, debug: undefined }, replacer, 2),
+      modifier: debugModifierToolReplacement,
     };
-
 
     const re = this.buildRegexExpression();
     let matches: RegExpExecArray | null;
 
-    while ((matches = re.exec(str))) {
+    while (matches = re.exec(str)) {
       if (!matches.groups) continue;
 
       const index = matches.index as number;
@@ -483,18 +536,27 @@ export abstract class BaseFormatter {
         continue;
       }
 
-      // Validate - Modifier(s)
-      if (matches.groups.mod) {
-        str = this.replaceCharsFromString(
-          str,
-          this.modifier(
-            matches.groups.mod,
-            property as any,
+      // Process - Modifier(s)
+      if (matches.groups.modifiers) {
+         const singleValidModifierRe = new RegExp(this.buildModifierRegexPattern(), 'gi');
+        
+        let result = property as any;
+        // iterate over modifiers in order of appearance
+        for (const modMatch of [...matches.groups.modifiers.matchAll(singleValidModifierRe)].sort((a, b) => (a.index ?? 0) - (b.index ?? 0))) {
+          result = this.modifier(
+            modMatch[1], // First capture group (the modifier name)
+            result,
             matches.groups.mod_tzlocale ?? "",
             matches.groups.mod_check_true ?? "",
             matches.groups.mod_check_false ?? "",
             value
-          ),
+          );
+          if (result.startsWith('{unknown_')) break;
+        }
+        
+        str = this.replaceCharsFromString(
+          str,
+          result,
           index,
           re.lastIndex
         );
@@ -585,39 +647,35 @@ export abstract class BaseFormatter {
     }
 
     // --- STRING MODIFIERS ---
-    if (typeof value === 'string') {
-      if (mod in stringModifiers) return stringModifiers[mod as keyof typeof stringModifiers](value);
-      return `{unknown_str_modifier(${mod})}`;
+    else if (typeof value === 'string') {
+      if (mod in stringModifiers)
+        return stringModifiers[mod as keyof typeof stringModifiers](value);
     }
 
     // --- ARRAY MODIFIERS ---
     else if (Array.isArray(value)) {
-      if (mod in arrayModifiers) {
-        const result = arrayModifiers[mod as keyof typeof arrayModifiers](value);
-        if (typeof result === 'string') return result;
-        return result.join(', ');
-      }
+      if (mod in arrayModifiers)
+        return arrayModifiers[mod as keyof typeof arrayModifiers](value)?.toString();
 
       // handle hardcoded modifiers here
       switch (true) {
         case mod.startsWith('join(') && mod.endsWith(')'): {
-          // Extract the separator from join(separator)
-          // e.g. join(' - ')
-          const separator = _mod
-            .substring(6, _mod.length - 2)
+          // Extract the separator from join('separator') or join("separator")
+          const separator = _mod.substring(6, _mod.length - 2)
           return value.join(separator);
         }
       }
-      return `{unknown_array_modifier(${mod})}`;
     }
 
     // --- NUMBER MODIFIERS ---
     else if (typeof value === 'number') {
-      if (mod in numberModifiers) return numberModifiers[mod as keyof typeof numberModifiers](value);
-      return `{unknown_int_modifier(${mod})}`;
+      if (mod in numberModifiers)
+        return numberModifiers[mod as keyof typeof numberModifiers](value);
     }
 
-    return `{unknown_modifier(${mod})}`;
+    let valueType = typeof value;
+    if (valueType === typeof undefined || valueType === typeof null) return `{unknown_modifier(${mod})}`;
+    return `{unknown_${valueType}_modifier(${mod})}`;
   }
 
   protected replaceCharsFromString(
