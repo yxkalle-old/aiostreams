@@ -22,6 +22,6 @@ jobs:
           node-version: '22.x'
 
       - name: Install Dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile
       - name: Build Addon
-        run: npm run build
+        run: pnpm run build
