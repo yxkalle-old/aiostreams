@@ -63,8 +63,15 @@ export interface AIOStreamsResponse<T> {
   errors: AIOStreamsError[];
 }
 
+export interface AIOStreamsOptions {
+  skipFailedAddons?: boolean;
+  increasedManifestTimeout?: boolean;
+  bypassManifestCache?: boolean;
+}
+
 export class AIOStreams {
   private userData: UserData;
+  private options: AIOStreamsOptions | undefined;
   private manifestUrl: string;
   private manifests: Record<string, Manifest | null>;
   private supportedResources: Record<string, StrictManifestResource[]>;
@@ -73,7 +80,6 @@ export class AIOStreams {
   private finalAddonCatalogs: Manifest['addonCatalogs'] = [];
   private isInitialised: boolean = false;
   private addons: Addon[] = [];
-  private skipFailedAddons: boolean = true;
   private proxifier: Proxifier;
   private limiter: StreamLimiter;
   private fetcher: Fetcher;
@@ -87,13 +93,13 @@ export class AIOStreams {
     error: string;
   }[] = [];
 
-  constructor(userData: UserData, options?: { skipFailedAddons: boolean }) {
+  constructor(userData: UserData, options?: AIOStreamsOptions) {
     this.addonInitialisationErrors = [];
     this.userData = userData;
     this.manifestUrl = `${Env.BASE_URL}/stremio/${this.userData.uuid}/${this.userData.encryptedPassword}/manifest.json`;
     this.manifests = {};
     this.supportedResources = {};
-    this.skipFailedAddons = options?.skipFailedAddons ?? true;
+    this.options = options;
     this.proxifier = new Proxifier(userData);
     this.limiter = new StreamLimiter(userData);
     this.fetcher = new Fetcher(userData);
@@ -703,9 +709,17 @@ export class AIOStreams {
         this.addons.map(async (addon) => {
           try {
             this.validateAddon(addon);
-            return [addon.instanceId, await new Wrapper(addon).getManifest()];
+            return [
+              addon.instanceId,
+              await new Wrapper(addon).getManifest({
+                timeout: this.options?.increasedManifestTimeout
+                  ? Env.MANIFEST_INCREASED_TIMEOUT
+                  : undefined,
+                bypassCache: this.options?.bypassManifestCache,
+              }),
+            ];
           } catch (error: any) {
-            if (this.skipFailedAddons) {
+            if (this.options?.skipFailedAddons) {
               this.addonInitialisationErrors.push({
                 addon: addon,
                 error: error.message,

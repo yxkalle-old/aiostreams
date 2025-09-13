@@ -471,7 +471,7 @@ export const Env = cleanEnv(process.env, {
     desc: 'Cache TTL for proxy IPs',
   }),
   MANIFEST_CACHE_TTL: num({
-    default: 300,
+    default: 21600,
     desc: 'Cache TTL for manifest files',
   }),
   MANIFEST_CACHE_MAX_SIZE: num({
@@ -588,6 +588,10 @@ export const Env = cleanEnv(process.env, {
   MANIFEST_TIMEOUT: num({
     default: 3000,
     desc: 'Timeout for manifest requests',
+  }),
+  MANIFEST_INCREASED_TIMEOUT: num({
+    default: 10000,
+    desc: 'Increased timeout for manifest requests',
   }),
 
   BACKGROUND_RESOURCE_REQUEST_TIMEOUT: num({

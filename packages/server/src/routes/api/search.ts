@@ -126,7 +126,10 @@ router.get(
       }
       userData.ip = req.userIp;
       try {
-        userData = await validateConfig(userData, true, true);
+        userData = await validateConfig(userData, {
+          skipErrorsFromAddonsOrProxies: true,
+          decryptValues: true,
+        });
       } catch (error: any) {
         throw new APIError(
           constants.ErrorCode.USER_INVALID_CONFIG,

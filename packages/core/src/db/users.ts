@@ -46,7 +46,14 @@ export class UserRepository {
       try {
         // don't skip errors, but don't decrypt credentials
         // as we need to store the encrypted version
-        validatedConfig = await validateConfig(config, false, false);
+        validatedConfig = await validateConfig(config, {
+          skipErrorsFromAddonsOrProxies: false,
+          decryptValues: false,
+          // when creating a user, time isnt a concern
+          increasedManifestTimeout: true,
+          // ensure we cache the latest manifest
+          bypassManifestCache: true,
+        });
       } catch (error: any) {
         logger.error(`Invalid config for new user: ${error.message}`);
         return Promise.reject(
@@ -229,7 +236,14 @@ export class UserRepository {
           false;
         let validatedConfig: UserData;
         try {
-          validatedConfig = await validateConfig(config, false, false);
+          validatedConfig = await validateConfig(config, {
+            skipErrorsFromAddonsOrProxies: false,
+            decryptValues: false,
+            // when updating a user, time isnt a concern
+            increasedManifestTimeout: true,
+            // ensure we cache the latest manifest
+            bypassManifestCache: true,
+          });
         } catch (error: any) {
           throw new APIError(
             constants.ErrorCode.USER_INVALID_CONFIG,

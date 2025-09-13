@@ -134,7 +134,10 @@ export class Wrapper {
     return validItems;
   }
 
-  async getManifest(): Promise<Manifest> {
+  async getManifest(options?: {
+    timeout?: number;
+    bypassCache?: boolean;
+  }): Promise<Manifest> {
     const cacheKey =
       this.preset.getCacheKey({
         resource: 'manifest',
@@ -184,9 +187,9 @@ export class Wrapper {
 
     return this._request({
       requestFn,
-      timeout: Env.MANIFEST_TIMEOUT,
+      timeout: options?.timeout ?? Env.MANIFEST_TIMEOUT,
       resourceName: 'manifest',
-      cacher: manifestCache,
+      cacher: options?.bypassCache ? undefined : manifestCache,
       cacheKey,
       cacheTtl: Env.MANIFEST_CACHE_TTL,
     });

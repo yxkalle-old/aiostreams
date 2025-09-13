@@ -265,10 +265,16 @@ export function getEnvironmentServiceDetails(): typeof constants.SERVICE_DETAILS
   ) as typeof constants.SERVICE_DETAILS;
 }
 
+export interface ValidateConfigOptions {
+  skipErrorsFromAddonsOrProxies?: boolean;
+  decryptValues?: boolean;
+  increasedManifestTimeout?: boolean;
+  bypassManifestCache?: boolean;
+}
+
 export async function validateConfig(
   data: any,
-  skipErrorsFromAddonsOrProxies: boolean = false,
-  decryptValues: boolean = false
+  options?: ValidateConfigOptions
 ): Promise<UserData> {
   const {
     success,
@@ -338,7 +344,7 @@ export async function validateConfig(
       try {
         validatePreset(preset);
       } catch (error) {
-        if (!skipErrorsFromAddonsOrProxies) {
+        if (!options?.skipErrorsFromAddonsOrProxies) {
           throw error;
         }
         logger.warn(`Invalid preset ${preset.instanceId}: ${error}`);
@@ -370,14 +376,14 @@ export async function validateConfig(
 
   if (config.services) {
     config.services = config.services.map((service: Service) =>
-      validateService(service, decryptValues)
+      validateService(service, options?.decryptValues)
     );
   }
 
   config.proxy = await validateProxy(
     config,
-    skipErrorsFromAddonsOrProxies,
-    decryptValues
+    options?.skipErrorsFromAddonsOrProxies,
+    options?.decryptValues
   );
 
   if (config.rpdbApiKey) {
@@ -385,7 +391,7 @@ export async function validateConfig(
       const rpdb = new RPDB(config.rpdbApiKey);
       await rpdb.validateApiKey();
     } catch (error) {
-      if (!skipErrorsFromAddonsOrProxies) {
+      if (!options?.skipErrorsFromAddonsOrProxies) {
         throw new Error(`Invalid RPDB API key: ${error}`);
       }
       logger.warn(`Invalid RPDB API key: ${error}`);
@@ -400,7 +406,7 @@ export async function validateConfig(
       });
       await tmdb.validateAuthorisation();
     } catch (error) {
-      if (!skipErrorsFromAddonsOrProxies) {
+      if (!options?.skipErrorsFromAddonsOrProxies) {
         throw new Error(`Invalid TMDB access token: ${error}`);
       }
       logger.warn(`Invalid TMDB access token: ${error}`);
@@ -415,10 +421,12 @@ export async function validateConfig(
     }
   }
 
-  await validateRegexes(config, skipErrorsFromAddonsOrProxies);
+  await validateRegexes(config, options?.skipErrorsFromAddonsOrProxies);
 
   await new AIOStreams(ensureDecrypted(config), {
-    skipFailedAddons: skipErrorsFromAddonsOrProxies,
+    skipFailedAddons: options?.skipErrorsFromAddonsOrProxies ?? false,
+    increasedManifestTimeout: options?.increasedManifestTimeout ?? false,
+    bypassManifestCache: options?.bypassManifestCache ?? false,
   }).initialise();
 
   return config;

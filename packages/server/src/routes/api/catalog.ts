@@ -20,7 +20,12 @@ router.post('/', async (req: Request, res: Response, next: NextFunction) => {
   try {
     let validatedUserData: UserData;
     try {
-      validatedUserData = await validateConfig(userData, false, true);
+      validatedUserData = await validateConfig(userData, {
+        skipErrorsFromAddonsOrProxies: false,
+        decryptValues: true,
+        increasedManifestTimeout: true,
+        bypassManifestCache: true,
+      });
     } catch (error) {
       if (
         error instanceof Error &&
