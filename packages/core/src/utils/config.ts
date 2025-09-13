@@ -352,8 +352,8 @@ export async function validateConfig(
     }
   }
 
-  if (config.groups) {
-    for (const group of config.groups) {
+  if (config.groups?.groupings) {
+    for (const group of config.groups.groupings) {
       await validateGroup(group);
     }
   }
@@ -456,8 +456,8 @@ function removeInvalidPresetReferences(config: UserData) {
         existingPresetIds?.includes(addon)
       );
   }
-  if (config.groups) {
-    config.groups = config.groups.map((group) => ({
+  if (config.groups?.groupings) {
+    config.groups.groupings = config.groups.groupings.map((group) => ({
       ...group,
       addons: group.addons?.filter((addon) =>
         existingPresetIds?.includes(addon)
@@ -467,7 +467,7 @@ function removeInvalidPresetReferences(config: UserData) {
   return config;
 }
 
-export function applyMigrations(config: UserData): UserData {
+export function applyMigrations(config: any): UserData {
   if (
     config.deduplicator &&
     typeof config.deduplicator.multiGroupBehaviour === 'string'
@@ -494,6 +494,14 @@ export function applyMigrations(config: UserData): UserData {
       addons: config.titleMatching.addons ?? [],
     };
     delete config.titleMatching.matchYear;
+  }
+
+  if (Array.isArray(config.groups)) {
+    config.groups = {
+      enabled: config.disableGroups ? false : true,
+      groupings: config.groups,
+      behaviour: 'parallel',
+    };
   }
   return config;
 }

@@ -27,7 +27,7 @@ import {
   ConfirmationDialog,
   useConfirmationDialog,
 } from '../shared/confirmation-dialog';
-import { UserData } from '@aiostreams/core';
+import { applyMigrations, UserData } from '@aiostreams/core';
 
 export function SaveInstallMenu() {
   return (
@@ -164,7 +164,9 @@ function Content() {
     const reader = new FileReader();
     reader.onload = (event) => {
       try {
-        const json = JSON.parse(event.target?.result as string);
+        const json = applyMigrations(
+          JSON.parse(event.target?.result as string)
+        );
         // const validate = UserDataSchema.safeParse(json);
         // if (!validate.success) {
         //   toast.error('Failed to import configuration: Invalid JSON file');

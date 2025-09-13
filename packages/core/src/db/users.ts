@@ -15,6 +15,7 @@ import {
   verifyHash,
   validateConfig,
   formatZodError,
+  applyMigrations,
 } from '../utils';
 
 const APIError = constants.APIError;
@@ -193,7 +194,7 @@ export class UserRepository {
         Env.TRUSTED_UUIDS?.split(',').some((u) => new RegExp(u).test(uuid)) ??
         false;
       logger.info(`Retrieved configuration for user ${uuid}`);
-      return decryptedConfig;
+      return applyMigrations(decryptedConfig);
     } catch (error) {
       logger.error(
         `Error retrieving user ${uuid}: ${error instanceof Error ? error.message : String(error)}`

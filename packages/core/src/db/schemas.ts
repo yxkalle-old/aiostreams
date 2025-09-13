@@ -360,14 +360,28 @@ export const UserDataSchema = z.object({
   requiredStreamExpressions: z.array(z.string().min(1).max(3000)).optional(),
   preferredStreamExpressions: z.array(z.string().min(1).max(3000)).optional(),
   includedStreamExpressions: z.array(z.string().min(1).max(3000)).optional(),
-  disableGroups: z.boolean().optional(),
+  // disableGroups: z.boolean().optional(),
+  // groups: z
+  //   .array(
+  //     z.object({
+  //       addons: z.array(z.string().min(1)),
+  //       condition: z.string().min(1).max(200),
+  //     })
+  //   )
+  //   .optional(),
   groups: z
-    .array(
-      z.object({
-        addons: z.array(z.string().min(1)),
-        condition: z.string().min(1).max(200),
-      })
-    )
+    .object({
+      enabled: z.boolean().optional(),
+      groupings: z
+        .array(
+          z.object({
+            addons: z.array(z.string().min(1)),
+            condition: z.string().min(1).max(200),
+          })
+        )
+        .optional(),
+      behaviour: z.enum(['sequential', 'parallel']).optional(),
+    })
     .optional(),
   sortCriteria: z.object({
     // global must be defined.
