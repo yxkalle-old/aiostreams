@@ -453,6 +453,12 @@ export const TABLES = {
       updated_at TIMESTAMP DEFAULT (CURRENT_TIMESTAMP),
       accessed_at TIMESTAMP DEFAULT (CURRENT_TIMESTAMP)
     `,
+  distributed_locks: `
+      key TEXT PRIMARY KEY,
+      owner TEXT NOT NULL,
+      expires_at BIGINT NOT NULL,
+      result TEXT
+    `,
 };
 
 const strictManifestResourceSchema = z.object({

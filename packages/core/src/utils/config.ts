@@ -415,7 +415,7 @@ export async function validateConfig(
     }
   }
 
-  await validateRegexes(config);
+  await validateRegexes(config, skipErrorsFromAddonsOrProxies);
 
   await new AIOStreams(ensureDecrypted(config), {
     skipFailedAddons: skipErrorsFromAddonsOrProxies,
@@ -490,7 +490,7 @@ export function applyMigrations(config: UserData): UserData {
   return config;
 }
 
-async function validateRegexes(config: UserData) {
+async function validateRegexes(config: UserData, skipErrors: boolean = false) {
   const excludedRegexes = config.excludedRegexPatterns;
   const includedRegexes = config.includedRegexPatterns;
   const requiredRegexes = config.requiredRegexPatterns;
@@ -511,14 +511,20 @@ async function validateRegexes(config: UserData) {
       allowedPatterns.includes(regex)
     );
     if (allowedRegexes.length === 0) {
-      throw new Error(
-        'You do not have permission to use regex filters, please remove them from your config'
-      );
+      if (!skipErrors) {
+        throw new Error(
+          'You do not have permission to use regex filters, please remove them from your config'
+        );
+      }
+      return;
     }
     if (allowedRegexes.length !== regexes.length) {
-      throw new Error(
-        `You are only permitted to use specific regex patterns, you have ${regexes.length - allowedRegexes.length} / ${regexes.length} regexes that are not allowed. Please remove them from your config.`
-      );
+      if (!skipErrors) {
+        throw new Error(
+          `You are only permitted to use specific regex patterns, you have ${regexes.length - allowedRegexes.length} / ${regexes.length} regexes that are not allowed. Please remove them from your config.`
+        );
+      }
+      return;
     }
   }
 

@@ -1,5 +1,10 @@
 import { Addon, ParsedStream, UserData } from '../db/schemas';
-import { constants, createLogger, getTimeTakenSincePoint } from '../utils';
+import {
+  AnimeDatabase,
+  constants,
+  createLogger,
+  getTimeTakenSincePoint,
+} from '../utils';
 import { Wrapper } from '../wrapper';
 import { GroupConditionEvaluator } from '../parser/streamExpression';
 import { getAddonName } from '../utils/general';
@@ -46,6 +51,10 @@ class StreamFetcher {
     }[] = [];
     let allStreams: ParsedStream[] = [];
     const start = Date.now();
+    let queryType = type;
+    if (AnimeDatabase.getInstance().isAnime(id)) {
+      queryType = 'anime';
+    }
 
     // Helper function to fetch streams from an addon and log summary
     const fetchFromAddon = async (addon: Addon) => {
@@ -147,7 +156,7 @@ class StreamFetcher {
       await this.precompute.precompute(filteredStreams);
 
       logger.info(
-        `Group processing finished. Filtered to ${filteredStreams.length} streams in ${getTimeTakenSincePoint(groupStart)}`
+        `Finished fetching from group in ${getTimeTakenSincePoint(groupStart)}`
       );
       return {
         totalTime: Date.now() - groupStart,
@@ -211,7 +220,7 @@ class StreamFetcher {
               allStreams,
               previousGroupTimeTaken,
               totalTimeTaken,
-              type
+              queryType
             );
             const shouldFetchNext = await evaluator.evaluate(
               nextGroup.condition
@@ -233,7 +242,7 @@ class StreamFetcher {
             allStreams,
             previousGroupTimeTaken,
             totalTimeTaken,
-            type
+            queryType
           );
           const shouldFetch = await evaluator.evaluate(group.condition);
 

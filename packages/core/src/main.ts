@@ -15,6 +15,7 @@ import {
   Cache,
   ExtrasParser,
   makeUrlLogSafe,
+  AnimeDatabase,
 } from './utils';
 import { Wrapper } from './wrapper';
 import { PresetManager } from './presets';
@@ -40,7 +41,8 @@ import {
   StreamUtils,
 } from './streams';
 import { getAddonName } from './utils/general';
-import { TMDBMetadata, TMDBMetadataResponse } from './metadata/tmdb';
+import { TMDBMetadata } from './metadata/tmdb';
+import { Metadata } from './metadata/utils';
 const logger = createLogger('core');
 
 const shuffleCache = Cache.getInstance<string, MetaPreview[]>('shuffle');
@@ -1163,9 +1165,7 @@ export class AIOStreams {
     });
   }
 
-  private async getMetadata(
-    id: string
-  ): Promise<TMDBMetadataResponse | undefined> {
+  private async getMetadata(id: string): Promise<Metadata | undefined> {
     try {
       const metadata = await new TMDBMetadata({
         accessToken: this.userData.tmdbAccessToken,
@@ -1186,7 +1186,7 @@ export class AIOStreams {
   private _getNextEpisode(
     currentSeason: number,
     currentEpisode: number,
-    metadata?: TMDBMetadataResponse
+    metadata?: Metadata
   ): {
     season: number;
     episode: number;
@@ -1194,7 +1194,7 @@ export class AIOStreams {
     let season = currentSeason;
     let episode = currentEpisode + 1;
     const episodeCount = metadata?.seasons?.find(
-      (s) => s.season_number === Number(season)
+      (s) => s.season_number === season
     )?.episode_count;
 
     // If we are at the last episode of the season, try to move to the next season
@@ -1237,7 +1237,7 @@ export class AIOStreams {
           await this.limiter.limit(
             await this.sorter.sort(
               processedStreams,
-              id.startsWith('kitsu') ? 'anime' : type
+              AnimeDatabase.getInstance().isAnime(id) ? 'anime' : type
             )
           )
         )

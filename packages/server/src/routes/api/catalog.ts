@@ -10,7 +10,7 @@ import {
   constants,
 } from '@aiostreams/core';
 import { catalogApiRateLimiter } from '../../middlewares/ratelimit';
-const router = Router();
+const router: Router = Router();
 
 const logger = createLogger('server');
 router.use(catalogApiRateLimiter);

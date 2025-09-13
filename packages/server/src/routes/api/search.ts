@@ -15,7 +15,7 @@ import { createLogger } from '@aiostreams/core';
 import { ApiTransformer, ApiSearchResponseData } from '@aiostreams/core';
 import { ApiResponse, createResponse } from '../../utils/responses';
 import { z, ZodError } from 'zod';
-const router = Router();
+const router: Router = Router();
 
 const logger = createLogger('server');
 
